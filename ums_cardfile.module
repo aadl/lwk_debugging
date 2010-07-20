@@ -299,7 +299,8 @@ function ums_cardfile_event_form($form_state, $eid = 0) {
     '#size' => 30,
     '#maxlength' => 64,
     '#default_value' => $event['date'],
-    '#description' => t('Date of Event (YYYY-MM-DD HH:MM:SS)'),
+    '#description' => t('Date of Event (YYYY-MM-DD [HH:MM:SS])') . '<br />' .
+                      t('Event Time is optional, and should be in 24 hour format (e.g. 8:00 PM = 20:00:00)'),
   );
   $form['venue'] = array(
     '#type' => 'select',
