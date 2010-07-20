@@ -1,0 +1,387 @@
+<?php
+// $Id$
+// UMS cardfile module will provide for adding, editing and querying of records into the UMS card file
+
+/**
+ * Valid permissions for UMS modules
+ * @return array of valid permissions
+ * need to change all permissions to a UMS only role
+ */
+function ums_cardfile_perm() {
+  return array('edit ums card file records', 'view ums card file records' );
+}
+
+function ums_cardfile_menu() {
+  $items = array();
+
+  $items['cardfile'] = array(
+    'title' => t('Beta UMS Home'),
+    'page callback' => 'ums_cardfile_home',
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/events'] = array(
+    'title' => t('Beta UMS Events'),
+    'page callback' => 'ums_cardfile_events',
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/event/edit'] = array(
+    'title' => t('Beta UMS Events'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ums_cardfile_event_form', 3),
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/event/delete'] = array(
+    'title' => t('Delete UMS Event'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ums_cardfile_event_delete_confirm', 3),
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['cardfile/venues'] = array(
+    'title' => t('Beta UMS Venues'),
+    'page callback' => 'ums_cardfile_venues',
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/venues/delete'] = array(
+    'title' => t('Delete Venue'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ums_cardfile_delete_venue_confirm', 3),
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['cardfile/series'] = array(
+    'title' => t('Beta UMS Series'),
+    'page callback' => 'ums_cardfile_series',
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/series/delete'] = array(
+    'title' => t('Delete Series'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ums_cardfile_delete_series_confirm', 3),
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/*== HOME ====================================================================*/
+function ums_cardfile_home() {
+  $output .= '<h1>' . t('UMS Cardfile Home') . '</h1>';
+  $output .= '<p>' . l('UMS Events List', 'cardfile/events') . '</p>';
+
+  return $output;
+}
+
+/*== VENUES ==================================================================*/
+
+function ums_cardfile_venues() {
+  $output .= drupal_get_form('ums_cardfile_venue_form');
+
+  $rows = array();
+  $result = db_query('SELECT * FROM ums_venues ORDER BY name');
+  while ($venue = db_fetch_object($result)) {
+    $rows[] = array($venue->name, '[' . l('X', "cardfile/venues/delete/$venue->vid") . ']');
+  }
+  if (count($rows)) {
+    $output .= theme('table', array('Venue Name', 'DELETE?'), $rows);
+  }
+  else {
+    $output .= '<p>No Venues Defined</p>';
+  }
+
+  $output .= '<p>' . l('UMS Events List', 'cardfile/events') . '</p>';
+  return $output;
+}
+
+function ums_cardfile_venue_form($form_state) {
+  $form = array(
+    '#prefix' => '<div class="container-inline">',
+    '#suffix' => '</div>',
+  );
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Add a Venue'),
+    '#size' => 64,
+    '#maxlength' => 128,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add'),
+  );
+
+  return $form;
+}
+
+function ums_cardfile_venue_form_submit($form, &$form_state) {
+  $new_venue = new stdClass;
+  $new_venue->name = $form_state['values']['name'];
+  drupal_write_record('ums_venues', $new_venue);
+  drupal_set_message('Added new Venue');
+}
+
+function ums_cardfile_delete_venue_confirm($form_state, $vid) {
+  $form = array();
+
+  $venue = db_fetch_object(db_query('SELECT * FROM ums_venues WHERE vid = %d', $vid));
+  $form['vid'] = array(
+    '#type' => 'value',
+    '#value' => $vid,
+  );
+  return confirm_form($form,
+                      t('Are you sure you want to remove this Venue?'),
+                      (isset($_GET['destination']) ? $_GET['destination'] : 'cardfile/venues'),
+                      '<h2>' . t('Are you sure you want to delete the Venue: "') . $venue->name . t('"? This action cannot be undone.') . '</h2>',
+                      t('Delete'),
+                      t('Cancel'));
+}
+
+function ums_cardfile_delete_venue_confirm_submit($form, &$form_state) {
+  drupal_set_message("Removed Venue from database");
+  db_query("DELETE FROM ums_venues WHERE vid = %d", $form_state['values']['vid']);
+  $form_state['redirect'] = 'cardfile/venues';
+}
+
+/*== SERIES ==================================================================*/
+
+function ums_cardfile_series() {
+  $output .= drupal_get_form('ums_cardfile_series_form');
+
+  $rows = array();
+  $result = db_query('SELECT * FROM ums_series ORDER BY name');
+  while ($series = db_fetch_object($result)) {
+    $rows[] = array($series->name, '[' . l('X', "cardfile/series/delete/$series->sid") . ']');
+  }
+  if (count($rows)) {
+    $output .= theme('table', array('Series Name', 'DELETE?'), $rows);
+  }
+  else {
+    $output .= '<p>No Series Defined</p>';
+  }
+
+  $output .= '<p>' . l('UMS Events List', 'cardfile/events') . '</p>';
+  return $output;
+}
+
+function ums_cardfile_series_form($form_state) {
+  $form = array(
+    '#prefix' => '<div class="container-inline">',
+    '#suffix' => '</div>',
+  );
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Add a Series'),
+    '#size' => 64,
+    '#maxlength' => 128,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add'),
+  );
+
+  return $form;
+}
+
+function ums_cardfile_series_form_submit($form, &$form_state) {
+  $new_series = new stdClass;
+  $new_series->name = $form_state['values']['name'];
+  drupal_write_record('ums_series', $new_series);
+  drupal_set_message('Added new Series');
+}
+
+function ums_cardfile_delete_series_confirm($form_state, $sid) {
+  $form = array();
+
+  $series = db_fetch_object(db_query('SELECT * FROM ums_series WHERE sid = %d', $sid));
+  $form['sid'] = array(
+    '#type' => 'value',
+    '#value' => $sid,
+  );
+  return confirm_form($form,
+                      t('Are you sure you want to remove this series?'),
+                      (isset($_GET['destination']) ? $_GET['destination'] : 'cardfile/series'),
+                      '<h2>' . t('Are you sure you want to delete the series: "') . $series->name . t('"? This action cannot be undone.') . '</h2>',
+                      t('Delete'),
+                      t('Cancel'));
+}
+
+function ums_cardfile_delete_series_confirm_submit($form, &$form_state) {
+  drupal_set_message("Removed Series from database");
+  db_query("DELETE FROM ums_series WHERE sid = %d", $form_state['values']['sid']);
+  $form_state['redirect'] = 'cardfile/series';
+}
+
+/*== EVENTS ==================================================================*/
+
+function _ums_cardfile_get_event($eid = 0) {
+  $event = db_fetch_array(db_query("SELECT ums_events.eid AS eid, " .
+                                   "ums_events.date AS date, " .
+                                   "ums_events.notes AS notes, " .
+                                   "ums_events.program_nid AS program_nid, " .
+                                   "ums_series.sid AS sid, " .
+                                   "ums_series.name AS series, " .
+                                   "ums_venues.vid AS vid, " .
+                                   "ums_venues.name AS venue " .
+                                   "FROM ums_events, ums_series, ums_venues " .
+                                   "WHERE ums_events.sid = ums_series.sid " .
+                                   "AND ums_events.vid = ums_venues.vid " .
+                                   "AND ums_events.eid = %d", $eid));
+  return $event;
+}
+
+function ums_cardfile_events() {
+  $output .= '<h1>UMS Cardfile Events</h1>';
+  $output .= '<ul>';
+  $output .= '<li>' . l('Add New Event', 'cardfile/event/edit') . '</li>';
+  $output .= '<li>' . l('Edit Venue List', 'cardfile/venues') . '</li>';
+  $output .= '<li>' . l('Edit Series List', 'cardfile/series') . '</li>';
+  $output .= '</ul>';
+
+  $rows = array();
+  $result = db_query('SELECT eid FROM ums_events ORDER BY date');
+  while ($e = db_fetch_object($result)) {
+    $event = _ums_cardfile_get_event($e->eid);
+    $row = array('ID' => $event['eid'],
+                 'Date' => $event['date'],
+                 'Venue' => $event['venue'],
+                 'Series' => $event['series'],
+                 'Notes' => strlen($event['notes']) > 30 ? substr($event['notes'], 0, 30) . '...' : $event['notes'],
+                 'Program' => $event['program_nid'] ? l('Program', 'node/' . $event['program_nid']) : '',
+                 'Edit?' => l('EDIT', 'cardfile/event/edit/' . $e->eid),
+                 'Delete?' => l('DELETE', 'cardfile/event/delete/' . $e->eid),
+                );
+    $rows[] = $row;
+    if (empty($header)) {
+      $header = array_keys($row);
+    }
+  }
+  if (count($rows)) {
+    $output .= theme('table', $header, $rows);
+  }
+  else {
+    $output .= '<p>No Events Defined</p>';
+  }
+
+  return $output;
+}
+
+function ums_cardfile_event_form($form_state, $eid = 0) {
+  // get venues
+  $venue_options = array();
+  $res = db_query("SELECT * FROM ums_venues ORDER BY name");
+  while ($venue = db_fetch_object($res)) {
+    $venue_options[$venue->vid] = $venue->name;
+  }
+  // get series
+  $series_options = array();
+  $res = db_query("SELECT * FROM ums_series ORDER BY name");
+  while ($series = db_fetch_object($res)) {
+    $series_options[$series->sid] = $series->name;
+  }
+
+  $form['title'] = array(
+    '#value' => '<h1>' . t('Edit UMS Event') . '</h1>',
+  );
+  if ($eid) {
+    $event = _ums_cardfile_get_event($eid);
+    $form['eid'] = array(
+      '#type' => 'value',
+      '#value' => $eid,
+    );
+  }
+  $form['date'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Date'),
+    '#size' => 30,
+    '#maxlength' => 64,
+    '#default_value' => $event['date'],
+    '#description' => t('Date of Event (YYYY-MM-DD HH:MM:SS)'),
+  );
+  $form['venue'] = array(
+    '#type' => 'select',
+    '#title' => t('Venue'),
+    '#options' => $venue_options,
+    '#default_value' => $event['vid'],
+    '#description' => t('Location of Event') . ' [' . l('Edit Venue List', 'cardfile/venues') . ']',
+  );
+  $form['series'] = array(
+    '#type' => 'select',
+    '#title' => t('Series'),
+    '#options' => $series_options,
+    '#default_value' => $event['sid'],
+    '#description' => t('Event Series') . ' [' . l('Edit Series List', 'cardfile/series') . ']',
+  );
+  $form['notes'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Notes'),
+    '#default_value' => $event['notes'],
+  );
+  $form['program_nid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Program ID'),
+    '#size' => 10,
+    '#maxlength' => 10,
+    '#default_value' => $event['program_nid'],
+    '#description' => t('Node ID of the corresponding program'),
+  );
+  $form['submit'] = array(
+    '#prefix' => '<div class="container-inline">',
+    '#type' => 'submit',
+    '#value' => t('Save Event'),
+    '#suffix' => '&nbsp;' . l('Cancel', 'cardfile/events') . '</div>',
+  );
+
+  return $form;
+}
+
+function ums_cardfile_event_form_submit($form, $form_state) {
+  $event = new stdClass;
+  $event->date = $form_state['values']['date'];
+  $event->vid = $form_state['values']['venue'];
+  $event->sid = $form_state['values']['series'];
+  $event->notes = $form_state['values']['notes'];
+  $event->program_nid = $form_state['values']['program_nid'];
+
+  if ($form_state['values']['eid']) {
+    // update existing record
+    $event->eid = $form_state['values']['eid'];
+    drupal_write_record('ums_events', $event, 'eid');
+  }
+  else {
+    // new event
+    drupal_write_record('ums_events', $event);
+  }
+
+  drupal_set_message('Event saved');
+  drupal_goto('cardfile/events');
+}
+
+function ums_cardfile_event_delete_confirm($form_state, $eid) {
+  $event_details .= '<ul>';
+  foreach (_ums_cardfile_get_event($eid) as $key => $data) {
+    $event_details .= "<li><b>$key:</b> $data</li>";
+  }
+  $event_details .= '</ul>';
+
+  $form = array();
+  $form['eid'] = array(
+    '#type' => 'value',
+    '#value' => $eid,
+  );
+  return confirm_form($form,
+                      t('Are you sure you want to delete this UMS Event'),
+                      (isset($_GET['destination']) ? $_GET['destination'] : 'cardfile/events'),
+                      '<h2>' . t('Are you sure you want to delete this UMS Event? This action cannot be undone.') . '</h2>' . $event_details,
+                      t('Delete'),
+                      t('Cancel'));
+}
+
+function ums_cardfile_event_delete_confirm_submit($form, &$form_state) {
+  db_query("DELETE FROM ums_events WHERE eid = %d", $form_state['values']['eid']);
+  drupal_set_message("Event has been deleted");
+  $form_state['redirect'] = 'cardfile/events';
+}

@@ -1,0 +1,44 @@
+<?php
+function ums_cardfile_install() {
+  drupal_install_schema('ums_cardfile');
+}
+
+function ums_cardfile_uninstall() {
+  drupal_uninstall_schema('ums_cardfile');
+}
+
+function ums_cardfile_schema() {
+  $schema = array();
+  $schema['ums_events'] = array(
+    'description' => 'A descrete performance at a single venue at a given time',
+    'fields' => array(
+      'eid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'date' => array('type' => 'datetime'),
+      'vid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'sid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'notes' => array('type' => 'text'),
+      'program_nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+    ),
+    'primary key' => array('eid'),
+  );
+
+  $schema['ums_venues'] = array(
+    'description' => 'Venues for UMS Events',
+    'fields' => array(
+      'vid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'name' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  $schema['ums_series'] = array(
+    'description' => 'Series for UMS Events',
+    'fields' => array(
+      'sid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'name' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+    ),
+    'primary key' => array('sid'),
+  );
+
+  return $schema;
+}
