@@ -20,6 +20,26 @@ function ums_cardfile_menu() {
     'access arguments' => array('edit ums card file records'),
     'type' => MENU_NORMAL_ITEM,
   );
+  $items['cardfile/artists'] = array(
+    'title' => t('Beta UMS artists'),
+    'page callback' => 'ums_cardfile_artists',
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/artist/edit'] = array(
+    'title' => t('Beta UMS artists'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ums_cardfile_artist_form', 3),
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/artist/delete'] = array(
+    'title' => t('Delete UMS artist'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ums_cardfile_artist_delete_confirm', 3),
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_CALLBACK,
+  );
   $items['cardfile/events'] = array(
     'title' => t('Beta UMS Events'),
     'page callback' => 'ums_cardfile_events',
@@ -72,6 +92,7 @@ function ums_cardfile_menu() {
 /*== HOME ====================================================================*/
 function ums_cardfile_home() {
   $output .= '<h1>' . t('UMS Cardfile Home') . '</h1>';
+  $output .= '<p>' . l('UMS Artists List', 'cardfile/artists') . '</p>';
   $output .= '<p>' . l('UMS Events List', 'cardfile/events') . '</p>';
 
   return $output;
@@ -385,4 +406,148 @@ function ums_cardfile_event_delete_confirm_submit($form, &$form_state) {
   db_query("DELETE FROM ums_events WHERE eid = %d", $form_state['values']['eid']);
   drupal_set_message("Event has been deleted");
   $form_state['redirect'] = 'cardfile/events';
+}
+
+/*== ARTISTS =================================================================*/
+
+function _ums_cardfile_get_artist($aid = 0) {
+  $event = db_fetch_array(db_query("SELECT ums_artists.aid AS aid, " .
+                                   "ums_artists.name AS name, " .
+                                   "ums_artists.name_plain AS name_plain, " .
+                                   "ums_artists.alias AS alias, " .
+                                   "ums_artists.notes AS notes " .
+                                   "FROM ums_artists " .
+                                   "WHERE ums_artists.aid = %d", $aid));
+  return $event;
+}
+
+function ums_cardfile_artists() {
+  $output .= '<h1>UMS Cardfile Artists</h1>';
+  $output .= '<ul>';
+  $output .= '<li>' . l('Add New Artist', 'cardfile/artist/edit') . '</li>';
+  $output .= '</ul>';
+
+  $rows = array();
+  $result = db_query('SELECT aid FROM ums_artists ORDER BY name_plain');
+  while ($a = db_fetch_object($result)) {
+    $artist = _ums_cardfile_get_artist($a->aid);
+    $row = array('ID' => $artist['aid'],
+                 'Name' => $artist['name'],
+                 'Alias' => $artist['alias'],
+                 'Notes' => strlen($artist['notes']) > 30 ? substr($artist['notes'], 0, 30) . '...' : $artist['notes'],
+                 'Edit?' => l('EDIT', 'cardfile/artist/edit/' . $a->aid),
+                 'Delete?' => l('DELETE', 'cardfile/artist/delete/' . $a->aid),
+                );
+    $rows[] = $row;
+    if (empty($header)) {
+      $header = array_keys($row);
+    }
+  }
+  if (count($rows)) {
+    $output .= theme('table', $header, $rows);
+  }
+  else {
+    $output .= '<p>No Artists Defined</p>';
+  }
+
+  return $output;
+}
+
+function ums_cardfile_artist_form($form_state, $aid = 0) {
+  $form['title'] = array(
+    '#value' => '<h1>' . t('Edit UMS artist') . '</h1>',
+  );
+  if ($aid) {
+    $artist = _ums_cardfile_get_artist($aid);
+    $form['aid'] = array(
+      '#type' => 'value',
+      '#value' => $aid,
+    );
+  }
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Name'),
+    '#size' => 64,
+    '#maxlength' => 128,
+    '#default_value' => $artist['name'],
+    '#description' => t('Name of Artist'),
+  );
+  $form['alias'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Alias'),
+    '#size' => 64,
+    '#maxlength' => 256,
+    '#default_value' => $artist['alias'],
+    '#description' => t('Artist Aliases') . ' (' . t('separate multiple values with a comma') . ')',
+  );
+  $form['notes'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Notes'),
+    '#default_value' => $artist['notes'],
+  );
+  $form['submit'] = array(
+    '#prefix' => '<div class="container-inline">',
+    '#type' => 'submit',
+    '#value' => t('Save Artist'),
+    '#suffix' => '&nbsp;' . l('Cancel', 'cardfile/artists') . '</div>',
+  );
+
+  return $form;
+}
+
+function ums_cardfile_artist_form_submit($form, $form_state) {
+  $artist = new stdClass;
+  $artist->name = $form_state['values']['name'];
+  $artist->alias = $form_state['values']['alias'];
+  $artist->notes = $form_state['values']['notes'];
+
+  // Convert Name to NamePlain for matching
+  $artist->name_plain = ums_cardfile_normalize($artist->name);
+
+  if ($form_state['values']['aid']) {
+    // update existing record
+    $artist->aid = $form_state['values']['aid'];
+    drupal_write_record('ums_artists', $artist, 'aid');
+  }
+  else {
+    // new artist
+    drupal_write_record('ums_artists', $artist);
+  }
+
+  drupal_set_message('Artist saved');
+  drupal_goto('cardfile/artists');
+}
+
+function ums_cardfile_artist_delete_confirm($form_state, $aid) {
+  $artist_details .= '<ul>';
+  foreach (_ums_cardfile_get_artist($aid) as $key => $data) {
+    $artist_details .= "<li><b>$key:</b> $data</li>";
+  }
+  $artist_details .= '</ul>';
+
+  $form = array();
+  $form['aid'] = array(
+    '#type' => 'value',
+    '#value' => $aid,
+  );
+  return confirm_form($form,
+                      t('Are you sure you want to delete this UMS Artist'),
+                      (isset($_GET['destination']) ? $_GET['destination'] : 'cardfile/artists'),
+                      '<h2>' . t('Are you sure you want to delete this UMS Artist? This action cannot be undone.') . '</h2>' . $artist_details,
+                      t('Delete'),
+                      t('Cancel'));
+}
+
+function ums_cardfile_artist_delete_confirm_submit($form, &$form_state) {
+  db_query("DELETE FROM ums_artists WHERE aid = %d", $form_state['values']['aid']);
+  drupal_set_message("Artist has been deleted");
+  $form_state['redirect'] = 'cardfile/artists';
+}
+
+function ums_cardfile_normalize($string){
+    $a = 'ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûýýþÿŔŕ';
+    $b = 'AAAAAAACEEEEIIIIDNOOOOOOUUUUYBSaaaaaaaceeeeiiiidnoooooouuuyybyRr';
+    $string = utf8_decode($string);
+    $string = strtr($string, utf8_decode($a), $b);
+    return utf8_encode($string);
 }

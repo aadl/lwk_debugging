@@ -40,5 +40,33 @@ function ums_cardfile_schema() {
     'primary key' => array('sid'),
   );
 
+  $schema['ums_artists'] = array(
+    'description' => 'An individual or group that contributed to a UMS production',
+    'fields' => array(
+      'aid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'name' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+      'name_plain' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+      'alias' => array('type' => 'varchar', 'length' => 256, 'default' => ''),
+      'notes' => array('type' => 'text'),
+    ),
+    'primary key' => array('aid'),
+  );
   return $schema;
+}
+
+function ums_cardfile_update_6100() {
+  $schema['ums_artists'] = array(
+    'description' => 'An individual or group that contributed to a UMS production',
+    'fields' => array(
+      'aid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'name' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+      'name_plain' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+      'alias' => array('type' => 'varchar', 'length' => 256, 'default' => ''),
+      'notes' => array('type' => 'text'),
+    ),
+    'primary key' => array('aid'),
+  );
+  $ret = array();
+  db_create_table($ret, 'ums_artists', $schema['ums_artists']);
+  return $ret;
 }
