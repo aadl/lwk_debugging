@@ -51,6 +51,67 @@ function ums_cardfile_schema() {
     ),
     'primary key' => array('aid'),
   );
+
+  $schema['ums_works'] = array(
+    'description' => 'An individual piece performed at an event at least once',
+    'fields' => array(
+      'wid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'title' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+      'alternate' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+      'notes' => array('type' => 'text'),
+    ),
+    'primary key' => array('wid'),
+  );
+
+  $schema['ums_work_roles'] = array(
+    'description' => 'The role in which an artist is connected to a work',
+    'fields' => array(
+      'wrid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'name' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+    ),
+    'primary key' => array('wrid'),
+  );
+
+  $schema['ums_artist_works'] = array(
+    'description' => 'An artist connected to a work',
+    'fields' => array(
+      'aid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'wid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'wrid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+    ),
+    'primary key' => array('aid', 'wid', 'wrid'),
+  );
+
+  $schema['ums_performances'] = array(
+    'description' => 'An individual performance of a work at an event',
+    'fields' => array(
+      'pid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'eid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'wid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'notes' => array('type' => 'text'),
+    ),
+    'primary key' => array('pid'),
+  );
+
+  $schema['ums_performance_roles'] = array(
+    'description' => 'The role in which an artist is connected to a performance',
+    'fields' => array(
+      'prid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'name' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+    ),
+    'primary key' => array('prid'),
+  );
+
+  $schema['ums_artist_performances'] = array(
+    'description' => 'An artist connected to a performance',
+    'fields' => array(
+      'aid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'pid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'prid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+    ),
+    'primary key' => array('aid', 'pid'),
+  );
+
   return $schema;
 }
 
@@ -68,5 +129,77 @@ function ums_cardfile_update_6100() {
   );
   $ret = array();
   db_create_table($ret, 'ums_artists', $schema['ums_artists']);
+  return $ret;
+}
+
+function ums_cardfile_update_6200() {
+  $ret = array();
+
+  $schema['ums_works'] = array(
+    'description' => 'An individual piece performed at an event at least once',
+    'fields' => array(
+      'wid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'title' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+      'alternate' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+      'notes' => array('type' => 'text'),
+    ),
+    'primary key' => array('wid'),
+  );
+  db_create_table($ret, 'ums_works', $schema['ums_works']);
+
+  $schema['ums_work_roles'] = array(
+    'description' => 'The role in which an artist is connected to a work',
+    'fields' => array(
+      'wrid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'name' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+    ),
+    'primary key' => array('wrid'),
+  );
+  db_create_table($ret, 'ums_work_roles', $schema['ums_work_roles']);
+
+  $schema['ums_artist_works'] = array(
+    'description' => 'An artist connected to a work',
+    'fields' => array(
+      'aid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'wid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'wrid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+    ),
+    'primary key' => array('aid', 'wid', 'wrid'),
+  );
+  db_create_table($ret, 'ums_artist_works', $schema['ums_artist_works']);
+
+  $schema['ums_performances'] = array(
+    'description' => 'An individual performance of a work at an event',
+    'fields' => array(
+      'pid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'eid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'wid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'notes' => array('type' => 'text'),
+    ),
+    'primary key' => array('pid'),
+  );
+  db_create_table($ret, 'ums_performances', $schema['ums_performances']);
+
+  $schema['ums_performance_roles'] = array(
+    'description' => 'The role in which an artist is connected to a performance',
+    'fields' => array(
+      'prid' => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+      'name' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+    ),
+    'primary key' => array('prid'),
+  );
+  db_create_table($ret, 'ums_performance_roles', $schema['ums_performance_roles']);
+
+  $schema['ums_artist_performances'] = array(
+    'description' => 'An artist connected to a performance',
+    'fields' => array(
+      'aid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'pid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'prid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+    ),
+    'primary key' => array('aid', 'pid'),
+  );
+  db_create_table($ret, 'ums_artist_performances', $schema['ums_artist_performances']);
+
   return $ret;
 }

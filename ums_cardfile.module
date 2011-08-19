@@ -20,29 +20,21 @@ function ums_cardfile_menu() {
     'access arguments' => array('edit ums card file records'),
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['cardfile/artists'] = array(
-    'title' => t('Beta UMS artists'),
-    'page callback' => 'ums_cardfile_artists',
+  $items['cardfile/autocomplete'] = array(
+    'title' => t('UMS Autocomplete'),
+    'page callback' => 'ums_cardfile_autocomplete',
     'access arguments' => array('edit ums card file records'),
     'type' => MENU_NORMAL_ITEM,
-  );
-  $items['cardfile/artist/edit'] = array(
-    'title' => t('Beta UMS artists'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('ums_cardfile_artist_form', 3),
-    'access arguments' => array('edit ums card file records'),
-    'type' => MENU_NORMAL_ITEM,
-  );
-  $items['cardfile/artist/delete'] = array(
-    'title' => t('Delete UMS artist'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('ums_cardfile_artist_delete_confirm', 3),
-    'access arguments' => array('edit ums card file records'),
-    'type' => MENU_CALLBACK,
   );
   $items['cardfile/events'] = array(
     'title' => t('Beta UMS Events'),
     'page callback' => 'ums_cardfile_events',
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/event'] = array(
+    'title' => t('Beta UMS Event'),
+    'page callback' => 'ums_cardfile_event',
     'access arguments' => array('edit ums card file records'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -57,6 +49,52 @@ function ums_cardfile_menu() {
     'title' => t('Delete UMS Event'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('ums_cardfile_event_delete_confirm', 3),
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['cardfile/artists'] = array(
+    'title' => t('Beta UMS Artists'),
+    'page callback' => 'ums_cardfile_artists',
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/artist/edit'] = array(
+    'title' => t('Beta UMS Artists'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ums_cardfile_artist_form', 3),
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/artist/delete'] = array(
+    'title' => t('Delete UMS Artist'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ums_cardfile_artist_delete_confirm', 3),
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['cardfile/works'] = array(
+    'title' => t('Beta UMS Works'),
+    'page callback' => 'ums_cardfile_works',
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/work'] = array(
+    'title' => t('Beta UMS Work'),
+    'page callback' => 'ums_cardfile_work',
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/work/edit'] = array(
+    'title' => t('Beta UMS Work Edit'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ums_cardfile_work_form', 3),
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/work/delete'] = array(
+    'title' => t('Delete UMS Work'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ums_cardfile_work_delete_confirm', 3),
     'access arguments' => array('edit ums card file records'),
     'type' => MENU_CALLBACK,
   );
@@ -86,6 +124,45 @@ function ums_cardfile_menu() {
     'access arguments' => array('edit ums card file records'),
     'type' => MENU_CALLBACK,
   );
+  $items['cardfile/perfroles'] = array(
+    'title' => t('Beta UMS Performance Roles'),
+    'page callback' => 'ums_cardfile_perfroles',
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/perfroles/delete'] = array(
+    'title' => t('Delete Performance Role'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ums_cardfile_delete_perfrole_confirm', 3),
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['cardfile/workroles'] = array(
+    'title' => t('Beta UMS Work Roles'),
+    'page callback' => 'ums_cardfile_workroles',
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/workroles/delete'] = array(
+    'title' => t('Delete Work Role'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ums_cardfile_delete_workrole_confirm', 3),
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['cardfile/performance'] = array(
+    'title' => t('Beta UMS Performance'),
+    'page callback' => 'ums_cardfile_performance',
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['cardfile/performance/delete'] = array(
+    'title' => t('Delete UMS Performance'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ums_cardfile_performance_delete_confirm', 3),
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -94,6 +171,7 @@ function ums_cardfile_home() {
   $output .= '<h1>' . t('UMS Cardfile Home') . '</h1>';
   $output .= '<p>' . l('UMS Artists List', 'cardfile/artists') . '</p>';
   $output .= '<p>' . l('UMS Events List', 'cardfile/events') . '</p>';
+  $output .= '<p>' . l('UMS Works List', 'cardfile/works') . '</p>';
 
   return $output;
 }
@@ -251,6 +329,16 @@ function _ums_cardfile_get_event($eid = 0) {
                                    "WHERE ums_events.sid = ums_series.sid " .
                                    "AND ums_events.vid = ums_venues.vid " .
                                    "AND ums_events.eid = %d", $eid));
+
+  // Get performances
+  $res = db_query("SELECT * FROM ums_performances, ums_works " .
+                  "WHERE ums_performances.eid = %d " .
+                  "AND ums_performances.wid = ums_works.wid " .
+                  "ORDER BY ums_performances.wid", $eid);
+  while ($performance = db_fetch_array($res)) {
+    $event['performances'][] = $performance;
+  }
+
   return $event;
 }
 
@@ -272,8 +360,9 @@ function ums_cardfile_events() {
                  'Series' => $event['series'],
                  'Notes' => strlen($event['notes']) > 30 ? substr($event['notes'], 0, 30) . '...' : $event['notes'],
                  'Program' => $event['program_nid'] ? l('Program', 'node/' . $event['program_nid']) : '',
-                 'Edit?' => l('EDIT', 'cardfile/event/edit/' . $e->eid),
-                 'Delete?' => l('DELETE', 'cardfile/event/delete/' . $e->eid),
+                 'View' => l('VIEW', 'cardfile/event/' . $e->eid),
+                 'Edit' => l('EDIT', 'cardfile/event/edit/' . $e->eid),
+                 'Delete' => l('DELETE', 'cardfile/event/delete/' . $e->eid),
                 );
     $rows[] = $row;
     if (empty($header)) {
@@ -288,6 +377,61 @@ function ums_cardfile_events() {
   }
 
   return $output;
+}
+
+function ums_cardfile_event($eid = 0) {
+  if ($event = _ums_cardfile_get_event($eid)) {
+    $output .= '<h1>UMS Event</h1>';
+    $output .= '<p>' . l('Edit event data', 'cardfile/event/edit/' . $event['eid']) . '</p>';
+    $output .= '<p><strong>Date:</strong> ' . $event['date'] . '</p>';
+    $output .= '<p><strong>Venue:</strong> ' . $event['venue'] . '</p>';
+    $output .= '<p><strong>Series:</strong> ' . $event['series'] . '</p>';
+    if ($event['notes']) {
+      $output .= '<p><strong>Notes:</strong> ' . $event['notes'] . '</p>';
+    }
+    if ($event['performances']) {
+      $output .= '<h3>Performances</h3>';
+      foreach ($event['performances'] as $performance) {
+        $output .= '<p>' . $performance['title'] . ' : ' . l('Edit Performance Details', 'cardfile/performance/'. $performance['pid']) . '</p>';
+      }
+    }
+    $output .= drupal_get_form('ums_cardfile_event_add_performance', $event['eid']);
+  }
+  else {
+    drupal_set_message('Event not found', 'error');
+    drupal_goto('cardfile/events');
+  }
+  return $output;
+}
+
+function ums_cardfile_event_add_performance($form_state, $eid) {
+  $form = array(
+    '#prefix' => '<fieldset class="collapsible collapsed"><legend>Add Performance</legend><div class="container-inline">',
+    '#suffix' => '</div></fieldset>',
+  );
+  $form['eid'] = array(
+    '#type' => 'value',
+    '#value' => $eid,
+  );
+  $form['wid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Work ID'),
+    '#size' => 8,
+    '#maxlength' => 8,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add Work Performance'),
+  );
+  
+  return $form;
+}
+
+function ums_cardfile_event_add_performance_submit($form, &$form_state) {
+  $perf = new stdClass;
+  $perf->wid = intval($form_state['values']['wid']);
+  $perf->eid = $form_state['values']['eid'];
+  drupal_write_record('ums_performances', $perf);  
 }
 
 function ums_cardfile_event_form($form_state, $eid = 0) {
@@ -411,14 +555,14 @@ function ums_cardfile_event_delete_confirm_submit($form, &$form_state) {
 /*== ARTISTS =================================================================*/
 
 function _ums_cardfile_get_artist($aid = 0) {
-  $event = db_fetch_array(db_query("SELECT ums_artists.aid AS aid, " .
-                                   "ums_artists.name AS name, " .
-                                   "ums_artists.name_plain AS name_plain, " .
-                                   "ums_artists.alias AS alias, " .
-                                   "ums_artists.notes AS notes " .
-                                   "FROM ums_artists " .
-                                   "WHERE ums_artists.aid = %d", $aid));
-  return $event;
+  $artist = db_fetch_array(db_query("SELECT ums_artists.aid AS aid, " .
+                                    "ums_artists.name AS name, " .
+                                    "ums_artists.name_plain AS name_plain, " .
+                                    "ums_artists.alias AS alias, " .
+                                    "ums_artists.notes AS notes " .
+                                    "FROM ums_artists " .
+                                    "WHERE ums_artists.aid = %d", $aid));
+  return $artist;
 }
 
 function ums_cardfile_artists() {
@@ -542,6 +686,501 @@ function ums_cardfile_artist_delete_confirm_submit($form, &$form_state) {
   db_query("DELETE FROM ums_artists WHERE aid = %d", $form_state['values']['aid']);
   drupal_set_message("Artist has been deleted");
   $form_state['redirect'] = 'cardfile/artists';
+}
+
+/*== WORKS ===================================================================*/
+
+function _ums_cardfile_get_work($wid = 0) {
+  $work = db_fetch_array(db_query("SELECT ums_works.wid AS wid, " .
+                                  "ums_works.title AS title, " .
+                                  "ums_works.alternate AS alternate, " .
+                                  "ums_works.notes AS notes " .
+                                  "FROM ums_works " .
+                                  "WHERE ums_works.wid = %d", $wid));
+
+  // Get work artists
+  $work['artists'] = array();
+  $res = db_query("SELECT ums_artists.aid AS aid, " .
+                  "ums_artists.name AS name, " .
+                  "ums_artists.alias AS alias, " .
+                  "ums_work_roles.name AS role " .
+                  "FROM ums_artist_works, ums_artists, ums_work_roles " .
+                  "WHERE ums_artist_works.wid = %d " .
+                  "AND ums_artist_works.aid = ums_artists.aid " .
+                  "AND ums_work_roles.wrid = ums_artist_works.wrid", $wid);
+  while ($work_artist = db_fetch_array($res)) {
+    $work['artists'][] = $work_artist;
+  }
+
+  return $work;
+}
+
+function ums_cardfile_works() {
+  $output .= '<h1>UMS Cardfile Works</h1>';
+  $output .= '<ul>';
+  $output .= '<li>' . l('Add New Work', 'cardfile/work/edit') . '</li>';
+  $output .= '<li>' . l('Edit Work Roles', 'cardfile/workroles') . '</li>';
+  $output .= '</ul>';
+
+  $rows = array();
+  $result = db_query('SELECT wid FROM ums_works ORDER BY title');
+  while ($w = db_fetch_object($result)) {
+    $work = _ums_cardfile_get_work($w->wid);
+    $row = array('ID' => $work['wid'],
+                 'Title' => $work['title'],
+                 'Alternate Title' => $work['alternate'],
+                 'Notes' => strlen($work['notes']) > 30 ? substr($work['notes'], 0, 30) . '...' : $work['notes'],
+                 'View' => l('VIEW', 'cardfile/work/' . $w->wid),
+                 'Edit' => l('EDIT', 'cardfile/work/edit/' . $w->wid),
+                 'Delete' => l('DELETE', 'cardfile/work/delete/' . $w->wid),
+                );
+    $rows[] = $row;
+    if (empty($header)) {
+      $header = array_keys($row);
+    }
+  }
+  if (count($rows)) {
+    $output .= theme('table', $header, $rows);
+  }
+  else {
+    $output .= '<p>No Works Defined</p>';
+  }
+
+  return $output;
+}
+
+function ums_cardfile_work($wid = 0) {
+  if ($work = _ums_cardfile_get_work($wid)) {
+    $output .= '<h1>UMS Work</h1>';
+    $output .= '<p>' . l('Edit work data', 'cardfile/work/edit/' . $work['wid']) . '</p>';
+    $output .= '<p><strong>Title:</strong> ' . $work['title'] . '</p>';
+    $output .= '<p><strong>Alternate:</strong> ' . $work['alternate'] . '</p>';
+    if ($work['notes']) {
+      $output .= '<p><strong>Notes:</strong> ' . $work['notes'] . '</p>';
+    }
+    if (count($work['artists'])) {
+      $output .= '<h3>Work Artists</h3>';
+      foreach ($work['artists'] as $work_artist) {
+        $output .= '<p><strong>' . $work_artist['role'] . ':</strong> ' . $work_artist['name'] . '</p>';
+      }
+    }
+    $output .= drupal_get_form('ums_cardfile_work_add_artist', $work['wid']);
+  }
+  else {
+    drupal_set_message('Work not found', 'error');
+    drupal_goto('cardfile/works');
+  }
+  return $output;
+}
+
+function ums_cardfile_work_add_artist($form_state, $wid) {
+  // get work roles
+  $work_role_options = array();
+  $res = db_query("SELECT * FROM ums_work_roles ORDER BY name");
+  while ($work_role = db_fetch_object($res)) {
+    $work_role_options[$work_role->wrid] = $work_role->name;
+  }
+  
+  $form = array(
+    '#prefix' => '<fieldset class="collapsible collapsed"><legend>Add Work Artist</legend><div class="container-inline">',
+    '#suffix' => '</div></fieldset>',
+  );
+  $form['wid'] = array(
+    '#type' => 'value',
+    '#value' => $wid,
+  );
+  $form['aid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Artist ID'),
+    '#size' => 8,
+    '#maxlength' => 8,
+  );
+  $form['wrid'] = array(
+    '#type' => 'select',
+    '#title' => 'Role',
+    '#options' => $work_role_options,
+    '#description' => '[' . l('Edit Work Roles', 'cardfile/workroles') . ']',
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add Artist'),
+  );
+  
+  return $form;
+}
+
+function ums_cardfile_work_add_artist_submit($form, &$form_state) {
+  $artist_work = new stdClass;
+  $artist_work->aid = intval($form_state['values']['aid']);
+  $artist_work->wid = $form_state['values']['wid'];
+  $artist_work->wrid = $form_state['values']['wrid'];
+  
+  drupal_write_record('ums_artist_works', $artist_work);
+  drupal_goto('cardfile/work/' . $artist_work->wid);
+}
+
+function ums_cardfile_work_form($form_state, $wid = 0) {
+  $form['title'] = array(
+    '#value' => '<h1>' . t('Edit UMS Work') . '</h1>',
+  );
+  if ($wid) {
+    $work = _ums_cardfile_get_work($wid);
+    $form['wid'] = array(
+      '#type' => 'value',
+      '#value' => $wid,
+    );
+  }
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#size' => 64,
+    '#maxlength' => 128,
+    '#default_value' => $work['title'],
+    '#description' => t('Title of Work'),
+  );
+  $form['alternate'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Alternate Title'),
+    '#size' => 64,
+    '#maxlength' => 256,
+    '#default_value' => $work['alternate'],
+    '#description' => t('Alternate Titles for the Work') . ' (' . t('separate multiple values with a comma') . ')',
+  );
+  $form['notes'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Notes'),
+    '#default_value' => $work['notes'],
+  );
+  $form['submit'] = array(
+    '#prefix' => '<div class="container-inline">',
+    '#type' => 'submit',
+    '#value' => t('Save Work'),
+    '#suffix' => '&nbsp;' . l('Cancel', 'cardfile/works') . '</div>',
+  );
+
+  return $form;
+}
+
+function ums_cardfile_work_form_submit($form, $form_state) {
+  $work = new stdClass;
+  $work->title = $form_state['values']['title'];
+  $work->alternate = $form_state['values']['alternate'];
+  $work->notes = $form_state['values']['notes'];
+
+  if ($form_state['values']['wid']) {
+    // update existing record
+    $work->wid = $form_state['values']['wid'];
+    drupal_write_record('ums_works', $work, 'wid');
+  }
+  else {
+    // new work
+    drupal_write_record('ums_works', $work);
+  }
+
+  drupal_set_message('Work saved');
+  drupal_goto('cardfile/works');
+}
+
+function ums_cardfile_work_delete_confirm($form_state, $wid) {
+  $work_details .= '<ul>';
+  foreach (_ums_cardfile_get_work($wid) as $key => $data) {
+    $work_details .= "<li><b>$key:</b> $data</li>";
+  }
+  $work_details .= '</ul>';
+
+  $form = array();
+  $form['wid'] = array(
+    '#type' => 'value',
+    '#value' => $wid,
+  );
+  return confirm_form($form,
+                      t('Are you sure you want to delete this UMS Work'),
+                      (isset($_GET['destination']) ? $_GET['destination'] : 'cardfile/works'),
+                      '<h2>' . t('Are you sure you want to delete this UMS work? This action cannot be undone.') . '</h2>' . $work_details,
+                      t('Delete'),
+                      t('Cancel'));
+}
+
+function ums_cardfile_work_delete_confirm_submit($form, &$form_state) {
+  db_query("DELETE FROM ums_works WHERE wid = %d", $form_state['values']['wid']);
+  drupal_set_message("Work has been deleted");
+  $form_state['redirect'] = 'cardfile/works';
+}
+
+/*== PERFORMANCE ROLES =======================================================*/
+
+function ums_cardfile_perfroles() {
+  $output .= drupal_get_form('ums_cardfile_perfrole_form');
+
+  $rows = array();
+  $result = db_query('SELECT * FROM ums_performance_roles ORDER BY name');
+  while ($role = db_fetch_object($result)) {
+    $rows[] = array($role->name, '[' . l('X', "cardfile/perfroles/delete/$role->prid") . ']');
+  }
+  if (count($rows)) {
+    $output .= theme('table', array('Role Name', 'DELETE?'), $rows);
+  }
+  else {
+    $output .= '<p>No Performance Roles Defined</p>';
+  }
+
+  $output .= '<p>' . l('UMS Events List', 'cardfile/events') . '</p>';
+  return $output;
+}
+
+function ums_cardfile_perfrole_form($form_state) {
+  $form = array(
+    '#prefix' => '<div class="container-inline">',
+    '#suffix' => '</div>',
+  );
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Add a Performance Role'),
+    '#size' => 64,
+    '#maxlength' => 128,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add'),
+  );
+
+  return $form;
+}
+
+function ums_cardfile_perfrole_form_submit($form, &$form_state) {
+  $new_role = new stdClass;
+  $new_role->name = $form_state['values']['name'];
+  drupal_write_record('ums_performance_roles', $new_role);
+  drupal_set_message('Added new role');
+}
+
+function ums_cardfile_delete_perfrole_confirm($form_state, $prid) {
+  $form = array();
+
+  $role = db_fetch_object(db_query('SELECT * FROM ums_performance_roles WHERE prid = %d', $prid));
+  $form['prid'] = array(
+    '#type' => 'value',
+    '#value' => $prid,
+  );
+  return confirm_form($form,
+                      t('Are you sure you want to remove this performance role?'),
+                      (isset($_GET['destination']) ? $_GET['destination'] : 'cardfile/perfroles'),
+                      '<h2>' . t('Are you sure you want to delete the performance role: "') . $role->name . t('"? This action cannot be undone.') . '</h2>',
+                      t('Delete'),
+                      t('Cancel'));
+}
+
+function ums_cardfile_delete_perfrole_confirm_submit($form, &$form_state) {
+  drupal_set_message("Removed performance role from database");
+  db_query("DELETE FROM ums_performance_roles WHERE prid = %d", $form_state['values']['prid']);
+  $form_state['redirect'] = 'cardfile/perfroles';
+}
+
+/*== WORK ROLES ==============================================================*/
+
+function ums_cardfile_workroles() {
+  $output .= drupal_get_form('ums_cardfile_workrole_form');
+
+  $rows = array();
+  $result = db_query('SELECT * FROM ums_work_roles ORDER BY name');
+  while ($role = db_fetch_object($result)) {
+    $rows[] = array($role->name, '[' . l('X', "cardfile/workroles/delete/$role->wrid") . ']');
+  }
+  if (count($rows)) {
+    $output .= theme('table', array('Role Name', 'DELETE?'), $rows);
+  }
+  else {
+    $output .= '<p>No Work Roles Defined</p>';
+  }
+
+  $output .= '<p>' . l('UMS Works List', 'cardfile/works') . '</p>';
+  return $output;
+}
+
+function ums_cardfile_workrole_form($form_state) {
+  $form = array(
+    '#prefix' => '<div class="container-inline">',
+    '#suffix' => '</div>',
+  );
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Add a Work Role'),
+    '#size' => 64,
+    '#maxlength' => 128,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add'),
+  );
+
+  return $form;
+}
+
+function ums_cardfile_workrole_form_submit($form, &$form_state) {
+  $new_role = new stdClass;
+  $new_role->name = $form_state['values']['name'];
+  drupal_write_record('ums_work_roles', $new_role);
+  drupal_set_message('Added new work role');
+}
+
+function ums_cardfile_delete_workrole_confirm($form_state, $wrid) {
+  $form = array();
+
+  $role = db_fetch_object(db_query('SELECT * FROM ums_work_roles WHERE wrid = %d', $wrid));
+  $form['wrid'] = array(
+    '#type' => 'value',
+    '#value' => $wrid,
+  );
+  return confirm_form($form,
+                      t('Are you sure you want to remove this work role?'),
+                      (isset($_GET['destination']) ? $_GET['destination'] : 'cardfile/workroles'),
+                      '<h2>' . t('Are you sure you want to delete the work role: "') . $role->name . t('"? This action cannot be undone.') . '</h2>',
+                      t('Delete'),
+                      t('Cancel'));
+}
+
+function ums_cardfile_delete_workrole_confirm_submit($form, &$form_state) {
+  drupal_set_message("Removed work role from database");
+  db_query("DELETE FROM ums_work_roles WHERE wrid = %d", $form_state['values']['wrid']);
+  $form_state['redirect'] = 'cardfile/workroles';
+}
+
+/*== PERFORMANCES ============================================================*/
+
+function _ums_cardfile_get_performance($pid = 0) {
+  $performance = db_fetch_array(db_query("SELECT ums_performances.pid AS pid, " .
+                                         "ums_performances.eid AS eid, " .
+                                         "ums_performances.wid AS wid, " .
+                                         "ums_performances.notes AS notes " .
+                                         "FROM ums_performances " .
+                                         "WHERE ums_performances.pid = %d", $pid));
+  
+  // Get performance event & work
+  $performance['event'] = _ums_cardfile_get_event($performance['eid']);
+  $performance['work'] = _ums_cardfile_get_work($performance['wid']);
+
+  // Get performance artists
+  $performance['artists'] = array();
+  $res = db_query("SELECT ums_artists.aid AS aid, " .
+                  "ums_artists.name AS name, " .
+                  "ums_artists.alias AS alias, " .
+                  "ums_performance_roles.name AS role " .
+                  "FROM ums_artist_performances, ums_artists, ums_performance_roles " .
+                  "WHERE ums_artist_performances.pid = %d " .
+                  "AND ums_artist_performances.aid = ums_artists.aid " .
+                  "AND ums_performance_roles.prid = ums_artist_performances.prid", $performance['pid']);
+  while ($perf_artist = db_fetch_array($res)) {
+    $performance['artists'][] = $perf_artist;
+  }
+
+  return $performance;
+}
+
+function ums_cardfile_performance($pid) {
+  if ($performance = _ums_cardfile_get_performance($pid)) {
+    $output .= '<h1>UMS Performance</h1>';
+    $output .= '<p><strong>Event:</strong> ' . $performance['event']['date'] . ' at ' . $performance['event']['venue'] . '</p>';
+    $output .= '<p><strong>Work:</strong> ' . $performance['work']['title'] . '</p>';
+    if ($performance['notes']) {
+      $output .= '<p><strong>Notes:</strong> ' . $performance['notes'] . '</p>';
+    }
+    if (count($performance['artists'])) {
+      $output .= '<h3>Performance Artists</h3>';
+      foreach ($performance['artists'] as $perf_artist) {
+        $output .= '<p><strong>' . $perf_artist['role'] . ':</strong> ' . $perf_artist['name'] . '</p>';
+      }
+    }
+    $output .= drupal_get_form('ums_cardfile_performance_add_artist', $performance['pid']);
+    $output .= '<p>[' . l('Return to Event', 'cardfile/event/' . $performance['eid']) . ']</p>';
+  }
+  else {
+    drupal_set_message('Performance not found', 'error');
+    drupal_goto('cardfile/events');
+  }
+  return $output;
+}
+
+function ums_cardfile_performance_add_artist($form_state, $pid) {
+  // get performance roles
+  $perf_role_options = array();
+  $res = db_query("SELECT * FROM ums_performance_roles ORDER BY name");
+  while ($perf_role = db_fetch_object($res)) {
+    $perf_role_options[$perf_role->prid] = $perf_role->name;
+  }
+  
+  $form = array(
+    '#prefix' => '<fieldset class="collapsible collapsed"><legend>Add Performance Artist</legend><div class="container-inline">',
+    '#suffix' => '</div></fieldset>',
+  );
+  $form['pid'] = array(
+    '#type' => 'value',
+    '#value' => $pid,
+  );
+  $form['aid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Artist ID'),
+    '#size' => 8,
+    '#maxlength' => 8,
+  );
+  $form['prid'] = array(
+    '#type' => 'select',
+    '#title' => 'Role',
+    '#options' => $perf_role_options,
+    '#description' => '[' . l('Edit Performance Roles', 'cardfile/perfroles') . ']',
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add Artist'),
+  );
+  
+  return $form;
+}
+
+function ums_cardfile_performance_add_artist_submit($form, &$form_state) {
+  $artist_perf = new stdClass;
+  $artist_perf->aid = intval($form_state['values']['aid']);
+  $artist_perf->pid = $form_state['values']['pid'];
+  $artist_perf->prid = $form_state['values']['prid'];
+  
+  drupal_write_record('ums_artist_performances', $artist_perf);
+  drupal_goto('cardfile/performance/' . $artist_perf->pid);
+}
+
+/*== HELPER FUNCTIONS ========================================================*/
+function ums_cardfile_autocomplete($type) {
+  $search = strtolower($_GET['search']);
+  if ($type == 'artist') {
+    $res = db_query("SELECT * FROM ums_artists " .
+                    "WHERE name LIKE '%%%s%%' " .
+                    "OR name_plain LIKE '%%%s%%' " .
+                    "OR alias LIKE '%%%s%%' " .
+                    "ORDER BY name ASC LIMIT 25",
+                    $search, $search, $search);
+    while ($match = db_fetch_array($res)) {
+      echo $match['name'] . ' (aid:' . $match['aid'] . ")\n";
+    }
+  }
+  else if ($type == 'event') {
+    $res = db_query("SELECT * FROM ums_events " .
+                    "WHERE date LIKE '%%%s%%' " .
+                    "ORDER BY date ASC LIMIT 25",
+                    $search);
+    while ($match = db_fetch_array($res)) {
+      $match_event = _ums_cardfile_get_event($match['eid']);
+      echo $match_event['date'] . ' at ' . $match_event['venue'] . ' (eid:' . $match['eid'] . ")\n";
+    }
+  }
+  else if ($type == 'work') {
+    $res = db_query("SELECT * FROM ums_works " .
+                    "WHERE title LIKE '%%%s%%' " .
+                    "OR alternate LIKE '%%%s%%' " .
+                    "OR notes LIKE '%%%s%%' " .
+                    "ORDER BY title ASC LIMIT 25",
+                    $search, $search, $search);
+    while ($match = db_fetch_array($res)) {
+      echo $match['title'] . ' (wid:' . $match['wid'] . ")\n";
+    }
+  }
 }
 
 function ums_cardfile_normalize($string){
