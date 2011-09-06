@@ -426,7 +426,22 @@ function ums_cardfile_event($eid = 0) {
     if ($event['performances']) {
       $output .= '<h3>Repertoire Performed</h3>';
       foreach ($event['performances'] as $performance) {
-        $output .= '<p>' . $performance['title'] . ' : ' . l('Edit Repertoire Performance Details', 'cardfile/performance/'. $performance['pid']) . '</p>';
+        $performance = _ums_cardfile_get_performance($performance['pid']);
+        $work = $performance['work'];
+        $output .= '<p>';
+        $output .= '<strong>' . $work['title'] . '</strong> : ';
+        if (count($work['artists'])) {
+          foreach ($work['artists'] as $artist) {
+            $output .= $artist['name'] . ' (' . $artist['role'] . ') ';
+          }
+        }
+        $output .= '</p><p>';
+        if (count($performance['artists'])) {
+          foreach ($performance['artists'] as $artist) {
+            $output .= $artist['role'] . ': ' . $artist['name'] . '<br />';
+          }
+        }
+        $output .= '<p>' . l('Edit Repertoire Performance Details', 'cardfile/performance/'. $performance['pid']) . '</p><hr />';
       }
     }
     $output .= drupal_get_form('ums_cardfile_event_add_performance', $event['eid']);
@@ -635,6 +650,46 @@ function ums_cardfile_artist_form($form_state, $aid = 0) {
   $form['title'] = array(
     '#value' => '<h1>' . t('Edit UMS artist') . '</h1>',
   );
+  if ($_GET['wid']) {
+    $work = _ums_cardfile_get_work($_GET['wid']);
+    $form['#prefix'] = '<p>Adding NEW Artist as a Creator of ' . $work['title'] . '</p>';
+    $form['wid'] = array(
+      '#type' => 'value',
+      '#value' => $work['wid'],
+    );
+    // get work roles
+    $work_role_options = array();
+    $res = db_query("SELECT * FROM ums_work_roles ORDER BY name");
+    while ($work_role = db_fetch_object($res)) {
+      $work_role_options[$work_role->wrid] = $work_role->name;
+    }
+    $form['wrid'] = array(
+      '#type' => 'select',
+      '#title' => 'Role',
+      '#options' => $work_role_options,
+      '#description' => '[' . l('Edit Creator Roles', 'cardfile/workroles') . ']',
+    );
+  }
+  else if ($_GET['pid']) {
+    $performance = _ums_cardfile_get_performance($_GET['pid']);
+    $form['#prefix'] = '<p>Adding NEW Artist as a Repertoire Performance Artist of ' . $performance['work']['title'] . '</p>';
+    $form['pid'] = array(
+      '#type' => 'value',
+      '#value' => $performance['pid'],
+    );
+    // get performance roles
+    $perf_role_options = array();
+    $res = db_query("SELECT * FROM ums_performance_roles ORDER BY name");
+    while ($perf_role = db_fetch_object($res)) {
+      $perf_role_options[$perf_role->prid] = $perf_role->name;
+    }
+    $form['prid'] = array(
+      '#type' => 'select',
+      '#title' => 'Role',
+      '#options' => $perf_role_options,
+      '#description' => '[' . l('Edit Artist Roles', 'cardfile/perfroles') . ']',
+    );
+  }
   if ($aid) {
     $artist = _ums_cardfile_get_artist($aid);
     $form['aid'] = array(
@@ -692,7 +747,18 @@ function ums_cardfile_artist_form_submit($form, $form_state) {
     drupal_write_record('ums_artists', $artist);
   }
 
-  drupal_set_message('Artist saved');
+  if ($form_state['values']['wid']) {
+    // Create new work artist
+    drupal_goto('cardfile/join/work/' . $form_state['values']['wid'] . '/artist/' . $artist->aid,
+                array('wrid' => $form_state['values']['wrid']));
+  }
+  else if ($form_state['values']['pid']) {
+    // Create new work artist
+    drupal_goto('cardfile/join/performance/' . $form_state['values']['pid'] . '/artist/' . $artist->aid,
+                array('prid' => $form_state['values']['prid']));
+  }
+
+  drupal_set_message('Artist saved'); 
   drupal_goto('cardfile/artists');
 }
 
@@ -793,7 +859,7 @@ function ums_cardfile_work($wid = 0) {
       $output .= '<p><strong>Notes:</strong> ' . $work['notes'] . '</p>';
     }
     if (count($work['artists'])) {
-      $output .= '<h3>Repertoire Artists</h3>';
+      $output .= '<h3>Creators</h3>';
       foreach ($work['artists'] as $work_artist) {
         $output .= '<p><strong>' . $work_artist['role'] . ':</strong> ' . $work_artist['name'] . '</p>';
       }
@@ -816,18 +882,12 @@ function ums_cardfile_work_add_artist($form_state, $wid) {
   }
 
   $form = array(
-    '#prefix' => '<fieldset class="collapsible collapsed"><legend>Add Repertoire Artist</legend><div class="container-inline">',
+    '#prefix' => '<fieldset class="collapsible collapsed"><legend>Add Creator</legend><div class="container-inline">',
     '#suffix' => '</div></fieldset>',
   );
   $form['wid'] = array(
     '#type' => 'value',
     '#value' => $wid,
-  );
-  $form['aid'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Artist ID'),
-    '#size' => 8,
-    '#maxlength' => 8,
   );
   $form['wrid'] = array(
     '#type' => 'select',
@@ -835,22 +895,25 @@ function ums_cardfile_work_add_artist($form_state, $wid) {
     '#options' => $work_role_options,
     '#description' => '[' . l('Edit Creator Roles', 'cardfile/workroles') . ']',
   );
+  $form['search'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Search for existing artist'),
+    '#size' => 32,
+    '#maxlength' => 32,
+  );
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Add Artist'),
+    '#value' => t('Search'),
   );
-
+  $form['addNew'] = array(
+    '#value' => '<strong>- OR -</strong> ' . l('ADD NEW ARTIST', 'cardfile/artist/edit', array('query' => array('wid' => $wid))),
+  );
   return $form;
 }
 
 function ums_cardfile_work_add_artist_submit($form, &$form_state) {
-  $artist_work = new stdClass;
-  $artist_work->aid = intval($form_state['values']['aid']);
-  $artist_work->wid = $form_state['values']['wid'];
-  $artist_work->wrid = $form_state['values']['wrid'];
-
-  drupal_write_record('ums_artist_works', $artist_work);
-  drupal_goto('cardfile/work/' . $artist_work->wid);
+  drupal_goto('cardfile/searchadd/work/' . $form_state['values']['wid'] .
+              '/artist/' . $form_state['values']['search'], array('wrid' => $form_state['values']['wrid']));
 }
 
 function ums_cardfile_work_form($form_state, $wid = 0) {
@@ -859,7 +922,7 @@ function ums_cardfile_work_form($form_state, $wid = 0) {
   );
   if ($_GET['eid']) {
     $event = _ums_cardfile_get_event($_GET['eid']);
-    $form['#prefix'] = '<p>Adding Repertoire to event: ' . $event['date'] . ' at ' . $event['venue'] . '</p>';
+    $form['#prefix'] = '<p>Adding NEW Repertoire to event: ' . $event['date'] . ' at ' . $event['venue'] . '</p>';
     $form['eid'] = array(
       '#type' => 'value',
       '#value' => $event['eid'],
@@ -1127,7 +1190,9 @@ function ums_cardfile_performance($pid) {
   if ($performance = _ums_cardfile_get_performance($pid)) {
     $output .= '<h1>UMS Repertoire Performance</h1>';
     $output .= '<p><strong>Event:</strong> ' . $performance['event']['date'] . ' at ' . $performance['event']['venue'] . '</p>';
-    $output .= '<p><strong>Repertoire:</strong> ' . $performance['work']['title'] . '</p>';
+    $output .= '<p><strong>Repertoire:</strong> ' .
+               l($performance['work']['title'], 'cardfile/work/' . $performance['work']['wid']) .
+               '</p>';
     if ($performance['notes']) {
       $output .= '<p><strong>Notes:</strong> ' . $performance['notes'] . '</p>';
     }
@@ -1163,34 +1228,32 @@ function ums_cardfile_performance_add_artist($form_state, $pid) {
     '#type' => 'value',
     '#value' => $pid,
   );
-  $form['aid'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Artist ID'),
-    '#size' => 8,
-    '#maxlength' => 8,
-  );
   $form['prid'] = array(
     '#type' => 'select',
     '#title' => 'Role',
     '#options' => $perf_role_options,
     '#description' => '[' . l('Edit Artist Roles', 'cardfile/perfroles') . ']',
   );
+  $form['search'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Search for existing artist'),
+    '#size' => 32,
+    '#maxlength' => 32,
+  );
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Add Artist'),
+    '#value' => t('Search'),
+  );
+  $form['addNew'] = array(
+    '#value' => '<strong>- OR -</strong> ' . l('ADD NEW ARTIST', 'cardfile/artist/edit', array('query' => array('pid' => $pid))),
   );
 
   return $form;
 }
 
-function ums_cardfile_performance_add_artist_submit($form, &$form_state) {
-  $artist_perf = new stdClass;
-  $artist_perf->aid = intval($form_state['values']['aid']);
-  $artist_perf->pid = $form_state['values']['pid'];
-  $artist_perf->prid = $form_state['values']['prid'];
-
-  drupal_write_record('ums_artist_performances', $artist_perf);
-  drupal_goto('cardfile/performance/' . $artist_perf->pid);
+function ums_cardfile_performance_add_artist_submit($form, &$form_state) {  
+  drupal_goto('cardfile/searchadd/performance/' . $form_state['values']['pid'] .
+              '/artist/' . $form_state['values']['search'], array('prid' => $form_state['values']['prid']));
 }
 
 /*== HELPER FUNCTIONS ========================================================*/
@@ -1199,7 +1262,19 @@ function ums_cardfile_searchadd($source_type, $source_id, $type, $search) {
   if ($source_type == 'event') {
     $event = _ums_cardfile_get_event($source_id);
     $output .= '<p>Adding repertoire to event: ' . $event['date'] . ' at ' . $event['venue'] . '</p>';
-
+  }
+  else if ($source_type == 'performance') {
+    $performance = _ums_cardfile_get_performance($source_id);
+    $role = db_fetch_object(db_query('SELECT * FROM ums_performance_roles WHERE prid = %d', $_GET['prid']));
+    $query_args = array('prid' => $role->prid);
+    $output .= '<p>Adding a <strong>' . $role->name . '</strong> to ' . $performance['work']['title'] . ' at event: ' .
+               $performance['event']['date'] . ' at ' . $performance['event']['venue'] . '</p>';
+  }
+  else if ($source_type == 'work') {
+    $work = _ums_cardfile_get_work($source_id);
+    $role = db_fetch_object(db_query('SELECT * FROM ums_work_roles WHERE wrid = %d', $_GET['wrid']));
+    $query_args = array('wrid' => $role->wrid);
+    $output .= '<p>Adding a <strong>' . $role->name . '</strong> to ' . $work['title'] . '</p>';
   }
   if ($type == 'work') {
     $wids = array();
@@ -1253,6 +1328,29 @@ function ums_cardfile_searchadd($source_type, $source_id, $type, $search) {
     $output .= '<p><strong>- OR -</strong></p>';
     $output .= '<p>' . l('ADD NEW REPERTOIRE', '#') . '</p>';
   }
+  else if ($type == 'artist') {
+    $res = db_query("SELECT * FROM ums_artists " .
+                    "WHERE name LIKE '%%%s%%' " .
+                    "OR name_plain LIKE '%%%s%%' " .
+                    "OR alias LIKE '%%%s%%' " .
+                    "OR notes LIKE '%%%s%%' " .
+                    "ORDER BY name ASC",
+                    $search, $search, $search, $search);
+    $rows = array();
+    while ($artist = db_fetch_array($res)) {
+      $rows[] = array(
+        'Artist ID' => $artist['aid'],
+        'Name' => $artist['name'],
+        'Alias' => $artist['alias'],
+        'Notes' => $artist['notes'],
+        'SELECT' => l('SELECT', "cardfile/join/$source_type/$source_id/artist/" . $artist['aid'],
+                      array('query' => $query_args)),
+      );
+    }
+    $output .= theme('table', array_keys($rows[0]), $rows);
+    $output .= '<p><strong>- OR -</strong></p>';
+    $output .= '<p>' . l('ADD NEW ARTIST', '#') . '</p>';
+  }
   return $output;
 }
 
@@ -1263,7 +1361,27 @@ function ums_cardfile_join($type1, $id1, $type2, $id2) {
     $perf->eid = $id1;
     $perf->wid = $id2;
     drupal_write_record('ums_performances', $perf);
+    drupal_set_message('Created new Repertoire Performance for Event ID: ' . $id1 .
+                       '<br />Add Artist Info below:');
     drupal_goto('cardfile/performance/' . $perf->pid);
+  }
+  else if ($type1 == 'performance' && $type2 == 'artist') {
+    $artist_perf = new stdClass;
+    $artist_perf->pid = $id1;
+    $artist_perf->aid = $id2;
+    $artist_perf->prid = $_GET['prid'];
+    drupal_write_record('ums_artist_performances', $artist_perf);
+    drupal_set_message("Added new Repertoire Artist to the Performance");
+    drupal_goto('cardfile/performance/' . $artist_perf->pid);
+  }
+  else if ($type1 == 'work' && $type2 == 'artist') {
+    $artist_work = new stdClass;
+    $artist_work->wid = $id1;
+    $artist_work->aid = $id2;
+    $artist_work->wrid = $_GET['wrid'];
+    drupal_write_record('ums_artist_works', $artist_work);
+    drupal_set_message("Added new Creator to the Repertoire");
+    drupal_goto('cardfile/work/' . $artist_work->wid);
   }
 }
 
