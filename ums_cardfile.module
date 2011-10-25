@@ -385,9 +385,14 @@ function ums_cardfile_events($year = '') {
   $output .= '<li>' . l('Edit Series List', 'cardfile/series') . '</li>';
   $output .= '</ul>';
 
-  if ($year = intval($year)) {
+  if ($year) {
     $rows = array();
-    $result = db_query('SELECT eid FROM ums_events WHERE YEAR(date) = %d ORDER BY date', $year);
+    if ($year == 'all') {
+      $result = db_query("SELECT * FROM ums_events WHERE 1 ORDER BY date");
+    }
+    else {
+      $result = db_query('SELECT eid FROM ums_events WHERE YEAR(date) = %d ORDER BY date', $year);
+    }
     while ($e = db_fetch_object($result)) {
       $event = _ums_cardfile_get_event($e->eid);
       $row = array('ID' => $event['eid'],
@@ -426,6 +431,7 @@ function ums_cardfile_events($year = '') {
       }
     }
     if (count($rows)) {
+      $output .= '<p>[ ' . l('VIEW ALL YEARS', 'cardfile/events/all') . ' ]</p>';
       $output .= theme('table', $header, $rows);
     }
     else {
@@ -696,7 +702,7 @@ function ums_cardfile_artist_form($form_state, $aid = 0) {
       '#type' => 'select',
       '#title' => 'Role',
       '#options' => $work_role_options,
-      '#description' => '[' . l('Edit Creator Roles', 'cardfile/workroles') . ']',
+      '#description' => '[' . l('Edit Creator Roles', 'cardfile/workroles', array('query' => array('return' => $_GET['q']))) . ']',
     );
   }
   else if ($_GET['pid']) {
@@ -716,7 +722,7 @@ function ums_cardfile_artist_form($form_state, $aid = 0) {
       '#type' => 'select',
       '#title' => 'Role',
       '#options' => $perf_role_options,
-      '#description' => '[' . l('Edit Artist Roles', 'cardfile/perfroles') . ']',
+      '#description' => '[' . l('Edit Artist Roles', 'cardfile/perfroles', array('query' => array('return' => $_GET['q']))) . ']',
     );
   }
   if ($aid) {
@@ -731,7 +737,7 @@ function ums_cardfile_artist_form($form_state, $aid = 0) {
     '#title' => t('Name'),
     '#size' => 64,
     '#maxlength' => 128,
-    '#default_value' => $artist['name'],
+    '#default_value' => ($_GET['name'] ? $_GET['name'] : $artist['name']),
     '#description' => t('Name of Artist'),
   );
   $form['alias'] = array(
@@ -914,22 +920,37 @@ function ums_cardfile_work_add_artist($form_state, $wid) {
   }
 
   $form = array(
-    '#prefix' => '<fieldset class="collapsible collapsed"><legend>Add Creator</legend>',
-    '#suffix' => '</fieldset>',
+    '#prefix' => '<fieldset class="collapsible collapsed"><legend>Add Creator</legend>' .
+                 '<table><tr><th>Select Role:</th><th>Select Artist:</th></tr><tr>',
+    '#suffix' => '</tr></table></fieldset>',
   );
   $form['wid'] = array(
     '#type' => 'value',
     '#value' => $wid,
   );
   $form['role'] = array(
-    '#prefix' => '<div class="container-inline">',
-    '#suffix' => '</div><br />',
+    '#prefix' => '<td><div class="container-inline">',
+    '#suffix' => '</div></td>',
   );
   $form['role']['wrid'] = array(
     '#type' => 'select',
     '#title' => 'Role',
     '#options' => $work_role_options,
-    '#description' => '[' . l('Edit Creator Roles', 'cardfile/workroles') . ']',
+    '#description' => '[' . l('Edit Creator Roles', 'cardfile/workroles', array('query' => array('return' => $_GET['q']))) . ']',
+  );
+  $form['search'] = array(
+    '#prefix' => '<td><div class="container-inline">',
+    '#suffix' => '</div><p><strong>- OR -</strong></p>',
+  );
+  $form['search']['search_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Search for existing artist'),
+    '#size' => 32,
+    '#maxlength' => 32,
+  );
+  $form['search']['submit_search'] = array(
+    '#type' => 'submit',
+    '#value' => t('Search'),
   );
   $form['recent'] = array(
     '#prefix' => '<div class="container-inline">',
@@ -945,22 +966,8 @@ function ums_cardfile_work_add_artist($form_state, $wid) {
     '#type' => 'submit',
     '#value' => t('Use This Artist'),
   );
-  $form['search'] = array(
-    '#prefix' => '<div class="container-inline">',
-    '#suffix' => '</div><p><strong>- OR -</strong></p>',
-  );
-  $form['search']['search_text'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Search for existing artist'),
-    '#size' => 32,
-    '#maxlength' => 32,
-  );
-  $form['search']['submit_search'] = array(
-    '#type' => 'submit',
-    '#value' => t('Search'),
-  );
   $form['addNew'] = array(
-    '#value' => l('ADD NEW ARTIST', 'cardfile/artist/edit', array('query' => array('wid' => $wid))) . '</p>',
+    '#value' => l('ADD NEW ARTIST', 'cardfile/artist/edit', array('query' => array('wid' => $wid))) . '</p></td>',
   );
   return $form;
 }
@@ -1002,7 +1009,7 @@ function ums_cardfile_work_form($form_state, $wid = 0) {
     '#title' => t('Title'),
     '#size' => 64,
     '#maxlength' => 128,
-    '#default_value' => $work['title'],
+    '#default_value' => ($_GET['title'] ? $_GET['title'] : $work['title']),
     '#description' => t('Title of Repertoire'),
   );
   $form['alternate'] = array(
@@ -1111,7 +1118,7 @@ function ums_cardfile_work_delete_confirm_submit($form, &$form_state) {
 /*== PERFORMANCE ROLES =======================================================*/
 
 function ums_cardfile_perfroles() {
-  $output .= drupal_get_form('ums_cardfile_perfrole_form');
+  $output .= drupal_get_form('ums_cardfile_perfrole_form', $_GET['return']);
 
   $rows = array();
   $result = db_query('SELECT * FROM ums_performance_roles ORDER BY name');
@@ -1125,15 +1132,24 @@ function ums_cardfile_perfroles() {
     $output .= '<p>No Artist Roles Defined</p>';
   }
 
+  if ($_GET['return']) {
+    $output .= '<p>' . l('Return to previous page', $_GET['return']) . '</p>';
+  }
   $output .= '<p>' . l('UMS Events List', 'cardfile/events') . '</p>';
   return $output;
 }
 
-function ums_cardfile_perfrole_form($form_state) {
+function ums_cardfile_perfrole_form($form_state, $return = '') {
   $form = array(
     '#prefix' => '<div class="container-inline">',
     '#suffix' => '</div>',
   );
+  if ($return) {
+    $form['return'] = array(
+      '#type' => 'value',
+      '#value' => $return,
+    );
+  }
   $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Add a Artist Role'),
@@ -1142,7 +1158,7 @@ function ums_cardfile_perfrole_form($form_state) {
   );
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Add'),
+    '#value' => ($return ? t('Add and Return to Previous Page') : t('Add')),
   );
 
   return $form;
@@ -1153,6 +1169,10 @@ function ums_cardfile_perfrole_form_submit($form, &$form_state) {
   $new_role->name = $form_state['values']['name'];
   drupal_write_record('ums_performance_roles', $new_role);
   drupal_set_message('Added new role');
+
+  if ($return = $form_state['values']['return']) {
+    drupal_goto($return);
+  }
 }
 
 function ums_cardfile_delete_perfrole_confirm($form_state, $prid) {
@@ -1180,7 +1200,7 @@ function ums_cardfile_delete_perfrole_confirm_submit($form, &$form_state) {
 /*== WORK ROLES ==============================================================*/
 
 function ums_cardfile_workroles() {
-  $output .= drupal_get_form('ums_cardfile_workrole_form');
+  $output .= drupal_get_form('ums_cardfile_workrole_form', $_GET['return']);
 
   $rows = array();
   $result = db_query('SELECT * FROM ums_work_roles ORDER BY name');
@@ -1194,15 +1214,24 @@ function ums_cardfile_workroles() {
     $output .= '<p>No Creator Roles Defined</p>';
   }
 
+  if ($_GET['return']) {
+    $output .= '<p>' . l('Return to previous page', $_GET['return']) . '</p>';
+  }
   $output .= '<p>' . l('UMS Works List', 'cardfile/works') . '</p>';
   return $output;
 }
 
-function ums_cardfile_workrole_form($form_state) {
+function ums_cardfile_workrole_form($form_state, $return = '') {
   $form = array(
     '#prefix' => '<div class="container-inline">',
     '#suffix' => '</div>',
   );
+  if ($return) {
+    $form['return'] = array(
+      '#type' => 'value',
+      '#value' => $return,
+    );
+  }
   $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Add a Creator Role'),
@@ -1211,7 +1240,7 @@ function ums_cardfile_workrole_form($form_state) {
   );
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Add'),
+    '#value' => ($return ? t('Add and Return to Previous Page') : t('Add')),
   );
 
   return $form;
@@ -1222,6 +1251,10 @@ function ums_cardfile_workrole_form_submit($form, &$form_state) {
   $new_role->name = $form_state['values']['name'];
   drupal_write_record('ums_work_roles', $new_role);
   drupal_set_message('Added new Creator Role');
+
+  if ($return = $form_state['values']['return']) {
+    drupal_goto($return);
+  }
 }
 
 function ums_cardfile_delete_workrole_confirm($form_state, $wrid) {
@@ -1315,22 +1348,37 @@ function ums_cardfile_performance_add_artist($form_state, $pid) {
   }
 
   $form = array(
-    '#prefix' => '<fieldset class="collapsible collapsed"><legend>Add Repertoire Performance Artist</legend>',
-    '#suffix' => '</fieldset>',
+    '#prefix' => '<fieldset class="collapsible collapsed"><legend>Add Repertoire Performance Artist</legend>' .
+                 '<table><tr><th>Select Role:</th><th>Select Artist:</th></tr><tr>',
+    '#suffix' => '</tr></table></fieldset>',
   );
   $form['pid'] = array(
     '#type' => 'value',
     '#value' => $pid,
   );
   $form['role'] = array(
-    '#prefix' => '<div class="container-inline">',
-    '#suffix' => '</div><br />',
+    '#prefix' => '<td style="padding-right: 25px"><div class="container-inline">',
+    '#suffix' => '</div></td>',
   );
   $form['role']['prid'] = array(
     '#type' => 'select',
     '#title' => 'Role',
     '#options' => $perf_role_options,
-    '#description' => '[' . l('Edit Artist Roles', 'cardfile/perfroles') . ']',
+    '#description' => '[' . l('Edit Artist Roles', 'cardfile/perfroles', array('query' => array('return' => $_GET['q']))) . ']',
+  );
+  $form['search'] = array(
+    '#prefix' => '<td><div class="container-inline">',
+    '#suffix' => '</div><p><strong>- OR -</strong></p>',
+  );
+  $form['search']['search_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Search for existing artist'),
+    '#size' => 32,
+    '#maxlength' => 32,
+  );
+  $form['search']['submit_search'] = array(
+    '#type' => 'submit',
+    '#value' => t('Search'),
   );
   $form['recent'] = array(
     '#prefix' => '<div class="container-inline">',
@@ -1345,22 +1393,9 @@ function ums_cardfile_performance_add_artist($form_state, $pid) {
     '#type' => 'submit',
     '#value' => t('Use This Artist'),
   );
-  $form['search'] = array(
-    '#prefix' => '<div class="container-inline">',
-    '#suffix' => '</div><p><strong>- OR -</strong></p>',
-  );
-  $form['search']['search_text'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Search for existing artist'),
-    '#size' => 32,
-    '#maxlength' => 32,
-  );
-  $form['search']['submit_search'] = array(
-    '#type' => 'submit',
-    '#value' => t('Search'),
-  );
   $form['addNew'] = array(
     '#value' => l('ADD NEW ARTIST', 'cardfile/artist/edit', array('query' => array('pid' => $pid))),
+    '#suffix' => '</td>',
   );
 
   return $form;
@@ -1502,10 +1537,13 @@ function ums_cardfile_searchadd($source_type, $source_id, $type, $search) {
         );
       }
       $output .= theme('table', array_keys($rows[0]), $rows);
+      $output .= '<p><strong>- OR -</strong></p>';
     }
-    $output .= '<p><strong>- OR -</strong></p>';
+    else {
+      $output .= '<p>No existing repertoire matches found</p>';
+    }
 
-    $output .= '<p>' . l('ADD NEW REPERTOIRE', 'cardfile/work/edit', array('query' => array('eid' => $source_id))) . '</p>';
+    $output .= '<p>' . l('ADD NEW REPERTOIRE', 'cardfile/work/edit', array('query' => array('eid' => $source_id, 'title' => $search))) . '</p>';
   }
   else if ($type == 'artist') {
     $res = db_query("SELECT * FROM ums_artists " .
@@ -1534,7 +1572,7 @@ function ums_cardfile_searchadd($source_type, $source_id, $type, $search) {
     else if ($source_type == 'work') {
       $source_id_name = 'wid';
     }
-    $output .= '<p>' . l('ADD NEW ARTIST', 'cardfile/artist/edit', array('query' => array($source_id_name => $source_id))) . '</p>';
+    $output .= '<p>' . l('ADD NEW ARTIST', 'cardfile/artist/edit', array('query' => array($source_id_name => $source_id, 'name' => $search))) . '</p>';
   }
   return $output;
 }
@@ -1609,23 +1647,32 @@ function ums_cardfile_autocomplete($type) {
 }
 
 function ums_cardfile_recent_artists($new_aid = 0) {
+  global $user;
   $artists = array();
 
-  if ($_COOKIE['UMS_Recent_Artists']) {
-    $aids = explode(',', $_COOKIE['UMS_Recent_Artists']);
+  $aids = variable_get('ums_cardfile_recent_artists_' . $user->uid, '');
+  if (strlen($aids)) {
+    $aids = explode(',', $aids);
   }
   else {
     $aids = array();
   }
 
   if ($new_aid) {
+    // If already in the list, remove it
+    $existing = array_search($new_aid, $aids);
+    if ($existing !== FALSE) {
+      unset($aids[$existing]);
+    }
+
     // Add to the beginning of the list
     array_unshift($aids, $new_aid);
+
     // If > 10 elements, pop the last one off the list
     if (count($aids) > 10) {
       array_pop($aids);
     }
-    setcookie('UMS_Recent_Artists', implode(',', $aids));
+    variable_set('ums_cardfile_recent_artists_' . $user->uid, implode(',', $aids));
   }
 
   foreach ($aids as $aid) {
