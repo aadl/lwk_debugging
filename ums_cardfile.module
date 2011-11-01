@@ -847,6 +847,24 @@ function _ums_cardfile_get_work($wid = 0) {
     $work['artists'][] = $work_artist;
   }
 
+  // Get work events
+  $work['events'] = array();
+  $res = db_query("SELECT ums_events.eid AS eid, " .
+                  "ums_events.date AS date, " .
+                  "ums_events.notes AS notes, " .
+                  "ums_events.program_nid AS program_nid, " .
+                  "ums_series.sid AS sid, " .
+                  "ums_series.name AS series, " .
+                  "ums_venues.vid AS vid, " .
+                  "ums_venues.name AS venue " .
+                  "FROM ums_events, ums_series, ums_venues, ums_performances " .
+                  "WHERE ums_events.sid = ums_series.sid " .
+                  "AND ums_events.vid = ums_venues.vid " .
+                  "AND ums_events.eid = ums_performances.eid " .
+                  "AND ums_performances.wid = %d", $wid);
+  while ($work_event = db_fetch_array($res)) {
+    $work['events'][] = $work_event;
+  }
   return $work;
 }
 
@@ -897,12 +915,26 @@ function ums_cardfile_work($wid = 0) {
       $output .= '<h3>Creators</h3>';
       foreach ($work['artists'] as $work_artist) {
         $output .= '<p>';
-        $output .= '<strong>' . $work_artist['role'] . ':</strong> ' . $work_artist['name'];
+        $output .= '<strong>' . $work_artist['role'] . ':</strong> ' . l($work_artist['name'], 'cardfile/artist/edit' . $work_artist['aid']);
         $output .= ' [' . l('X', 'cardfile/work/delete_artist/' . $wid . '/' . $work_artist['aid']) . ']';
         $output .= '</p>';
       }
     }
     $output .= drupal_get_form('ums_cardfile_work_add_artist', $work['wid']);
+    if (count($work['events'])) {
+      $output .= '<h3>Performed at these Events</h3>';
+      foreach ($work['events'] as $work_event) {
+        $output .= '<p>';
+        $output .= l($work_event['date'], 'cardfile/event/' . $work_event['eid']);
+        if ($work_event['venue']) {
+          $output .= ' at <strong>' . $work_event['venue'] . '</strong>';
+        }
+        if ($work_event['series']) {
+          $output .= ', ' . $work_event['series'] . ' Series';
+        }
+        $output .= '</p>';
+      }
+    }
   }
   else {
     drupal_set_message('Repertoire not found', 'error');
@@ -1315,8 +1347,14 @@ function ums_cardfile_performance($pid) {
     $output .= '<h1>UMS Repertoire Performance</h1>';
     $output .= '<p><strong>Event:</strong> ' . $performance['event']['date'] . ' at ' . $performance['event']['venue'] . '</p>';
     $output .= '<p><strong>Repertoire:</strong> ' .
-               l($performance['work']['title'], 'cardfile/work/' . $performance['work']['wid']) .
-               '</p>';
+               l($performance['work']['title'], 'cardfile/work/' . $performance['work']['wid']);
+    if (count($performance['work']['artists'])) {
+      foreach ($performance['work']['artists'] as $artist) {
+        $output .= ' ' . l($artist['name'], 'cardfile/artist/edit/' . $artist['aid']) . ' (' . $artist['role'] . ')';
+      }
+    }
+    $output .= '</p>';
+    $output .= drupal_get_form('ums_cardfile_work_add_artist', $performance['work']['wid']);
     if ($performance['notes']) {
       $output .= '<p><strong>Notes:</strong> ' . $performance['notes'] . '</p>';
     }
@@ -1324,7 +1362,7 @@ function ums_cardfile_performance($pid) {
       $output .= '<h3>Performance Artists</h3>';
       foreach ($performance['artists'] as $perf_artist) {
         $output .= '<p>';
-        $output .= '<strong>' . $perf_artist['role'] . ':</strong> ' . $perf_artist['name'];
+        $output .= '<strong>' . $perf_artist['role'] . ':</strong> ' . l($perf_artist['name'], 'cardfile/artist/edit/' . $perf_artist['aid']);
         $output .= ' [' . l('X', 'cardfile/performance/delete_artist/' . $pid . '/' . $perf_artist['aid']) . ']';
         $output .= '</p>';
       }
