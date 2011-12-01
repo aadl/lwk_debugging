@@ -663,8 +663,9 @@ function ums_cardfile_artists() {
                  'Name' => $artist['name'],
                  'Alias' => $artist['alias'],
                  'Notes' => strlen($artist['notes']) > 30 ? substr($artist['notes'], 0, 30) . '...' : $artist['notes'],
-                 'Edit?' => l('EDIT', 'cardfile/artist/edit/' . $a->aid),
-                 'Delete?' => l('DELETE', 'cardfile/artist/delete/' . $a->aid),
+                 //'View' => l('VIEW', 'cardfile/artist/' . $a->aid),
+                 'Edit' => l('EDIT', 'cardfile/artist/edit/' . $a->aid),
+                 'Delete' => l('DELETE', 'cardfile/artist/delete/' . $a->aid),
                 );
     $rows[] = $row;
     if (empty($header)) {
@@ -856,7 +857,8 @@ function _ums_cardfile_get_work($wid = 0) {
                   "ums_series.sid AS sid, " .
                   "ums_series.name AS series, " .
                   "ums_venues.vid AS vid, " .
-                  "ums_venues.name AS venue " .
+                  "ums_venues.name AS venue, " .
+                  "ums_performances.pid AS pid " .
                   "FROM ums_events, ums_series, ums_venues, ums_performances " .
                   "WHERE ums_events.sid = ums_series.sid " .
                   "AND ums_events.vid = ums_venues.vid " .
@@ -932,7 +934,7 @@ function ums_cardfile_work($wid = 0) {
         if ($work_event['series']) {
           $output .= ', ' . $work_event['series'] . ' Series';
         }
-        $output .= '</p>';
+        $output .= ' [' . l('Edit Repertoire Performance Details', 'cardfile/performance/' . $work_event['pid']) . ' ]</p>';
       }
     }
   }
@@ -1707,7 +1709,7 @@ function ums_cardfile_recent_artists($new_aid = 0) {
     array_unshift($aids, $new_aid);
 
     // If > 10 elements, pop the last one off the list
-    if (count($aids) > 10) {
+    if (count($aids) > 20) {
       array_pop($aids);
     }
     variable_set('ums_cardfile_recent_artists_' . $user->uid, implode(',', $aids));
