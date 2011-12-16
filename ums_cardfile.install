@@ -18,6 +18,7 @@ function ums_cardfile_schema() {
       'sid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
       'notes' => array('type' => 'text'),
       'program_nid' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+      'title' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
     ),
     'primary key' => array('eid'),
   );
@@ -219,6 +220,18 @@ function ums_cardfile_update_6400() {
   // Change primary key
   db_drop_primary_key($ret, 'ums_artist_performances');
   db_add_primary_key($ret, 'ums_artist_performances', array('aid', 'pid', 'prid'));
+
+  return $ret;
+}
+
+function ums_cardfile_update_6500() {
+  $ret = array();
+
+  // Add title field to events table
+  db_add_field($ret,
+               'ums_events',
+               'title',
+               array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''));
 
   return $ret;
 }
