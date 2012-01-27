@@ -376,7 +376,7 @@ function _ums_cardfile_get_event($eid = 0) {
   $res = db_query("SELECT * FROM ums_performances, ums_works " .
                   "WHERE ums_performances.eid = %d " .
                   "AND ums_performances.wid = ums_works.wid " .
-                  "ORDER BY ums_performances.wid", $eid);
+                  "ORDER BY ums_performances.weight ASC", $eid);
   while ($performance = db_fetch_array($res)) {
     $event['performances'][] = $performance;
   }
@@ -478,7 +478,7 @@ function ums_cardfile_event($eid = 0) {
         $performance = _ums_cardfile_get_performance($performance['pid']);
         $work = $performance['work'];
         $output .= '<table style="width: 100%;"><tr><td style="vertical-align: top;">';
-        $output .= '<h3>' . l($work['title'], 'cardfile/work/' . $work['wid']) . '</h3>';
+        $output .= '<h3>' . $performance['weight'] . '. ' . l($work['title'], 'cardfile/work/' . $work['wid']) . '</h3>';
         if (count($work['artists'])) {
           foreach ($work['artists'] as $artist) {
             $output .= $artist['name'] . ' (' . $artist['role'] . ')<br />';
@@ -1023,7 +1023,7 @@ function ums_cardfile_work($wid = 0) {
       $output .= '<h3>Creators</h3>';
       foreach ($work['artists'] as $work_artist) {
         $output .= '<p>';
-        $output .= '<strong>' . $work_artist['role'] . ':</strong> ' . l($work_artist['name'], 'cardfile/artist/edit' . $work_artist['aid']);
+        $output .= '<strong>' . $work_artist['role'] . ':</strong> ' . l($work_artist['name'], 'cardfile/artist/' . $work_artist['aid']);
         $output .= ' [' . l('X', 'cardfile/work/delete_artist/' . $wid . '/' . $work_artist['aid']) . ']';
         $output .= '</p>';
       }
@@ -1425,7 +1425,8 @@ function _ums_cardfile_get_performance($pid = 0) {
   $performance = db_fetch_array(db_query("SELECT ums_performances.pid AS pid, " .
                                          "ums_performances.eid AS eid, " .
                                          "ums_performances.wid AS wid, " .
-                                         "ums_performances.notes AS notes " .
+                                         "ums_performances.notes AS notes, " .
+                                         "ums_performances.weight AS weight " .
                                          "FROM ums_performances " .
                                          "WHERE ums_performances.pid = %d", $pid));
 
@@ -1454,12 +1455,12 @@ function _ums_cardfile_get_performance($pid = 0) {
 function ums_cardfile_performance($pid) {
   if ($performance = _ums_cardfile_get_performance($pid)) {
     $output .= '<h1>UMS Repertoire Performance</h1>';
-    $output .= '<p><strong>Event:</strong> ' . $performance['event']['date'] . ' at ' . $performance['event']['venue'] . '</p>';
+    $output .= '<p>Performance #' . $performance['weight'] . ' at <strong>Event:</strong> ' . $performance['event']['date'] . ' at ' . $performance['event']['venue'] . '</p>';
 
     if ($performance['notes']) {
       $output .= '<p><strong>Notes:</strong> ' . $performance['notes'] . '</p>';
     }
-    $output .= '<p>[ ' . l('edit performance notes', 'cardfile/performance/edit/' . $pid) . ' ]</p>';
+    $output .= '<p>[ ' . l('edit performance notes & order', 'cardfile/performance/edit/' . $pid) . ' ]</p>';
 
     $output .= '<h3>Repertoire: ' .
                l($performance['work']['title'], 'cardfile/work/' . $performance['work']['wid']) .
@@ -1467,7 +1468,7 @@ function ums_cardfile_performance($pid) {
     if (count($performance['work']['artists'])) {
       $output .= '<p>';
       foreach ($performance['work']['artists'] as $artist) {
-        $output .= l($artist['name'], 'cardfile/artist/edit/' . $artist['aid']) . ' (' . $artist['role'] . ')<br />';
+        $output .= l($artist['name'], 'cardfile/artist/' . $artist['aid']) . ' (' . $artist['role'] . ')<br />';
       }
       $output .= '</p>';
     }
@@ -1478,7 +1479,7 @@ function ums_cardfile_performance($pid) {
       $output .= '<h3>Performance Artists</h3>';
       foreach ($performance['artists'] as $perf_artist) {
         $output .= '<p>';
-        $output .= '<strong>' . $perf_artist['role'] . ':</strong> ' . l($perf_artist['name'], 'cardfile/artist/edit/' . $perf_artist['aid']);
+        $output .= '<strong>' . $perf_artist['role'] . ':</strong> ' . l($perf_artist['name'], 'cardfile/artist/' . $perf_artist['aid']);
         $output .= ' [' . l('X', 'cardfile/performance/delete_artist/' . $pid . '/' . $perf_artist['aid']) . ']';
         $output .= '</p>';
       }
@@ -1505,6 +1506,14 @@ function ums_cardfile_performance_form($form_state, $pid) {
       '#type' => 'value',
       '#value' => $pid,
     );
+    $form['weight'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Performance Order'),
+      '#default_value' => $perf['weight'],
+      '#size' => 8,
+      '#maxlength' => 8,
+      '#description' => "Number corresponding to this performance's order in the event",
+    );
     $form['notes'] = array(
       '#type' => 'textarea',
       '#title' => 'Performance Notes',
@@ -1527,6 +1536,7 @@ function ums_cardfile_performance_form_submit($form, $form_state) {
   $perf = new stdClass;
   $perf->pid = $form_state['values']['pid'];
   $perf->notes = $form_state['values']['notes'];
+  $perf->weight = $form_state['values']['weight'];
   drupal_write_record('ums_performances', $perf, 'pid');
   drupal_set_message('Updated Performance');
   drupal_goto('cardfile/performance/' . $form_state['values']['pid']);
@@ -1875,9 +1885,11 @@ function ums_cardfile_join($type1, $id1, $type2, $id2) {
   }
   if ($type1 == 'event' && $type2 == 'work') {
     // New Performance
+    $max = db_fetch_object(db_query("SELECT MAX(weight) as max_weight FROM ums_performances WHERE eid = %d", $id1));
     $perf = new stdClass;
     $perf->eid = $id1;
     $perf->wid = $id2;
+    $perf->weight = $max->max_weight + 1;
     drupal_write_record('ums_performances', $perf);
     drupal_set_message('Created new Repertoire Performance for Event ID: ' . $id1 .
                        '<br />Add Artist Info below:');

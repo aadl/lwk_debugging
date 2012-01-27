@@ -90,6 +90,7 @@ function ums_cardfile_schema() {
       'eid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
       'wid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
       'notes' => array('type' => 'text'),
+      'weight' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
     ),
     'primary key' => array('pid'),
   );
@@ -232,6 +233,18 @@ function ums_cardfile_update_6500() {
                'ums_events',
                'title',
                array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''));
+
+  return $ret;
+}
+
+function ums_cardfile_update_6600() {
+  $ret = array();
+
+  // Add title field to events table
+  db_add_field($ret,
+               'ums_performances',
+               'weight',
+               array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE));
 
   return $ret;
 }
