@@ -1758,34 +1758,35 @@ function ums_cardfile_searchadd($source_type, $source_id, $type, $search) {
   else {
     // Split search string into keywords
     $search_terms = explode(' ', str_replace(',', '', $search));
-    $output .= '<p>Searching for "' . implode('" OR "', $search_terms) . '"</p>';
+    $output .= '<p>Searching for "' . implode('" AND "', $search_terms) . '"</p>';
     $search_query_parts = array();
     $search_args = array();
 
     if ($type == 'work') {
       $wids = array();
       foreach ($search_terms as $search_term) {
-        $search_query_parts[] = "ums_works.title LIKE '%%%s%%'";
+        $search_query_part = "(ums_works.title LIKE '%%%s%%'";
         $search_args[] = $search_term;
-        $search_query_parts[] = "ums_works.alternate LIKE '%%%s%%'";
+        $search_query_part .= " OR ums_works.alternate LIKE '%%%s%%'";
         $search_args[] = $search_term;
-        $search_query_parts[] = "ums_works.notes LIKE '%%%s%%'";
+        $search_query_part .= " OR ums_works.notes LIKE '%%%s%%'";
         $search_args[] = $search_term;
-        $search_query_parts[] = "ums_artists.name LIKE '%%%s%%'";
+        $search_query_part .= " OR ums_artists.name LIKE '%%%s%%'";
         $search_args[] = $search_term;
-        $search_query_parts[] = "ums_artists.name_plain LIKE '%%%s%%'";
+        $search_query_part .= " OR ums_artists.name_plain LIKE '%%%s%%'";
         $search_args[] = $search_term;
-        $search_query_parts[] = "ums_artists.alias LIKE '%%%s%%'";
+        $search_query_part .= " OR ums_artists.alias LIKE '%%%s%%'";
         $search_args[] = $search_term;
-        $search_query_parts[] = "ums_artists.notes LIKE '%%%s%%'";
+        $search_query_part .= " OR ums_artists.notes LIKE '%%%s%%')";
         $search_args[] = $search_term;
+        $search_query_parts[] = $search_query_part;
       }
 
       $res = db_query("SELECT ums_works.wid FROM ums_works " .
                       "LEFT JOIN ums_artist_works ON ums_works.wid = ums_artist_works.wid " .
                       "LEFT JOIN ums_artists ON ums_artist_works.aid = ums_artists.aid " .
                       "WHERE " .
-                      implode(' OR ', $search_query_parts),
+                      implode(' AND ', $search_query_parts),
                       $search_args);
       while ($match = db_fetch_object($res)) {
         $wids[$match->wid] = $match->wid;
@@ -1825,18 +1826,19 @@ function ums_cardfile_searchadd($source_type, $source_id, $type, $search) {
     }
     else if ($type == 'artist') {
       foreach ($search_terms as $search_term) {
-        $search_query_parts[] = "name LIKE '%%%s%%'";
+        $search_query_part = "(name LIKE '%%%s%%'";
         $search_args[] = $search_term;
-        $search_query_parts[] = "name_plain LIKE '%%%s%%'";
+        $search_query_part .= " OR name_plain LIKE '%%%s%%'";
         $search_args[] = $search_term;
-        $search_query_parts[] = "alias LIKE '%%%s%%'";
+        $search_query_part .= " OR alias LIKE '%%%s%%'";
         $search_args[] = $search_term;
-        $search_query_parts[] = "notes LIKE '%%%s%%'";
+        $search_query_part .= " OR notes LIKE '%%%s%%')";
         $search_args[] = $search_term;
+        $search_query_parts[] = $search_query_part;
       }
       $res = db_query("SELECT * FROM ums_artists " .
                       "WHERE " .
-                      implode(' OR ', $search_query_parts) .
+                      implode(' AND ', $search_query_parts) .
                       "ORDER BY name ASC",
                       $search_args);
 
