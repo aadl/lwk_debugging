@@ -480,14 +480,24 @@ function ums_cardfile_event($eid = 0) {
         $output .= '<table style="width: 100%;"><tr><td style="vertical-align: top;">';
         $output .= '<h3>' . $performance['weight'] . '. ' . l($work['title'], 'cardfile/work/' . $work['wid']) . '</h3>';
         if (count($work['artists'])) {
+          $work_artists = array();
           foreach ($work['artists'] as $artist) {
-            $output .= $artist['name'] . ' (' . $artist['role'] . ')<br />';
+            $work_artists[$artist['aid']]['name'] = $artist['name'];
+            $work_artists[$artist['aid']]['roles'][] = $artist['role'];
+          }
+          foreach ($work_artists as $work_artist) {
+            $output .= $work_artist['name'] . ' (' . implode(', ', $work_artist['roles']) . ')<br />';
           }
         }
         $output .= '</td><td style="text-align: right; vertical-align: top;">';
         if (count($performance['artists'])) {
+          $performance_artists = array();
           foreach ($performance['artists'] as $artist) {
-            $output .= $artist['role'] . ': ' . $artist['name'] . '<br />';
+            $performance_artists[$artist['aid']]['name'] = $artist['name'];
+            $performance_artists[$artist['aid']]['roles'][] = $artist['role'];
+          }
+          foreach ($performance_artists as $performance_artist) {
+            $output .= implode(', ', $performance_artist['roles']) . ': ' . $performance_artist['name'] . '<br />';
           }
         }
 
