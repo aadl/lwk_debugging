@@ -991,6 +991,7 @@ function _ums_cardfile_get_work($wid = 0) {
 }
 
 function ums_cardfile_works() {
+  $works_per_page = 100;
   $output .= '<h1>UMS Cardfile Repertoire</h1>';
   $output .= '<ul>';
   $output .= '<li>' . l('Add New Repertoire', 'cardfile/work/edit') . '</li>';
@@ -998,7 +999,7 @@ function ums_cardfile_works() {
   $output .= '</ul>';
 
   $rows = array();
-  $result = db_query('SELECT wid FROM ums_works ORDER BY title');
+  $result = pager_query('SELECT wid FROM ums_works ORDER BY title', $works_per_page);
   while ($w = db_fetch_object($result)) {
     $work = _ums_cardfile_get_work($w->wid);
     $row = array('ID' => $work['wid'],
@@ -1015,6 +1016,9 @@ function ums_cardfile_works() {
     }
   }
   if (count($rows)) {
+    if ($pager = theme('pager', NULL, $works_per_page, 0)) {
+      $rows[] = array(array('data' => $pager, 'colspan' => '7'));
+    }
     $output .= theme('table', $header, $rows);
   }
   else {
