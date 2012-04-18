@@ -1983,6 +1983,7 @@ function ums_cardfile_recent_artists($new_aid = 0) {
   $row = db_fetch_object($res);
   if ($row->value) {
     $artists = json_decode($row->value, TRUE);
+    $existing_list = TRUE;
   }
 
   if ($new_aid) {
@@ -2007,8 +2008,14 @@ function ums_cardfile_recent_artists($new_aid = 0) {
     }
 
     // Store updated list
-    db_query('UPDATE variable SET value = "%s" WHERE name = "%s"',
-             json_encode($artists), $var_key);
+    if ($existing_list) {
+      db_query('UPDATE variable SET value = "%s" WHERE name = "%s"',
+               json_encode($artists), $var_key);
+    }
+    else {
+      db_query('INSERT INTO variable (name, value) VALUES ("%s", "%s")',
+               $var_key, json_encode($artists));
+    }
   }
 
   return $artists;
