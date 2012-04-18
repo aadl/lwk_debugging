@@ -1975,36 +1975,37 @@ function ums_cardfile_autocomplete($type) {
 
 function ums_cardfile_recent_artists($new_aid = 0) {
   global $user;
-  $artists = array();
+  $var_key = 'ums_cardfile_recent_artists_' . $user->uid;
 
-  $aids = variable_get('ums_cardfile_recent_artists_' . $user->uid, '');
-  if (strlen($aids)) {
-    $aids = explode(',', $aids);
-  }
-  else {
-    $aids = array();
-  }
+  $res = db_query('SELECT value FROM variable WHERE name = "%s"', $var_key);
+  $row = db_fetch_object($res);
+  $artists = json_decode($row->value, TRUE);
 
   if ($new_aid) {
+
     // If already in the list, remove it
-    $existing = array_search($new_aid, $aids);
-    if ($existing !== FALSE) {
-      unset($aids[$existing]);
+    if ($artists[$new_aid]) {
+      $artist_name = $artists[$new_aid];
+      unset($artists[$new_aid]);
+    }
+    else {
+      $row = db_fetch_object(db_query("SELECT name FROM ums_artists WHERE aid = %d", $new_aid));
+      $artist_name = $row->name;
     }
 
     // Add to the beginning of the list
-    array_unshift($aids, $new_aid);
+    $artists = array_reverse($artists, TRUE);
+    $artists[$new_aid] = $artist_name;
+    $artists = array_reverse($artists, TRUE);
 
-    // If > 10 elements, pop the last one off the list
-    if (count($aids) > 20) {
-      array_pop($aids);
+    // If > 20 elements, pop the last one off the list
+    if (count($artists) > 20) {
+      array_pop($artists);
     }
-    variable_set('ums_cardfile_recent_artists_' . $user->uid, implode(',', $aids));
-  }
 
-  foreach ($aids as $aid) {
-    $artist = _ums_cardfile_get_artist($aid);
-    $artists[$aid] = $artist['name'];
+    // Store updated list
+    db_query('UPDATE variable SET value = "%s" WHERE name = "%s"',
+             json_encode($artists), $var_key);
   }
 
   return $artists;
