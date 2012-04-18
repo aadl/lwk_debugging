@@ -1975,14 +1975,17 @@ function ums_cardfile_autocomplete($type) {
 
 function ums_cardfile_recent_artists($new_aid = 0) {
   global $user;
+  $artists = array();
+
   $var_key = 'ums_cardfile_recent_artists_' . $user->uid;
 
   $res = db_query('SELECT value FROM variable WHERE name = "%s"', $var_key);
   $row = db_fetch_object($res);
-  $artists = json_decode($row->value, TRUE);
+  if ($row->value) {
+    $artists = json_decode($row->value, TRUE);
+  }
 
   if ($new_aid) {
-
     // If already in the list, remove it
     if ($artists[$new_aid]) {
       $artist_name = $artists[$new_aid];
