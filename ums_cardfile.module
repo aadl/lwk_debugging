@@ -1782,58 +1782,87 @@ function ums_cardfile_searchadd($source_type, $source_id, $type, $search) {
 
     if ($type == 'work') {
       $wids = array();
+
       foreach ($search_terms as $search_term) {
         $search_query_part = "(ums_works.title LIKE '%%%s%%'";
-        $search_args[] = $search_term;
+        $works_search_args[] = $search_term;
+        $artists_search_args[] = $search_term;
         $search_query_part .= " OR ums_works.alternate LIKE '%%%s%%'";
-        $search_args[] = $search_term;
+        $works_search_args[] = $search_term;
+        $artists_search_args[] = $search_term;
         $search_query_part .= " OR ums_works.notes LIKE '%%%s%%'";
-        $search_args[] = $search_term;
+        $works_search_args[] = $search_term;
+        $artists_search_args[] = $search_term;
+
+        $works_query_parts[] = $search_query_part . ')';
+
         $search_query_part .= " OR ums_artists.name LIKE '%%%s%%'";
-        $search_args[] = $search_term;
+        $artists_search_args[] = $search_term;
         $search_query_part .= " OR ums_artists.name_plain LIKE '%%%s%%'";
-        $search_args[] = $search_term;
+        $artists_search_args[] = $search_term;
         $search_query_part .= " OR ums_artists.alias LIKE '%%%s%%'";
-        $search_args[] = $search_term;
+        $artists_search_args[] = $search_term;
         $search_query_part .= " OR ums_artists.notes LIKE '%%%s%%')";
-        $search_args[] = $search_term;
-        $search_query_parts[] = $search_query_part;
+        $artists_search_args[] = $search_term;
+
+        $artists_query_parts[] = $search_query_part;
       }
 
-      $res = db_query("SELECT ums_works.wid FROM ums_works " .
-                      "LEFT JOIN ums_artist_works ON ums_works.wid = ums_artist_works.wid " .
-                      "LEFT JOIN ums_artists ON ums_artist_works.aid = ums_artists.aid " .
+      $res = db_query("SELECT wid " .
+                      "FROM ums_works " .
                       "WHERE " .
-                      implode(' AND ', $search_query_parts),
-                      $search_args);
+                      implode(' AND ', $works_query_parts) .
+                      " ORDER BY wid",
+                      $works_search_args);
+      while ($match = db_fetch_object($res)) {
+        $wids[$match->wid] = $match->wid;
+      }
+
+      $res = db_query("SELECT ums_works.wid AS wid " .
+                      "FROM ums_works, ums_artist_works, ums_artists " .
+                      "WHERE ums_works.wid = ums_artist_works.wid " .
+                      "AND ums_artist_works.aid = ums_artists.aid " .
+                      "AND " . implode(' AND ', $artists_query_parts) .
+                      " ORDER BY wid",
+                      $artists_search_args);
       while ($match = db_fetch_object($res)) {
         $wids[$match->wid] = $match->wid;
       }
 
       if (count($wids)) {
-        // Grab work IDs in order of title
-        $sorted_wids = array();
-        $rows = array();
+        $works = array();
+        $res = db_query("SELECT ums_works.wid as wid, " .
+                        "ums_works.title as title, " .
+                        "ums_works.alternate as alternate, " .
+                        "ums_works.notes as notes, " .
+                        "ums_artists.name as artist_name, " .
+                        "ums_work_roles.name AS role " .
+                        "FROM ums_works " .
+                        "LEFT JOIN ums_artist_works ON ums_works.wid = ums_artist_works.wid " .
+                        "LEFT JOIN ums_work_roles ON ums_artist_works.wrid = ums_work_roles.wrid " .
+                        "LEFT JOIN ums_artists ON ums_artist_works.aid = ums_artists.aid " .
+                        "WHERE ums_works.wid IN (" .
+                        implode(',', $wids) .
+                        ") ORDER BY ums_works.title");
 
-        $res = db_query('SELECT wid FROM ums_works WHERE wid IN (' .
-                        implode(',', $wids) . ') ORDER BY title ASC');
-        while ($work_row = db_fetch_object($res)) {
-          $work = _ums_cardfile_get_work($work_row->wid);
-          $work_artists = array();
-          foreach ($work['artists'] as $work_artist) {
-            $work_artists[] = '<strong>' . $work_artist['role'] . ':</strong> ' . $work_artist['name'];
+        while ($match = db_fetch_object($res)) {
+          if ($works[$match->wid]) {
+            // Work data already captured, just add artist info
+            $works[$match->wid]['Artists'] .= "<br /><strong>$match->role:</strong> $match->artist_name";
           }
-
-          $rows[] = array(
-            'Work ID' => $work['wid'],
-            'Title' => $work['title'],
-            'Alternate' => $work['alternate'],
-            'Artists' => implode('<br />', $work_artists),
-            'Notes' => $work['notes'],
-            'SELECT' => l('SELECT', "cardfile/join/$source_type/$source_id/work/" . $work['wid']),
-          );
+          else {
+            $works[$match->wid] = array(
+              'Work ID' => $match->wid,
+              'Title' => $match->title,
+              'Alternate' => $match->alternate,
+              'Artists' => "<strong>$match->role:</strong> $match->artist_name",
+              'Notes' => $match->notes,
+              'SELECT' => l('SELECT', "cardfile/join/$source_type/$source_id/work/" . $match->wid),
+            );
+          }
         }
-        $output .= theme('table', array_keys($rows[0]), $rows);
+
+        $output .= theme('table', array_keys(reset($works)), $works);
         $output .= '<p><strong>- OR -</strong></p>';
       }
       else {
