@@ -384,7 +384,15 @@ function _ums_cardfile_get_event($eid = 0) {
   // Turn program nid into links
   if ($event['program_nid']) {
     foreach (explode(',', $event['program_nid']) as $program_nid) {
-      $event['programs'][] = l('Program', 'node/' . $program_nid);
+      $program_nid = trim($program_nid);
+      if (strpos($program_nid, '#') !== FALSE) {
+        $parts = explode('#', $program_nid);
+        $event['programs'][] = l('Program', 'node/' . $parts[0],
+                                 array('fragment' => $parts[1]));
+      }
+      else {
+        $event['programs'][] = l('Program', 'node/' . $program_nid);
+      }
     }
   }
 
