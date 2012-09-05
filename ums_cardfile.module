@@ -728,17 +728,35 @@ function _ums_cardfile_get_artist($aid = 0) {
   return $artist;
 }
 
-function ums_cardfile_artists() {
+function ums_cardfile_artists($filter = '') {
   $artists_per_page = 100;
   $output .= '<h1>UMS Cardfile Artists</h1>';
   $output .= '<ul>';
   $output .= '<li>' . l('Add New Artist', 'cardfile/artist/edit') . '</li>';
   $output .= '</ul>';
 
+  $alpha_links = array();
+  foreach (range('A', 'Z') as $char) {
+    if ($filter == $char) {
+      $alpha_links[] = "<strong>$char</strong>";
+    }
+    else {
+      $alpha_links[] = l($char, 'cardfile/artists/' . $char);
+    }
+  }
+  if ($filter) {
+    $alpha_links[] = l('Reset', 'cardfile/artists');
+  }
+  $output .= '<p>Filter: ' . implode(' - ', $alpha_links) . '</p>';
+
   $rows = array();
-  $result = pager_query('SELECT aid FROM ums_artists ORDER BY name_plain', $artists_per_page);
-  while ($a = db_fetch_object($result)) {
-    $artist = _ums_cardfile_get_artist($a->aid);
+  if ($filter) {
+    $result = pager_query('SELECT * FROM ums_artists WHERE name_plain LIKE "%s%%" ORDER BY name_plain', $artists_per_page, 0, NULL, $filter);
+  }
+  else {
+    $result = pager_query('SELECT * FROM ums_artists ORDER BY name_plain', $artists_per_page);
+  }
+  while ($artist = db_fetch_array($result)) {
     $row = array('ID' => $artist['aid'],
                  'Name' => $artist['name'],
                  'Alias' => $artist['alias'],
