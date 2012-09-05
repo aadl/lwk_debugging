@@ -762,7 +762,8 @@ function ums_cardfile_artists($filter = '') {
                  'Alias' => $artist['alias'],
                  'Notes' => strlen($artist['notes']) > 30 ? substr($artist['notes'], 0, 30) . '...' : $artist['notes'],
                  'View' => l('VIEW', 'cardfile/artist/' . $artist['aid']),
-                 'Edit' => l('EDIT', 'cardfile/artist/edit/' . $artist['aid']),
+                 'Edit' => l('EDIT', 'cardfile/artist/edit/' . $artist['aid'],
+                             array('query' => array('destination' => $_GET['q']))),
                  'Delete' => l('DELETE', 'cardfile/artist/delete/' . $artist['aid']),
                 );
     $rows[] = $row;
