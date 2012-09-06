@@ -760,10 +760,12 @@ function _ums_cardfile_merge_artist($old_aid, $aid) {
   }
 
   // Move performances and works from old artist to artist
-  db_query("UPDATE ums_artist_performances SET aid = %d WHERE aid = %d", $aid, $old_aid);
-  db_query("UPDATE ums_artist_works SET aid = %d WHERE aid = %d", $aid, $old_aid);
+  db_query("UPDATE IGNORE ums_artist_performances SET aid = %d WHERE aid = %d", $aid, $old_aid);
+  db_query("UPDATE IGNORE ums_artist_works SET aid = %d WHERE aid = %d", $aid, $old_aid);
 
   // DELETE old artist record
+  db_query("DELETE FROM ums_artist_performances WHERE aid = %d", $old_aid);
+  db_query("DELETE FROM ums_artist_works WHERE aid = %d", $old_aid);
   db_query("DELETE FROM ums_artists WHERE aid = %d", $old_aid);
 
   drupal_set_message("Merged Artist #$old_aid (" . $old_artist['name'] .
@@ -1087,45 +1089,89 @@ function _ums_cardfile_get_work($wid = 0) {
                                   "FROM ums_works " .
                                   "WHERE ums_works.wid = %d", $wid));
 
-  // Get work artists
-  $work['artists'] = array();
-  $res = db_query("SELECT ums_artists.aid AS aid, " .
-                  "ums_artists.name AS name, " .
-                  "ums_artists.alias AS alias, " .
-                  "ums_work_roles.name AS role " .
-                  "FROM ums_artist_works, ums_artists, ums_work_roles " .
-                  "WHERE ums_artist_works.wid = %d " .
-                  "AND ums_artist_works.aid = ums_artists.aid " .
-                  "AND ums_work_roles.wrid = ums_artist_works.wrid " .
-                  "ORDER BY ums_artists.name ASC", $wid);
-  while ($work_artist = db_fetch_array($res)) {
-    $work['artists'][] = $work_artist;
+  if ($work['wid']) {
+    // Get work artists
+    $work['artists'] = array();
+    $res = db_query("SELECT ums_artists.aid AS aid, " .
+                    "ums_artists.name AS name, " .
+                    "ums_artists.alias AS alias, " .
+                    "ums_work_roles.name AS role " .
+                    "FROM ums_artist_works, ums_artists, ums_work_roles " .
+                    "WHERE ums_artist_works.wid = %d " .
+                    "AND ums_artist_works.aid = ums_artists.aid " .
+                    "AND ums_work_roles.wrid = ums_artist_works.wrid " .
+                    "ORDER BY ums_artists.name ASC", $wid);
+    while ($work_artist = db_fetch_array($res)) {
+      $work['artists'][] = $work_artist;
+    }
+
+    // Get work events
+    $work['events'] = array();
+    $res = db_query("SELECT ums_events.eid AS eid, " .
+                    "ums_events.date AS date, " .
+                    "ums_events.notes AS notes, " .
+                    "ums_events.program_nid AS program_nid, " .
+                    "ums_series.sid AS sid, " .
+                    "ums_series.name AS series, " .
+                    "ums_venues.vid AS vid, " .
+                    "ums_venues.name AS venue, " .
+                    "ums_performances.pid AS pid " .
+                    "FROM ums_events, ums_series, ums_venues, ums_performances " .
+                    "WHERE ums_events.sid = ums_series.sid " .
+                    "AND ums_events.vid = ums_venues.vid " .
+                    "AND ums_events.eid = ums_performances.eid " .
+                    "AND ums_performances.wid = %d " .
+                    "ORDER BY ums_events.date ASC", $wid);
+    while ($work_event = db_fetch_array($res)) {
+      $work['events'][] = $work_event;
+    }
+  }
+  else {
+    $work = FALSE;
   }
 
-  // Get work events
-  $work['events'] = array();
-  $res = db_query("SELECT ums_events.eid AS eid, " .
-                  "ums_events.date AS date, " .
-                  "ums_events.notes AS notes, " .
-                  "ums_events.program_nid AS program_nid, " .
-                  "ums_series.sid AS sid, " .
-                  "ums_series.name AS series, " .
-                  "ums_venues.vid AS vid, " .
-                  "ums_venues.name AS venue, " .
-                  "ums_performances.pid AS pid " .
-                  "FROM ums_events, ums_series, ums_venues, ums_performances " .
-                  "WHERE ums_events.sid = ums_series.sid " .
-                  "AND ums_events.vid = ums_venues.vid " .
-                  "AND ums_events.eid = ums_performances.eid " .
-                  "AND ums_performances.wid = %d " .
-                  "ORDER BY ums_events.date ASC", $wid);
-  while ($work_event = db_fetch_array($res)) {
-    $work['events'][] = $work_event;
-  }
   return $work;
 }
 
-function ums_cardfile_works() {
+function _ums_cardfile_merge_work($old_wid, $wid) {
+  // Copy info from old work record to new if field is blank
+  $old_work = db_fetch_array(db_query("SELECT * FROM ums_works WHERE wid = %d", $old_wid));
+  $work = db_fetch_array(db_query("SELECT * FROM ums_works WHERE wid = %d", $wid));
+
+  if (empty($old_work['wid'])) {
+    drupal_set_message("Cannot merge Repertoire $old_wid (repertoire not found)");
+    drupal_goto('cardfile/works');
+  }
+  else if (empty($work['wid'])) {
+    drupal_set_message("Cannot merge Repertoire into Repertoire $wid (repertoire not found)");
+    drupal_goto('cardfile/works');
+  }
+
+  $updated = FALSE;
+  foreach ($old_work as $field => $value) {
+    if (empty($work[$field])) {
+      $work[$field] = $value;
+      $updated = TRUE;
+    }
+  }
+  if ($updated) {
+    drupal_write_record('ums_works', $work, 'wid');
+  }
+
+  // Move artists and performances from old work to work
+  db_query("UPDATE IGNORE ums_artist_works SET wid = %d WHERE wid = %d", $wid, $old_wid);
+  db_query("UPDATE IGNORE ums_performances SET wid = %d WHERE wid = %d", $wid, $old_wid);
+
+  // DELETE old work record
+  db_query("DELETE FROM ums_artist_works WHERE wid = %d", $old_wid);
+  db_query("DELETE FROM ums_performances WHERE wid = %d", $old_wid);
+  db_query("DELETE FROM ums_works WHERE wid = %d", $old_wid);
+
+  drupal_set_message("Merged Repertoire #$old_wid (" . $old_work['title'] .
+                     ") into Repertoire #$wid (" . $work['title'] . ")");
+}
+
+function ums_cardfile_works($filter = '') {
   $works_per_page = 100;
   $output .= '<h1>UMS Cardfile Repertoire</h1>';
   $output .= '<ul>';
@@ -1133,8 +1179,27 @@ function ums_cardfile_works() {
   $output .= '<li>' . l('Edit Creator Roles', 'cardfile/workroles') . '</li>';
   $output .= '</ul>';
 
+  $alpha_links = array();
+  foreach (range('A', 'Z') as $char) {
+    if ($filter == $char) {
+      $alpha_links[] = "<strong>$char</strong>";
+    }
+    else {
+      $alpha_links[] = l($char, 'cardfile/works/' . $char);
+    }
+  }
+  if ($filter) {
+    $alpha_links[] = l('Reset', 'cardfile/works');
+  }
+  $output .= '<p>Filter: ' . implode(' - ', $alpha_links) . '</p>';
+
   $rows = array();
-  $result = pager_query('SELECT wid FROM ums_works ORDER BY title', $works_per_page);
+  if ($filter) {
+    $result = pager_query('SELECT wid FROM ums_works WHERE title LIKE "%s%%" ORDER BY title', $works_per_page, 0, NULL, $filter);
+  }
+  else {
+    $result = pager_query('SELECT wid FROM ums_works ORDER BY title', $works_per_page);
+  }
   while ($w = db_fetch_object($result)) {
     $work = _ums_cardfile_get_work($w->wid);
     $row = array('ID' => $work['wid'],
