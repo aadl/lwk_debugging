@@ -83,6 +83,12 @@ function ums_cardfile_menu() {
     'access arguments' => array('edit ums card file records'),
     'type' => MENU_NORMAL_ITEM,
   );
+  $items['cardfile/artists/merge'] = array(
+    'title' => t('Merge Artists'),
+    'page callback' => 'ums_cardfile_artists_merge',
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_CALLBACK,
+  );
   $items['cardfile/artist/delete'] = array(
     'title' => t('Delete UMS Artist'),
     'page callback' => 'drupal_get_form',
@@ -728,6 +734,42 @@ function _ums_cardfile_get_artist($aid = 0) {
   return $artist;
 }
 
+function _ums_cardfile_merge_artist($old_aid, $aid) {
+  // Copy info from old artist record to new if field is blank
+  $old_artist = db_fetch_array(db_query("SELECT * FROM ums_artists WHERE aid = %d", $old_aid));
+  $artist = db_fetch_array(db_query("SELECT * FROM ums_artists WHERE aid = %d", $aid));
+
+  if (empty($old_artist['aid'])) {
+    drupal_set_message("Cannot merge artist $old_aid (artist not found)");
+    drupal_goto('cardfile/artists');
+  }
+  else if (empty($artist['aid'])) {
+    drupal_set_message("Cannot merge artist into artist $aid (artist not found)");
+    drupal_goto('cardfile/artists');
+  }
+
+  $updated = FALSE;
+  foreach ($old_artist as $field => $value) {
+    if (empty($artist[$field])) {
+      $artist[$field] = $value;
+      $updated = TRUE;
+    }
+  }
+  if ($updated) {
+    drupal_write_record('ums_artists', $artist, 'aid');
+  }
+
+  // Move performances and works from old artist to artist
+  db_query("UPDATE ums_artist_performances SET aid = %d WHERE aid = %d", $aid, $old_aid);
+  db_query("UPDATE ums_artist_works SET aid = %d WHERE aid = %d", $aid, $old_aid);
+
+  // DELETE old artist record
+  db_query("DELETE FROM ums_artists WHERE aid = %d", $old_aid);
+
+  drupal_set_message("Merged Artist #$old_aid (" . $old_artist['name'] .
+                     ") into Artist #$aid (" . $artist['name'] . ")");
+}
+
 function ums_cardfile_artists($filter = '') {
   $artists_per_page = 100;
   $output .= '<h1>UMS Cardfile Artists</h1>';
@@ -819,6 +861,8 @@ function ums_cardfile_artist($aid = 0) {
     else {
       $output .= '<p>No repertoire as a performer.</p>';
     }
+
+    $output .= '<p>[ ' . l('See full artist list', 'cardfile/artists') . ' ]</p>';
   }
   else {
     drupal_set_message("Unable to find artist with ID:$aid");
@@ -875,7 +919,7 @@ function ums_cardfile_artist_form($form_state, $aid = 0) {
     $artist = _ums_cardfile_get_artist($aid);
     $form['aid'] = array(
       '#type' => 'value',
-      '#value' => $aid,
+      '#value' => $artist['aid'],
     );
   }
   $form['name'] = array(
@@ -899,6 +943,17 @@ function ums_cardfile_artist_form($form_state, $aid = 0) {
     '#title' => t('Notes'),
     '#default_value' => $artist['notes'],
   );
+  if ($artist['aid']) {
+    $form['merge_id'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Merge this artist into Artist ID'),
+      '#size' => 8,
+      '#maxlength' => 8,
+      '#description' => t("Enter another Artist ID number to merge this artist information into that artist record"),
+      '#prefix' => "<fieldset class=\"collapsible collapsed\"><legend>MERGE ARTIST</legend>",
+      '#suffix' => "</fieldset>",
+    );
+  }
   $form['submit'] = array(
     '#prefix' => '<div class="container-inline">',
     '#type' => 'submit',
@@ -910,6 +965,14 @@ function ums_cardfile_artist_form($form_state, $aid = 0) {
 }
 
 function ums_cardfile_artist_form_submit($form, $form_state) {
+  // Check for merge ID
+  if ($form_state['values']['aid'] && $form_state['values']['merge_id']) {
+    if ($_REQUEST['destination']) {
+      unset($_REQUEST['destination']);
+    }
+    drupal_goto('cardfile/artists/merge/' . $form_state['values']['aid'] . '/' . $form_state['values']['merge_id']);
+  }
+
   $artist = new stdClass;
   $artist->name = $form_state['values']['name'];
   $artist->alias = $form_state['values']['alias'];
@@ -940,7 +1003,7 @@ function ums_cardfile_artist_form_submit($form, $form_state) {
   }
 
   drupal_set_message('Artist saved');
-  drupal_goto('cardfile/artists');
+  drupal_goto('cardfile/artist/' . $artist->aid);
 }
 
 function ums_cardfile_artist_delete_confirm($form_state, $aid) {
@@ -967,6 +1030,51 @@ function ums_cardfile_artist_delete_confirm_submit($form, &$form_state) {
   db_query("DELETE FROM ums_artists WHERE aid = %d", $form_state['values']['aid']);
   drupal_set_message("Artist has been deleted");
   $form_state['redirect'] = 'cardfile/artists';
+}
+
+/**
+ * Page: Merge Two Artist Records
+ */
+function ums_cardfile_artists_merge($old_aid, $aid, $confirm = '') {
+  if ($confirm) {
+    _ums_cardfile_merge_artist($old_aid, $aid);
+    drupal_goto('cardfile/artist/' . $aid);
+  }
+
+  $old_artist = _ums_cardfile_get_artist($old_aid);
+  $artist = _ums_cardfile_get_artist($aid);
+
+  if ($old_artist['aid'] && $artist['aid']) {
+    $old_artist['performances'] = count($old_artist['performances']);
+    $old_artist['works'] = count($old_artist['works']);
+
+    $artist['performances'] = count($artist['performances']);
+    $artist['works'] = count($artist['works']);
+
+    $merge_table = array();
+    foreach ($old_artist as $field => $old_artist_data) {
+      $arrows = (!empty($old_artist_data) && empty($artist[$field]) ? '<strong>>>></strong>' : '');
+      $merge_table[] = array("<strong>$field</strong>", $old_artist_data, $arrows, $artist[$field]);
+    }
+
+    $content .= "<h1>Merge These Artist Records?</h1>";
+    $content .= '<p style="color: red">Warning: Artist record #' . $old_artist['aid'] . ' will be deleted as a result of this merge</p>';
+
+    $content .= theme('table', array('', 'Old Artist', '>>>', 'Artist'), $merge_table);
+
+    $content .= '<ul>';
+    $content .= '<li class="button green">' . l('MERGE', $_GET['q'] . '/1') . '</li>';
+    $content .= '<li class="button red">' .l('Cancel', 'cardfile/artist/' . $old_aid) . '</li>';
+    $content .= '</ul>';
+
+    return $content;
+  }
+  else {
+    drupal_set_message('Invalid Artist IDs', 'error');
+    drupal_goto('cardfile/artists');
+  }
+
+  return $content;
 }
 
 /*== WORKS ===================================================================*/
