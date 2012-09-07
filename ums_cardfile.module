@@ -115,6 +115,12 @@ function ums_cardfile_menu() {
     'access arguments' => array('edit ums card file records'),
     'type' => MENU_NORMAL_ITEM,
   );
+  $items['cardfile/works/merge'] = array(
+    'title' => t('Merge Repertoire'),
+    'page callback' => 'ums_cardfile_works_merge',
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_CALLBACK,
+  );
   $items['cardfile/work/delete_artist'] = array(
     'title' => t('Delete Creator'),
     'page callback' => 'drupal_get_form',
@@ -1383,6 +1389,17 @@ function ums_cardfile_work_form($form_state, $wid = 0) {
     '#title' => t('Notes'),
     '#default_value' => $work['notes'],
   );
+  if ($work['wid']) {
+    $form['merge_id'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Merge this repertoire into Repertoire ID'),
+      '#size' => 8,
+      '#maxlength' => 8,
+      '#description' => t("Enter another Repertoire ID number to merge this repertoire information into that repertoire record"),
+      '#prefix' => "<fieldset class=\"collapsible collapsed\"><legend>MERGE REPERTOIRE</legend>",
+      '#suffix' => "</fieldset>",
+    );
+  }
   $form['submit'] = array(
     '#prefix' => '<div class="container-inline">',
     '#type' => 'submit',
@@ -1394,6 +1411,14 @@ function ums_cardfile_work_form($form_state, $wid = 0) {
 }
 
 function ums_cardfile_work_form_submit($form, $form_state) {
+  // Check for merge ID
+  if ($form_state['values']['wid'] && $form_state['values']['merge_id']) {
+    if ($_REQUEST['destination']) {
+      unset($_REQUEST['destination']);
+    }
+    drupal_goto('cardfile/works/merge/' . $form_state['values']['wid'] . '/' . $form_state['values']['merge_id']);
+  }
+
   $work = new stdClass;
   $work->title = $form_state['values']['title'];
   $work->alternate = $form_state['values']['alternate'];
@@ -1471,6 +1496,51 @@ function ums_cardfile_work_delete_confirm_submit($form, &$form_state) {
   db_query("DELETE FROM ums_works WHERE wid = %d", $form_state['values']['wid']);
   drupal_set_message("Repertoire has been deleted");
   $form_state['redirect'] = 'cardfile/works';
+}
+
+/**
+ * Page: Merge Two Work Records
+ */
+function ums_cardfile_works_merge($old_wid, $wid, $confirm = '') {
+  if ($confirm) {
+    _ums_cardfile_merge_work($old_wid, $wid);
+    drupal_goto('cardfile/work/' . $wid);
+  }
+
+  $old_work = _ums_cardfile_get_work($old_wid);
+  $work = _ums_cardfile_get_work($wid);
+
+  if ($old_work['wid'] && $work['wid']) {
+    $old_work['artists'] = count($old_work['artists']);
+    $old_work['events'] = count($old_work['events']);
+
+    $work['artists'] = count($work['artists']);
+    $work['events'] = count($work['events']);
+
+    $merge_table = array();
+    foreach ($old_work as $field => $old_work_data) {
+      $arrows = (!empty($old_work_data) && empty($work[$field]) ? '<strong>>>></strong>' : '');
+      $merge_table[] = array("<strong>$field</strong>", $old_work_data, $arrows, $work[$field]);
+    }
+
+    $content .= "<h1>Merge These Repertoire Records?</h1>";
+    $content .= '<p style="color: red">Warning: Repertoire record #' . $old_work['wid'] . ' will be deleted as a result of this merge</p>';
+
+    $content .= theme('table', array('', 'Old Work', '>>>', 'Work'), $merge_table);
+
+    $content .= '<ul>';
+    $content .= '<li class="button green">' . l('MERGE', $_GET['q'] . '/1') . '</li>';
+    $content .= '<li class="button red">' .l('Cancel', 'cardfile/work/' . $old_wid) . '</li>';
+    $content .= '</ul>';
+
+    return $content;
+  }
+  else {
+    drupal_set_message('Invalid Repertoire IDs', 'error');
+    drupal_goto('cardfile/works');
+  }
+
+  return $content;
 }
 
 /*== PERFORMANCE ROLES =======================================================*/
