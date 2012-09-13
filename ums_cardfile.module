@@ -1208,8 +1208,20 @@ function ums_cardfile_works($filter = '') {
   }
   while ($w = db_fetch_object($result)) {
     $work = _ums_cardfile_get_work($w->wid);
+
+    // Format Creators
+    $creators = '';
+    if (count($work['artists'])) {
+      $creators .= '<span style="font-size: smaller">';
+      foreach ($work['artists'] as $artist) {
+        $creators .= '<br />&nbsp;&bull; ' . $artist['role'] . ': ' .
+                      l($artist['name'], 'cardfile/artist/' . $artist['aid']);
+      }
+      $creators .= '</span>';
+    }
+    
     $row = array('ID' => $work['wid'],
-                 'Title' => $work['title'],
+                 'Title' => '<strong>' . $work['title'] . '</strong>' . $creators,
                  'Alternate Title' => $work['alternate'],
                  'Notes' => strlen($work['notes']) > 30 ? substr($work['notes'], 0, 30) . '...' : $work['notes'],
                  'View' => l('VIEW', 'cardfile/work/' . $w->wid),
