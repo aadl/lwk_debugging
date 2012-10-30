@@ -64,6 +64,13 @@ function ums_cardfile_menu() {
     'access arguments' => array('edit ums card file records'),
     'type' => MENU_CALLBACK,
   );
+  $items['cardfile/event/reorder'] = array(
+    'title' => 'Reorder Event Performances',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ums_cardfile_event_reorder_form', 3),
+    'access arguments' => array('edit ums card file records'),
+    'type' => MENU_NORMAL_ITEM
+  );
   $items['cardfile/artists'] = array(
     'title' => t('Beta UMS Artists'),
     'page callback' => 'ums_cardfile_artists',
@@ -530,6 +537,9 @@ function ums_cardfile_event($eid = 0) {
 
         $output .= '</td></tr></table><hr />';
       }
+      if (count($event['performances']) > 1) {
+        $output .= '<p>[ ' . l('Reorder Repertoire Performances', 'cardfile/event/reorder/' . $event['eid']) . ' ]</p>';
+      }
     }
     $output .= drupal_get_form('ums_cardfile_event_add_performance', $event['eid']);
 
@@ -699,6 +709,47 @@ function ums_cardfile_event_delete_confirm_submit($form, &$form_state) {
   db_query("DELETE FROM ums_events WHERE eid = %d", $form_state['values']['eid']);
   drupal_set_message("Event has been deleted");
   $form_state['redirect'] = 'cardfile/events';
+}
+
+function ums_cardfile_event_reorder_form($form_state, $eid = 0) {
+  $event = _ums_cardfile_get_event($eid);
+
+  $form = array(
+    'eid' => array(
+      '#type' => 'value',
+      '#value' => $event['eid'],
+    ),
+  );
+  $form['performances']['#tree'] = TRUE;
+
+  foreach ($event['performances'] as $performance) {
+    $form['performances'][$performance['pid']] = array(
+      'title' => array(
+        '#value' => $performance['title'],
+      ),
+      'weight' => array(
+        '#type' => 'weight',
+        '#delta' => 50,
+        '#default_value' => $performance['weight'],
+        '#attributes' => array('class' => 'weight'),
+      ),
+    );
+  }
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+
+  return $form;
+}
+
+function ums_cardfile_event_reorder_form_submit($form, &$form_state) {
+  foreach ($form_state['values']['performances'] as $pid => $performance) {
+    $weight = $performance['weight'] + 51; // #delta sets range from -50 to 50
+    db_query("UPDATE ums_performances SET weight = %d WHERE pid = %d", $weight, $pid);
+  }
+  drupal_goto('cardfile/event/' . $form_state['values']['eid']);
 }
 
 /*== ARTISTS =================================================================*/
@@ -1219,7 +1270,7 @@ function ums_cardfile_works($filter = '') {
       }
       $creators .= '</span>';
     }
-    
+
     $row = array('ID' => $work['wid'],
                  'Title' => '<strong>' . $work['title'] . '</strong>' . $creators,
                  'Alternate Title' => $work['alternate'],
@@ -2338,4 +2389,47 @@ function ums_cardfile_normalize($string){
     $string = utf8_decode($string);
     $string = strtr($string, utf8_decode($a), $b);
     return utf8_encode($string);
+}
+
+function ums_cardfile_theme() {
+  return array(
+    'ums_cardfile_event_reorder_form' => array(
+      'arguments' => array(
+        'form' => NULL,
+      ),
+    ),
+  );
+}
+
+function theme_ums_cardfile_event_reorder_form($form) {
+  $table_rows = array();
+  $table_id = 'event-performances';
+
+  foreach ($form['performances'] as $id => $row) {
+    if (!intval($id)) {
+      continue;
+    }
+    $table_row = array(
+      drupal_render($row['title']),
+      drupal_render($row['weight']),
+    );
+    $table_rows[] = array(
+      'data' => $table_row,
+      'class' => 'draggable',
+    );
+  }
+  $header = array(
+    'Title',
+    'Weight',
+  );
+
+  drupal_add_tabledrag($table_id, 'order', 'sibling', 'weight');
+
+  $form['performances'] = array(
+    '#type' => 'markup',
+    '#value' => theme('table', $header, $table_rows, array('id' => $table_id)),
+    '#weight' => '1',
+  );
+
+  return drupal_render($form);
 }
