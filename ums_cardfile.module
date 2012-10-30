@@ -737,8 +737,10 @@ function ums_cardfile_event_reorder_form($form_state, $eid = 0) {
   }
 
   $form['submit'] = array(
+    '#prefix' => '<div class="container-inline">',
     '#type' => 'submit',
-    '#value' => t('Save'),
+    '#value' => t('Save Order'),
+    '#suffix' => '&nbsp;' . l('Cancel', 'cardfile/event/' . $event['eid']) . '</div>',
   );
 
   return $form;
