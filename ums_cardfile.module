@@ -451,13 +451,17 @@ function ums_cardfile_events($year = '') {
         }
         $program_links = implode(', ', $program_links);
       }
+      else {
+        $program_links = '';
+      }
+
       $row = array('ID' => $event['eid'],
                    'Date' => $event['date'],
                    'Title' => $event['title'],
                    'Venue' => $event['venue'],
                    'Series' => $event['series'],
                    'Notes' => strlen($event['notes']) > 30 ? substr($event['notes'], 0, 30) . '...' : $event['notes'],
-                   'Program' => $program_links ? $program_links : '',
+                   'Program' => $program_links,
                    'View' => l('VIEW', 'cardfile/event/' . $e->eid),
                    'Edit' => l('EDIT', 'cardfile/event/edit/' . $e->eid),
                    'Delete' => l('DELETE', 'cardfile/event/delete/' . $e->eid),
