@@ -19,6 +19,7 @@ function ums_cardfile_schema() {
       'notes' => array('type' => 'text'),
       'program_nid' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
       'title' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
+      'photo_nid' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
     ),
     'primary key' => array('eid'),
   );
@@ -245,6 +246,18 @@ function ums_cardfile_update_6600() {
                'ums_performances',
                'weight',
                array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE));
+
+  return $ret;
+}
+
+function ums_cardfile_update_6700() {
+  $ret = array();
+
+  // Add photo NID field to events table
+  db_add_field($ret,
+               'ums_events',
+               'photo_nid',
+               array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''));
 
   return $ret;
 }

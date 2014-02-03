@@ -382,6 +382,7 @@ function _ums_cardfile_get_event($eid = 0) {
                                    "ums_events.date AS date, " .
                                    "ums_events.notes AS notes, " .
                                    "ums_events.program_nid AS program_nid, " .
+                                   "ums_events.photo_nid AS photo_nid, " .
                                    "ums_series.sid AS sid, " .
                                    "ums_series.name AS series, " .
                                    "ums_venues.vid AS vid, " .
@@ -412,6 +413,13 @@ function _ums_cardfile_get_event($eid = 0) {
       else {
         $event['programs'][] = l('Program', 'node/' . $program_nid);
       }
+    }
+  }
+
+  // Turn photo nid into links
+  if ($event['photo_nid']) {
+    foreach (explode(',', $event['photo_nid']) as $photo_nid) {
+      $event['photos'][] = l('Photo', 'node/' . $photo_nid);
     }
   }
 
@@ -455,6 +463,18 @@ function ums_cardfile_events($year = '') {
         $program_links = '';
       }
 
+      if ($event['photo_nid']) {
+        $photo_links = array();
+        foreach (explode(',', $event['photo_nid']) as $photo_nid) {
+          $photo_nid = trim($photo_nid);
+          $photo_links[] = l('Photo', 'node/' . $photo_nid);
+        }
+        $photo_links = implode(', ', $photo_links);
+      }
+      else {
+        $photo_links = '';
+      }
+
       $row = array('ID' => $event['eid'],
                    'Date' => $event['date'],
                    'Title' => $event['title'],
@@ -462,6 +482,7 @@ function ums_cardfile_events($year = '') {
                    'Series' => $event['series'],
                    'Notes' => strlen($event['notes']) > 30 ? substr($event['notes'], 0, 30) . '...' : $event['notes'],
                    'Program' => $program_links,
+                   'Photo' => $photo_links,
                    'View' => l('VIEW', 'cardfile/event/' . $e->eid),
                    'Edit' => l('EDIT', 'cardfile/event/edit/' . $e->eid),
                    'Delete' => l('DELETE', 'cardfile/event/delete/' . $e->eid),
@@ -516,6 +537,11 @@ function ums_cardfile_event($eid = 0) {
     if (is_array($event['programs'])) {
       $output .= '<p><strong>View Programs:</strong> ';
       $output .= implode(' | ', $event['programs']);
+      $output .= '</p>';
+    }
+    if (is_array($event['photos'])) {
+      $output .= '<p><strong>View Photos:</strong> ';
+      $output .= implode(' | ', $event['photos']);
       $output .= '</p>';
     }
     if ($event['performances']) {
@@ -671,6 +697,14 @@ function ums_cardfile_event_form($form_state, $eid = 0) {
     '#default_value' => $event['program_nid'],
     '#description' => t('Node ID of the corresponding program, separate multiple values with commas'),
   );
+  $form['photo_nid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Photo ID'),
+    '#size' => 64,
+    '#maxlength' => 64,
+    '#default_value' => $event['photo_nid'],
+    '#description' => t('Node ID of the corresponding photo, separate multiple values with commas'),
+  );
   $form['submit'] = array(
     '#prefix' => '<div class="container-inline">',
     '#type' => 'submit',
@@ -689,6 +723,7 @@ function ums_cardfile_event_form_submit($form, $form_state) {
   $event->sid = $form_state['values']['series'];
   $event->notes = $form_state['values']['notes'];
   $event->program_nid = $form_state['values']['program_nid'];
+  $event->photo_nid = $form_state['values']['photo_nid'];
 
   if ($form_state['values']['eid']) {
     // update existing record
@@ -1189,6 +1224,7 @@ function _ums_cardfile_get_work($wid = 0) {
                     "ums_events.date AS date, " .
                     "ums_events.notes AS notes, " .
                     "ums_events.program_nid AS program_nid, " .
+                    "ums_events.photo_nid AS photo_nid, " .
                     "ums_series.sid AS sid, " .
                     "ums_series.name AS series, " .
                     "ums_venues.vid AS vid, " .
