@@ -50,6 +50,7 @@ function ums_cardfile_schema() {
       'name_plain' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
       'alias' => array('type' => 'varchar', 'length' => 256, 'default' => ''),
       'notes' => array('type' => 'text'),
+      'photo_nid' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
     ),
     'primary key' => array('aid'),
   );
@@ -256,6 +257,18 @@ function ums_cardfile_update_6700() {
   // Add photo NID field to events table
   db_add_field($ret,
                'ums_events',
+               'photo_nid',
+               array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''));
+
+  return $ret;
+}
+
+function ums_cardfile_update_6800() {
+  $ret = array();
+
+  // Add photo NID field to artists table
+  db_add_field($ret,
+               'ums_artists',
                'photo_nid',
                array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''));
 

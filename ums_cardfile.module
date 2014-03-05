@@ -815,7 +815,8 @@ function _ums_cardfile_get_artist($aid = 0) {
                                     "ums_artists.name AS name, " .
                                     "ums_artists.name_plain AS name_plain, " .
                                     "ums_artists.alias AS alias, " .
-                                    "ums_artists.notes AS notes " .
+                                    "ums_artists.notes AS notes, " .
+                                    "ums_artists.photo_nid AS photo_nid " .
                                     "FROM ums_artists " .
                                     "WHERE ums_artists.aid = %d", $aid));
 
@@ -842,6 +843,13 @@ function _ums_cardfile_get_artist($aid = 0) {
     $performance = _ums_cardfile_get_performance($perf['pid']);
     $performance['role'] = $perf['name'];
     $artist['performances'][] = $performance;
+  }
+
+  // Turn photo nid into links
+  if ($artist['photo_nid']) {
+    foreach (explode(',', $artist['photo_nid']) as $photo_nid) {
+      $artist['photos'][] = l('Photo', 'node/' . $photo_nid);
+    }
   }
 
   return $artist;
@@ -914,10 +922,23 @@ function ums_cardfile_artists($filter = '') {
     $result = pager_query('SELECT * FROM ums_artists ORDER BY name_plain', $artists_per_page);
   }
   while ($artist = db_fetch_array($result)) {
+    if ($artist['photo_nid']) {
+      $photo_links = array();
+      foreach (explode(',', $artist['photo_nid']) as $photo_nid) {
+        $photo_nid = trim($photo_nid);
+        $photo_links[] = l('Photo', 'node/' . $photo_nid);
+      }
+      $photo_links = implode(', ', $photo_links);
+    }
+    else {
+      $photo_links = '';
+    }
+
     $row = array('ID' => $artist['aid'],
                  'Name' => $artist['name'],
                  'Alias' => $artist['alias'],
                  'Notes' => strlen($artist['notes']) > 30 ? substr($artist['notes'], 0, 30) . '...' : $artist['notes'],
+                 'Photo' => $photo_links,
                  'View' => l('VIEW', 'cardfile/artist/' . $artist['aid']),
                  'Edit' => l('EDIT', 'cardfile/artist/edit/' . $artist['aid'],
                              array('query' => array('destination' => $_GET['q']))),
@@ -951,6 +972,11 @@ function ums_cardfile_artist($aid = 0) {
     }
     if ($artist['notes']) {
       $output .= '<p>Notes: ' . $artist['notes'] . '</p>';
+    }
+    if (is_array($artist['photos'])) {
+      $output .= '<p><strong>View Photos:</strong> ';
+      $output .= implode(' | ', $artist['photos']);
+      $output .= '</p>';
     }
 
     $output .= '<h2>Repertoire as a Creator:</h2>';
@@ -1058,6 +1084,15 @@ function ums_cardfile_artist_form($form_state, $aid = 0) {
     '#title' => t('Notes'),
     '#default_value' => $artist['notes'],
   );
+  $form['photo_nid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Photo ID'),
+    '#size' => 64,
+    '#maxlength' => 64,
+    '#default_value' => $artist['photo_nid'],
+    '#description' => t('Node ID of the corresponding photo, separate multiple values with commas'),
+  );
+
   if ($artist['aid']) {
     $form['merge_id'] = array(
       '#type' => 'textfield',
@@ -1092,6 +1127,7 @@ function ums_cardfile_artist_form_submit($form, $form_state) {
   $artist->name = $form_state['values']['name'];
   $artist->alias = $form_state['values']['alias'];
   $artist->notes = $form_state['values']['notes'];
+  $artist->photo_nid = $form_state['values']['photo_nid'];
 
   // Convert Name to NamePlain for matching
   $artist->name_plain = ums_cardfile_normalize($artist->name);
