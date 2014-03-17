@@ -701,7 +701,7 @@ function ums_cardfile_event_form($form_state, $eid = 0) {
     '#type' => 'textfield',
     '#title' => t('Photo ID'),
     '#size' => 64,
-    '#maxlength' => 64,
+    '#maxlength' => 128,
     '#default_value' => $event['photo_nid'],
     '#description' => t('Node ID of the corresponding photo, separate multiple values with commas'),
   );
@@ -1088,7 +1088,7 @@ function ums_cardfile_artist_form($form_state, $aid = 0) {
     '#type' => 'textfield',
     '#title' => t('Photo ID'),
     '#size' => 64,
-    '#maxlength' => 64,
+    '#maxlength' => 128,
     '#default_value' => $artist['photo_nid'],
     '#description' => t('Node ID of the corresponding photo, separate multiple values with commas'),
   );
