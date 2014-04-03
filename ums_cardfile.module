@@ -550,7 +550,8 @@ function ums_cardfile_event($eid = 0) {
         $performance = _ums_cardfile_get_performance($performance['pid']);
         $work = $performance['work'];
         $output .= '<table style="width: 100%;"><tr><td style="vertical-align: top;">';
-        $output .= '<h3>' . $performance['weight'] . '. ' . l($work['title'], 'cardfile/work/' . $work['wid']) . '</h3>';
+        $work_title = ($work ? l($work['title'], 'cardfile/work/' . $work['wid']) : 'Unknown Performance');
+        $output .= '<h3>' . $performance['weight'] . '. ' . $work_title . '</h3>';
         if (count($work['artists'])) {
           $work_artists = array();
           foreach ($work['artists'] as $artist) {
