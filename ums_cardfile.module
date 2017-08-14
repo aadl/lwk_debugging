@@ -383,6 +383,7 @@ function _ums_cardfile_get_event($eid = 0) {
                                    "ums_events.notes AS notes, " .
                                    "ums_events.program_nid AS program_nid, " .
                                    "ums_events.photo_nid AS photo_nid, " .
+                                   "ums_events.youtube_url AS youtube_url" .
                                    "ums_series.sid AS sid, " .
                                    "ums_series.name AS series, " .
                                    "ums_venues.vid AS vid, " .
@@ -533,6 +534,9 @@ function ums_cardfile_event($eid = 0) {
     $output .= '<p><strong>Series:</strong> ' . $event['series'] . '</p>';
     if ($event['notes']) {
       $output .= '<p><strong>Notes:</strong> ' . $event['notes'] . '</p>';
+    }
+    if ($event['youtube_url']) {
+      $output .= '<p><strong>YouTube URL(s)</strong> ' . $event['youtube_url'] . '</p>';
     }
     if (is_array($event['programs'])) {
       $output .= '<p><strong>View Programs:</strong> ';
@@ -690,6 +694,11 @@ function ums_cardfile_event_form($form_state, $eid = 0) {
     '#title' => t('Notes'),
     '#default_value' => $event['notes'],
   );
+  $form['youtube_url'] = array(
+    '#type' => 'textarea',
+    '#title' => t('YouTube URL(s)'),
+    '#default_value' => $event['youtube_url'],
+  );
   $form['program_nid'] = array(
     '#type' => 'textfield',
     '#title' => t('Program ID'),
@@ -723,6 +732,7 @@ function ums_cardfile_event_form_submit($form, $form_state) {
   $event->vid = $form_state['values']['venue'];
   $event->sid = $form_state['values']['series'];
   $event->notes = $form_state['values']['notes'];
+  $event->youtube_url = $form_state['values']['youtube_url'];
   $event->program_nid = $form_state['values']['program_nid'];
   $event->photo_nid = $form_state['values']['photo_nid'];
 
@@ -1236,6 +1246,7 @@ function _ums_cardfile_get_work($wid = 0) {
                                   "ums_works.title AS title, " .
                                   "ums_works.alternate AS alternate, " .
                                   "ums_works.notes AS notes " .
+                                  "ums_works.youtube_url AS youtube_url" .
                                   "FROM ums_works " .
                                   "WHERE ums_works.wid = %d", $wid));
 
@@ -1260,6 +1271,7 @@ function _ums_cardfile_get_work($wid = 0) {
     $res = db_query("SELECT ums_events.eid AS eid, " .
                     "ums_events.date AS date, " .
                     "ums_events.notes AS notes, " .
+                    "ums_events.youtube_url AS youtube_url" .
                     "ums_events.program_nid AS program_nid, " .
                     "ums_events.photo_nid AS photo_nid, " .
                     "ums_series.sid AS sid, " .
@@ -1399,6 +1411,9 @@ function ums_cardfile_work($wid = 0) {
     $output .= '<p><strong>Alternate:</strong> ' . $work['alternate'] . '</p>';
     if ($work['notes']) {
       $output .= '<p><strong>Notes:</strong> ' . $work['notes'] . '</p>';
+    }
+    if ($work['youtube_url']) {
+      $output .= '<p><strong>YouTube URL(s):</strong> ' . $work['youtube_url'] . '</p>';
     }
     if (count($work['artists'])) {
       $output .= '<h3>Creators</h3>';
@@ -1871,6 +1886,7 @@ function _ums_cardfile_get_performance($pid = 0) {
                                          "ums_performances.eid AS eid, " .
                                          "ums_performances.wid AS wid, " .
                                          "ums_performances.notes AS notes, " .
+                                         "ums_performances.youtube_url AS youtube_url" .
                                          "ums_performances.weight AS weight " .
                                          "FROM ums_performances " .
                                          "WHERE ums_performances.pid = %d", $pid));
@@ -1904,6 +1920,9 @@ function ums_cardfile_performance($pid) {
 
     if ($performance['notes']) {
       $output .= '<p><strong>Notes:</strong> ' . $performance['notes'] . '</p>';
+    }
+    if ($performance['youtube_url']) {
+      $output .= '<p><strong>YouTube URL(s):</strong> ' . $performance['youtube_url'] . '</p>';
     }
     $output .= '<p>[ ' . l('edit performance notes & order', 'cardfile/performance/edit/' . $pid) . ' ]</p>';
 
@@ -1965,6 +1984,11 @@ function ums_cardfile_performance_form($form_state, $pid) {
       '#default_value' => $perf['notes'],
       '#description' => 'Enter notes about this specific repertoire performance, e.g. "Encore"',
     );
+    $form['notes'] = array(
+      '#type' => 'textarea',
+      '#title' => 'Performance Notes',
+      '#default_value' => $perf['youtube_url'],
+    );
     $form['submit'] = array(
       '#type' => 'submit',
       '#value' => 'Save',
@@ -1981,6 +2005,7 @@ function ums_cardfile_performance_form_submit($form, $form_state) {
   $perf = new stdClass;
   $perf->pid = $form_state['values']['pid'];
   $perf->notes = $form_state['values']['notes'];
+  $perf->youtube_url = $form_state['values']['youtube_url'];
   $perf->weight = $form_state['values']['weight'];
   drupal_write_record('ums_performances', $perf, 'pid');
   drupal_set_message('Updated Performance');
@@ -2262,6 +2287,7 @@ function ums_cardfile_searchadd($source_type, $source_id, $type, $search) {
                         "ums_works.title as title, " .
                         "ums_works.alternate as alternate, " .
                         "ums_works.notes as notes, " .
+                        "ums_works.youtube_url as youtube_url" .
                         "ums_artists.name as artist_name, " .
                         "ums_work_roles.name AS role " .
                         "FROM ums_works " .
