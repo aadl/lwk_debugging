@@ -383,7 +383,7 @@ function _ums_cardfile_get_event($eid = 0) {
                                    "ums_events.notes AS notes, " .
                                    "ums_events.program_nid AS program_nid, " .
                                    "ums_events.photo_nid AS photo_nid, " .
-                                   "ums_events.youtube_url AS youtube_url" .
+                                   "ums_events.youtube_url AS youtube_url," .
                                    "ums_series.sid AS sid, " .
                                    "ums_series.name AS series, " .
                                    "ums_venues.vid AS vid, " .
@@ -1245,7 +1245,7 @@ function _ums_cardfile_get_work($wid = 0) {
   $work = db_fetch_array(db_query("SELECT ums_works.wid AS wid, " .
                                   "ums_works.title AS title, " .
                                   "ums_works.alternate AS alternate, " .
-                                  "ums_works.notes AS notes " .
+                                  "ums_works.notes AS notes, " .
                                   "ums_works.youtube_url AS youtube_url" .
                                   "FROM ums_works " .
                                   "WHERE ums_works.wid = %d", $wid));
@@ -1271,7 +1271,7 @@ function _ums_cardfile_get_work($wid = 0) {
     $res = db_query("SELECT ums_events.eid AS eid, " .
                     "ums_events.date AS date, " .
                     "ums_events.notes AS notes, " .
-                    "ums_events.youtube_url AS youtube_url" .
+                    "ums_events.youtube_url AS youtube_url," .
                     "ums_events.program_nid AS program_nid, " .
                     "ums_events.photo_nid AS photo_nid, " .
                     "ums_series.sid AS sid, " .
@@ -1886,7 +1886,7 @@ function _ums_cardfile_get_performance($pid = 0) {
                                          "ums_performances.eid AS eid, " .
                                          "ums_performances.wid AS wid, " .
                                          "ums_performances.notes AS notes, " .
-                                         "ums_performances.youtube_url AS youtube_url" .
+                                         "ums_performances.youtube_url AS youtube_url," .
                                          "ums_performances.weight AS weight " .
                                          "FROM ums_performances " .
                                          "WHERE ums_performances.pid = %d", $pid));
@@ -2287,7 +2287,7 @@ function ums_cardfile_searchadd($source_type, $source_id, $type, $search) {
                         "ums_works.title as title, " .
                         "ums_works.alternate as alternate, " .
                         "ums_works.notes as notes, " .
-                        "ums_works.youtube_url as youtube_url" .
+                        "ums_works.youtube_url as youtube_url," .
                         "ums_artists.name as artist_name, " .
                         "ums_work_roles.name AS role " .
                         "FROM ums_works " .
