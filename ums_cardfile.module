@@ -1246,7 +1246,7 @@ function _ums_cardfile_get_work($wid = 0) {
                                   "ums_works.title AS title, " .
                                   "ums_works.alternate AS alternate, " .
                                   "ums_works.notes AS notes, " .
-                                  "ums_works.youtube_url AS youtube_url" .
+                                  "ums_works.youtube_url AS youtube_url " .
                                   "FROM ums_works " .
                                   "WHERE ums_works.wid = %d", $wid));
 
