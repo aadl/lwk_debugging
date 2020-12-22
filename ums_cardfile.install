@@ -47,7 +47,11 @@ function ums_cardfile_schema() {
         'length' => 128,
         'not null' => TRUE,
         'default' => '',
-      ]
+      ],
+      'youtube_url' => [
+        'type' => 'text',
+        'not null' => TRUE,
+      ],
      ],
     'primary key' => ['eid']
   ];
@@ -124,6 +128,7 @@ function ums_cardfile_schema() {
       ],
     ],
     'primary key' => ['aid'],
+    'key' => ['name_plain']
   ];
 
   $schema['ums_works'] = [
@@ -148,6 +153,10 @@ function ums_cardfile_schema() {
       ],
       'notes' => [
         'type' => 'text',
+      ],
+      'youtube_url' => [
+        'type' => 'text',
+        'not null' => TRUE,
       ],
     ],
     'primary key' => ['wid'],
@@ -221,6 +230,10 @@ function ums_cardfile_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ],
+      'youtube_url' => [
+        'type' => 'text',
+        'not null' => TRUE,
+      ],
     ],
     'primary key' => ['pid'],
   ];
@@ -266,6 +279,91 @@ function ums_cardfile_schema() {
       'aid',
       'pid',
       'prid'
+    ],
+  ];
+
+  $schema['ums_photos'] = [
+    'fields' => [
+      'u_id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ],
+      'nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'filename' => [
+        'type' => 'varchar',
+        'length' => 150,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'des' => [
+        'type' => 'text',
+        'not null' => TRUE,
+      ],
+      'title' => [
+        'type' => 'varchar',
+        'length' => 200,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'date' => [
+        'type' => 'varchar',
+        'length' => 15,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+    ],
+    'primary key' => [
+      'u_id',
+    ]
+  ];
+  
+  $schema['ums_raw'] = [
+    'fields' => [
+      'g_ID' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE
+      ],
+      'nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'title' => [
+        'type' => 'varchar',
+        'length' => 126,
+        'not null' => FALSE,
+      ],
+     'summary' => [
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => FALSE,
+      ],
+     'keywords' => [
+        'type' => 'varchar',
+        'length' => 149,
+        'not null' => FALSE,
+      ],
+      'description' => [
+        'type' => 'varchar',
+        'length' => 259,
+        'not null' => FALSE,
+      ],
+      'g_path' => [
+        'type' => 'varchar',
+        'length' => 67,
+        'not null' => FALSE,
+      ],
+      'filename' => [
+        'type' => 'varchar',
+        'length' => 20,
+        'not null' => FALSE,
+      ],
     ],
   ];
 
