@@ -1,4 +1,0 @@
-name = UMS Card File
-description = UMS forms to create new records
-core = 6.x
-package = "AADL Modules"

@@ -1,0 +1,32 @@
+{#
+/**
+ * UMS Cardfile Top-level menu
+
+
+    $output .= '<h1>' . t('UMS Cardfile Home') . '</h1>';
+	  $output .= '<p>' . l('UMS Artists List', 'cardfile/artists') . '</p>';
+	  $output .= '<p>' . l('UMS Events List', 'cardfile/events') . '</p>';
+	  $output .= '<p>' . l('UMS Repertoire List', 'cardfile/works') . '</p>';
+	  $output .= '<p>' . l('UMS Repertoire Roles List', 'cardfile/workroles') . '</p>';
+	  $output .= '<p>' . l('UMS Performance Roles List', 'cardfile/perfroles') . '</p>';
+
+ */
+#}
+
+<h1 class="t-center ruled-heading large-heading">
+	<span>UMS Cardfile Home</span>
+</h1>
+
+<div class="l-overflow-clear">
+	<p>
+		<a href="/cardfile/artists" class="align-left base-margin-right">UMS Artists List</a>
+		<br/>
+		<a href="/cardfile/Events" class="align-left base-margin-right">UMS Events List</a>
+		<br/>
+		<a href="/cardfile/works" class="align-left base-margin-right">UMS Repertoire List</a>
+		<br/>
+		<a href="/cardfile/workroles" class="align-left base-margin-right">UMS Repertoire Roles List</a>
+		<br/>
+		<a href="/cardfile/perfroles" class="align-left base-margin-right">UMS Performance Roles List</a>
+	</p>
+</div>

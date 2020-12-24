@@ -3,13 +3,91 @@
 // UMS cardfile module will provide for adding, editing and querying of records into the UMS card file
 
 /**
- * Valid permissions for UMS modules
- * @return array of valid permissions
- * need to change all permissions to a UMS only role
+ * Display help and module information
+ * @return help text for section
  */
-function ums_cardfile_perm() {
-  return array('edit ums card file records', 'view ums card file records' );
+function ums_cardfile_help($path, $arg) {
+  $output = '';
+
+  switch ($path) {
+  case "admin/help#ums_cardfile":
+    $output = '<p>' .  t("UMS Card File CRUD Interface") . '</p>';
+
+    break;
+  }
+
+  return $output;
 }
+
+// function ums_cardfile_theme($existing, $type, $theme, $path) {
+//   return [
+//     'ums_cardfile' => [
+//       'variables' => [
+//       ]
+//     ],
+//   ];
+// }
+// /**
+//  * Valid permissions for UMS modules
+//  * @return array of valid permissions
+//  * need to change all permissions to a UMS only role
+//  */
+// function ums_cardfile_perm() {
+//   return array('edit ums card file records', 'view ums card file records' );
+// }
+
+
+/**
+ * Implements hook_theme().
+ *
+ * Register a module or theme's theme implementations.
+ * The implementations declared by this hook specify how a particular render array is to be rendered as HTML.
+ *
+ * See: https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Render%21theme.api.php/function/hook_theme/8.2.x
+ *
+ * If you change this method, clear theme registry and routing table 'drush cc theme-registry' and 'drush cc router'.
+ */
+function ums_cardfile_theme($existing, $type, $theme, $path) {
+  ksm("ums_cardfile_theme method ENTERED");
+  return [
+    'ums_cardfile_home' => [
+      'variables' => [
+        'reviews' => NULL,
+        'pager' => NULL
+      ]
+    ]
+  ];
+}
+
+//   return [
+//     // Name of the theme hook. This is used in the controller to trigger the hook.
+//     'ums_cardfile_home' => [
+//       'render element' => 'children',
+//       // If no template name is defined here, it defaults to the name of the theme hook, ie. module-name-theme-hook.html.twig
+//       'template' => 'ums_cardfile_home',
+//       // Optionally define path to Twig template files. Defaults to the module's ./templates/ directory.
+//       'path' => $path . '/templates',
+//       // Optionally define variables that will be passed to the Twig template and set default values for them.
+//       'variables' => [
+//         'variable1' => 'Yet another default text.',
+//         'variable2' => 0,
+//         'variable3' => [0, 0, 0],
+//       ],
+//     ],
+//   ];
+// }
+
+
+
+
+
+
+
+
+
+
+
+
 
 function ums_cardfile_menu() {
   $items = array();
@@ -225,16 +303,16 @@ function ums_cardfile_menu() {
 }
 
 /*== HOME ====================================================================*/
-function ums_cardfile_home() {
-  $output .= '<h1>' . t('UMS Cardfile Home') . '</h1>';
-  $output .= '<p>' . l('UMS Artists List', 'cardfile/artists') . '</p>';
-  $output .= '<p>' . l('UMS Events List', 'cardfile/events') . '</p>';
-  $output .= '<p>' . l('UMS Repertoire List', 'cardfile/works') . '</p>';
-  $output .= '<p>' . l('UMS Repertoire Roles List', 'cardfile/workroles') . '</p>';
-  $output .= '<p>' . l('UMS Performance Roles List', 'cardfile/perfroles') . '</p>';
+// function ums_cardfile_home() {
+//   $output .= '<h1>' . t('UMS Cardfile Home') . '</h1>';
+//   $output .= '<p>' . l('UMS Artists List', 'cardfile/artists') . '</p>';
+//   $output .= '<p>' . l('UMS Events List', 'cardfile/events') . '</p>';
+//   $output .= '<p>' . l('UMS Repertoire List', 'cardfile/works') . '</p>';
+//   $output .= '<p>' . l('UMS Repertoire Roles List', 'cardfile/workroles') . '</p>';
+//   $output .= '<p>' . l('UMS Performance Roles List', 'cardfile/perfroles') . '</p>';
 
-  return $output;
-}
+//   return $output;
+// }
 
 /*== VENUES ==================================================================*/
 
@@ -2511,15 +2589,15 @@ function ums_cardfile_normalize($string){
     return utf8_encode($string);
 }
 
-function ums_cardfile_theme() {
-  return array(
-    'ums_cardfile_event_reorder_form' => array(
-      'arguments' => array(
-        'form' => NULL,
-      ),
-    ),
-  );
-}
+// function ums_cardfile_theme() {
+//   return array(
+//     'ums_cardfile_event_reorder_form' => array(
+//       'arguments' => array(
+//         'form' => NULL,
+//       ),
+//     ),
+//   );
+// }
 
 function theme_ums_cardfile_event_reorder_form($form) {
   $table_rows = array();
