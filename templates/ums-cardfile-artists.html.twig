@@ -1,0 +1,77 @@
+<h1 class="t-center ruled-heading large-heading">
+	<span>UMS Cardfile Artists</span>
+</h1>
+
+<div class="l-overflow-clear">
+	<p>
+		<a href="/cardfile/artist/edit" class="align-left base-margin-right">Add New Artist</a>
+	</p>
+
+  {% set alpha_links = [] %}
+  {% for achar in range('A', 'Z') %}
+    {% if filter == achar %}
+      {% set alpha_links = alpha_links|merge(["<strong>{{achar}}</strong>"]) %}
+    {% else %}
+      {% set aurl = url('<current>') %}
+      {% set anchor_href = ['<a href="', aurl['#markup'], '/', achar, '">', achar,'</a>'] | join %}
+      {% set alpha_links = alpha_links|merge([anchor_href]) %}
+    {% endif %}
+  {% endfor %}
+
+  {% if filter %}
+    {% set aurl = url('<current>') %}
+    {% set anchor_href = ['<a href="', aurl['#markup'], '/">', 'Reset</a>'] | join %} 
+    {% set alpha_links = alpha_links|merge(["{{anchor_href}}"]) %}
+  {% endif %}
+
+  {% set imploded = alpha_links | join(' - ') %}
+  {% set parahtml = ['<p>Filter: ', imploded, '</p>'] | join %}
+ 
+  {{dump(parahtml)}}
+
+
+  <div>
+  {{ parahtml }}
+  </div>
+	<table id="pickup-requests-table">
+		<thead>
+			<tr>
+				<th role="columnheader">Id</th>
+				<th role="columnheader">Name</th>
+				<th role="columnheader">Alias</th>
+				<th role="columnheader">Notes</th>
+				<th data-sort-default role="ascending">Photo</th>
+				<th>View</th>
+				<th>Edit</th>
+				<th>Delete</th>
+			</tr>
+		</thead>
+		<tbody>
+
+			{% for artist in artists %}
+				<tr>
+					<td>
+						{{ artist.aid }}
+					</td>
+					<td>
+						{{ artist.name }}
+					</td>
+					<td>
+						{{ artist.alias }}
+					</td>
+					<td>
+						{{ artist.notes }}
+					</td>
+					<td>
+            {{ artist.photo_links }}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+
+<div class="l-overflow-clear">
+	{{ pager }}
+</div>
+

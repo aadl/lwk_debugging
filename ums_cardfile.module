@@ -1,4 +1,7 @@
 <?php
+
+use Drupal\Core\Datetime\DrupalDateTime;
+
 // $Id$
 // UMS cardfile module will provide for adding, editing and querying of records into the UMS card file
 
@@ -25,16 +28,22 @@ function ums_cardfile_help($path, $arg) {
 //       'variables' => [
 //       ]
 //     ],
+    
+//     'ums_cardfile_artists' => [
+//       'variables' => [
+//         'artists' => NULL
+//       ]
+//     ]
 //   ];
 // }
-// /**
-//  * Valid permissions for UMS modules
-//  * @return array of valid permissions
-//  * need to change all permissions to a UMS only role
-//  */
-// function ums_cardfile_perm() {
-//   return array('edit ums card file records', 'view ums card file records' );
-// }
+/**
+ * Valid permissions for UMS modules
+ * @return array of valid permissions
+ * need to change all permissions to a UMS only role
+ */
+function ums_cardfile_perm() {
+  return array('edit ums card file records', 'view ums card file records' );
+}
 
 
 /**
@@ -52,7 +61,12 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
   return [
     'ums_cardfile_home' => [
       'variables' => [
-        'reviews' => NULL,
+      ]
+    ],
+    
+    'ums_cardfile_artists' => [
+      'variables' => [
+        'artists' => NULL,
         'pager' => NULL
       ]
     ]
@@ -980,75 +994,6 @@ function _ums_cardfile_merge_artist($old_aid, $aid) {
 
   drupal_set_message("Merged Artist #$old_aid (" . $old_artist['name'] .
                      ") into Artist #$aid (" . $artist['name'] . ")");
-}
-
-function ums_cardfile_artists($filter = '') {
-  $artists_per_page = 100;
-  $output .= '<h1>UMS Cardfile Artists</h1>';
-  $output .= '<ul>';
-  $output .= '<li>' . l('Add New Artist', 'cardfile/artist/edit') . '</li>';
-  $output .= '</ul>';
-
-  $alpha_links = array();
-  foreach (range('A', 'Z') as $char) {
-    if ($filter == $char) {
-      $alpha_links[] = "<strong>$char</strong>";
-    }
-    else {
-      $alpha_links[] = l($char, 'cardfile/artists/' . $char);
-    }
-  }
-  if ($filter) {
-    $alpha_links[] = l('Reset', 'cardfile/artists');
-  }
-  $output .= '<p>Filter: ' . implode(' - ', $alpha_links) . '</p>';
-
-  $rows = array();
-  if ($filter) {
-    $result = pager_query('SELECT * FROM ums_artists WHERE name_plain LIKE "%s%%" ORDER BY name_plain', $artists_per_page, 0, NULL, $filter);
-  }
-  else {
-    $result = pager_query('SELECT * FROM ums_artists ORDER BY name_plain', $artists_per_page);
-  }
-  while ($artist = db_fetch_array($result)) {
-    if ($artist['photo_nid']) {
-      $photo_links = array();
-      foreach (explode(',', $artist['photo_nid']) as $photo_nid) {
-        $photo_nid = trim($photo_nid);
-        $photo_links[] = l('Photo', 'node/' . $photo_nid);
-      }
-      $photo_links = implode(', ', $photo_links);
-    }
-    else {
-      $photo_links = '';
-    }
-
-    $row = array('ID' => $artist['aid'],
-                 'Name' => $artist['name'],
-                 'Alias' => $artist['alias'],
-                 'Notes' => strlen($artist['notes']) > 30 ? substr($artist['notes'], 0, 30) . '...' : $artist['notes'],
-                 'Photo' => $photo_links,
-                 'View' => l('VIEW', 'cardfile/artist/' . $artist['aid']),
-                 'Edit' => l('EDIT', 'cardfile/artist/edit/' . $artist['aid'],
-                             array('query' => array('destination' => $_GET['q']))),
-                 'Delete' => l('DELETE', 'cardfile/artist/delete/' . $artist['aid']),
-                );
-    $rows[] = $row;
-    if (empty($header)) {
-      $header = array_keys($row);
-    }
-  }
-  if (count($rows)) {
-    if ($pager = theme('pager', NULL, $artists_per_page, 0)) {
-      $rows[] = array(array('data' => $pager, 'colspan' => '7'));
-    }
-    $output .= theme('table', $header, $rows);
-  }
-  else {
-    $output .= '<p>No Artists Defined</p>';
-  }
-
-  return $output;
 }
 
 function ums_cardfile_artist($aid = 0) {
@@ -2630,4 +2575,19 @@ function theme_ums_cardfile_event_reorder_form($form) {
   );
 
   return drupal_render($form);
+}
+
+  /*
+* Debugging routine to log to the <root folder>/LWKLWK.log IN arborcat.module
+*/
+function dblog(...$thingsToLog) {
+  $lineToLog = '';
+  foreach ($thingsToLog as $item) {
+    $lineToLog = $lineToLog . ' ' . print_r($item, TRUE);
+  }
+  // prepend date/time onto log line
+  $nowDateTime = new DrupalDateTime();
+  $dateTimeString = (string) $nowDateTime->format('Y-m-d H:i:s');
+  $completeLine = '[' . $dateTimeString . '] ' . $lineToLog . "\n";
+  error_log($completeLine, 3, "LWKLWK.log");
 }

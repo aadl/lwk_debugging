@@ -6,6 +6,13 @@ ums_cardfile.home:
   requirements:
     _permission: 'access home'
 
+ums_cardfile.artists:
+  path: '/cardfile/artists'
+  defaults:
+    _title: 'UMS Cardfile Artists'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::artists'
+  requirements:
+    _permission: 'access home'
 
 # ums_cardfile.bibrecord:
 #   path: /catalog/record/{bnum}
