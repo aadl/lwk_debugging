@@ -37,25 +37,22 @@ class DefaultController extends ControllerBase {
 
     $query = $db->select('ums_artists', 'artists')
     ->fields('artists', ['aid','name','name_plain','alias','notes','photo_nid']);
+
+    if (NULL != $filter) {
+      $query->condition('name_plain', $db->escapeLike($filter) . "%", 'like');
+    }
+    $query->orderBy('name_plain');
+
+    $num_rows = $query->countQuery()->execute()->fetchField();
+    dblog('artists: num_rows = ', $num_rows, '$filter = ', $filter);
+
     $artists = $query->range($offset, $per_page)->execute()->fetchAll();
     
-    
-    
-  
-    
-    // $limit = (isset($offset) && isset($per_page) ? " LIMIT $offset, $per_page" : '');
-    dblog('artists: BEFORE total');
-    $total = $db->query("SELECT COUNT(*) as total FROM ums_artists")->fetch()->total;
-    dblog('artists: AFTER $total = ', $total);
+    //dblog('artists: BEFORE total');
+    //$total = $db->query("SELECT COUNT(*) as total FROM ums_artists")->fetch()->total;
+    //dblog('artists: AFTER $total = ', $total);
 
- 
-    // $query = 'SELECT * FROM ums_artists ORDER BY name_plain limit '. $per_page;
-    // if ($filter) {
-    //   $query = "SELECT * FROM ums_artists WHERE name_plain LIKE $filter% ORDER BY name_plain";
-    // }
-    // $artists = $db->query($query)->fetchAll();
-
-    $pager = pager_default_initialize($total, $per_page);
+    $pager = pager_default_initialize($num_rows, $per_page);
 
     dblog('artists:', count($artists));
     dblog('pager:', $pager);
@@ -84,6 +81,7 @@ class DefaultController extends ControllerBase {
     return [
       '#theme' => 'ums_cardfile_artists',
       '#artists' => $artists,
+      '#filter' => $filter,
       '#pager' => [
         '#type' => 'pager',
         '#quantity' => 5

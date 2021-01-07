@@ -7,10 +7,11 @@ ums_cardfile.home:
     _permission: 'access home'
 
 ums_cardfile.artists:
-  path: '/cardfile/artists'
+  path: '/cardfile/artists/{filter}'
   defaults:
     _title: 'UMS Cardfile Artists'
     _controller: '\Drupal\ums_cardfile\Controller\DefaultController::artists'
+    filter: ''
   requirements:
     _permission: 'access home'
 

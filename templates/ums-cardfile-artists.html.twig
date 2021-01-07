@@ -7,31 +7,27 @@
 		<a href="/cardfile/artist/edit" class="align-left base-margin-right">Add New Artist</a>
 	</p>
 
-  {% set alpha_links = [] %}
+  {% set alphabet_links = [] %}
+
   {% for achar in range('A', 'Z') %}
     {% if filter == achar %}
-      {% set alpha_links = alpha_links|merge(["<strong>{{achar}}</strong>"]) %}
+      {% set anchor_href = [ '<strong>', achar, '</strong>' ] | join %}
+      {% set alphabet_links = alphabet_links|merge([anchor_href]) %}
     {% else %}
-      {% set aurl = url('<current>') %}
-      {% set anchor_href = ['<a href="', aurl['#markup'], '/', achar, '">', achar,'</a>'] | join %}
-      {% set alpha_links = alpha_links|merge([anchor_href]) %}
+      {% set anchor_href = [ '<a href="', base_url, '/cardfile/artists/', achar, '">', achar,'</a>' ] | join %}
+      {% set alphabet_links = alphabet_links|merge([anchor_href]) %}
     {% endif %}
   {% endfor %}
-
   {% if filter %}
-    {% set aurl = url('<current>') %}
-    {% set anchor_href = ['<a href="', aurl['#markup'], '/">', 'Reset</a>'] | join %} 
-    {% set alpha_links = alpha_links|merge(["{{anchor_href}}"]) %}
+    {% set anchor_href = ['<a href="', base_url, '/cardfile/artists/">', 'Reset</a>'] | join %}
+    {% set alphabet_links = alphabet_links|merge([anchor_href]) %}
   {% endif %}
 
-  {% set imploded = alpha_links | join(' - ') %}
+  {% set imploded = alphabet_links | join(' - ') %}
   {% set parahtml = ['<p>Filter: ', imploded, '</p>'] | join %}
- 
-  {{dump(parahtml)}}
-
 
   <div>
-  {{ parahtml }}
+  {{ parahtml | raw }}
   </div>
 	<table id="pickup-requests-table">
 		<thead>
