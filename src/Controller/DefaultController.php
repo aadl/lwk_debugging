@@ -13,8 +13,9 @@ use Drupal\Core\Url;
  */
 class DefaultController extends ControllerBase {
   public function cf_home() {
+    dblog("cf_home: RETURNING: '#theme' => 'ums_cardfile-home'");
     return [
-      '#theme' => 'ums_cardfile_home'
+      '#theme' => 'ums-cardfile-home'
     ];
   }
 
@@ -23,7 +24,7 @@ class DefaultController extends ControllerBase {
     $db = \Drupal::database();
     $page = pager_find_page();
  
-    dblog('artists: ENTERED, $filter = ' . $filter . ', $page = ', $page);
+    dblog('cf_artists: ENTERED, $filter = ' . $filter . ', $page = ', $page);
     $per_page = 50;
     $offset = $per_page * $page;
     $query = $db->select('ums_artists', 'artists')
@@ -52,8 +53,9 @@ class DefaultController extends ControllerBase {
       $artist->photo_links = $photo_links;
     }
 
+    dblog("cf_home: RETURNING: '#theme' => 'ums_cardfile_artists'");
     return [
-      '#theme' => 'ums_cardfile_artists',
+      '#theme' => 'ums-cardfile-artists',
       '#artists' => $artists,
       '#filter' => $filter,
       '#pager' => [
@@ -70,7 +72,7 @@ class DefaultController extends ControllerBase {
     $artist = _ums_cardfile_get_artist($aid);
     if ($artist['aid']) {
       return [
-        '#theme' => 'ums_cardfile_artist',
+        '#theme' => 'ums-cardfile-artist',
         '#artist' => $artist,
 
         '#cache' => [ 'max-age' => 0 ]
@@ -89,17 +91,16 @@ class DefaultController extends ControllerBase {
 
     $rows = [];
     foreach ($venues as $venue) {
-      dblog('cf_venues: -------------------- venue=', $venue);
-      $link = ums_cardfile_create_link('X', "cardfile/venues/delete/$venue->vid");
-      dblog('$link = ', $link);
+      dblog('cf_venues: -------------------- venue =', $venue);
+      dblog('VenueName: ',$venue->vid, ', link = ', ums_cardfile_create_link('X', "cardfile/venues/delete/$venue->vid"));
       $rows[] = ['name' => $venue->name, 
                 'delete_link' => '[' . ums_cardfile_create_link('X', "cardfile/venues/delete/$venue->vid") . ']'
               ];
     }
-    dblog('cf_venues: rows=', $rows);
-    
+    // dblog('cf_venues: rows=', $rows);
+    dblog("cf_home: RETURNING: '#theme' => 'ums_cardfile_venues'");
     return [
-        '#theme' => 'ums_cardfile_venues',
+        '#theme' => 'ums-cardfile-venues',
         '#rows' => $rows,
         '#cache' => [ 'max-age' => 0 ]
       ];

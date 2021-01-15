@@ -11,7 +11,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 
-class ArtistForm extends FormBase {
+class VenueForm extends FormBase {
   public function getFormId() {
     return 'artist_edit_form';
   }

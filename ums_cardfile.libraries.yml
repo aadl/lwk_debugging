@@ -1,0 +1,6 @@
+ums-cardfile-functions:
+  version: 1.x
+  js:
+    js/ums-cardfile-functions.js: {}
+  dependencies:
+    - core/drupalSettings

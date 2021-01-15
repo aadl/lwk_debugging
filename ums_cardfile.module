@@ -47,11 +47,11 @@ function ums_cardfile_perm() {
  */
 function ums_cardfile_theme($existing, $type, $theme, $path) {
   return [
-    'ums_cardfile_home' => [
+    'ums-cardfile-home' => [
       'variables' => [
       ]
     ],
-    'ums_cardfile_artists' => [
+    'ums-cardfile-artists' => [
       'variables' => [
         'artists' => NULL,
         'pager' => NULL,
@@ -59,7 +59,7 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
         'base_url' => $GLOBALS['base_url']
       ]
     ],
-    'ums_cardfile_venues' => [
+    'ums-cardfile-venues' => [
       'variables' => [
         'rows' => NULL,
       ]

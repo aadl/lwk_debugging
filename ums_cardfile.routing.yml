@@ -41,6 +41,22 @@ ums_cardfile.venues:
   requirements:
     _permission: 'access ums_cardfile'
 
+ums_cardfile.venues_delete:
+  path: '/cardfile/venues/delete'
+  defaults:
+    _title: 'UMS Cardfile Delete Venue'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_venues'
+    filter: ''
+  requirements:
+    _permission: 'access ums_cardfile'
+
+  #   $items['cardfile/venues/delete'] = array(
+  #   'title' => t('Delete Venue'),
+  #   'page callback' => 'drupal_get_form',
+  #   'page arguments' => array('ums_cardfile_delete_venue_confirm', 3),
+  #   'access arguments' => array('edit ums card file records'),
+  #   'type' => MENU_CALLBACK,
+  # );
     
 
  
