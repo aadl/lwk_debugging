@@ -12,31 +12,22 @@ use Drupal\Core\Url;
  * Default controller for the ums_cardfile module.
  */
 class DefaultController extends ControllerBase {
-  public function home() {
-    // return [
-    //   '#type' => 'markup',
-    //       '#markup' => $this->t('Hello World!'),
-    // ];
-
+  public function cf_home() {
     return [
       '#theme' => 'ums_cardfile_home'
     ];
   }
 
-  public function artists($filter = '') {
-    dblog('artists: ENTERED');
+  public function cf_artists($filter = '') {
     $rows = array();
     $db = \Drupal::database();
     $page = pager_find_page();
  
-    dblog('artists:   $page = ', $page);
+    dblog('artists: ENTERED, $filter = ' . $filter . ', $page = ', $page);
     $per_page = 50;
     $offset = $per_page * $page;
-    
-    dblog('artists: $offset = ', $offset);
-
     $query = $db->select('ums_artists', 'artists')
-    ->fields('artists', ['aid','name','name_plain','alias','notes','photo_nid']);
+      ->fields('artists', ['aid','name','name_plain','alias','notes','photo_nid']);
 
     if (NULL != $filter) {
       $query->condition('name_plain', $db->escapeLike($filter) . "%", 'like');
@@ -44,39 +35,22 @@ class DefaultController extends ControllerBase {
     $query->orderBy('name_plain');
 
     $num_rows = $query->countQuery()->execute()->fetchField();
-    dblog('artists: num_rows = ', $num_rows, '$filter = ', $filter);
-
     $artists = $query->range($offset, $per_page)->execute()->fetchAll();
-    
-    //dblog('artists: BEFORE total');
-    //$total = $db->query("SELECT COUNT(*) as total FROM ums_artists")->fetch()->total;
-    //dblog('artists: AFTER $total = ', $total);
-
     $pager = pager_default_initialize($num_rows, $per_page);
 
-    dblog('artists:', count($artists));
-    dblog('pager:', $pager);
-
-
     foreach ($artists as $artist) {
-      dblog('FOREACH - artist = ', $artist);
       if ($artist->photo_nid) {
         $photo_links = array();
         foreach (explode(',', $artist->photo_nid) as $photo_nid) {
           $photo_nid = trim($photo_nid);
-          $photo_links[] = \Drupal::l('Photo', Url::fromUri('internal:/node/' . $photo_nid));
+          $photo_links[] = ums_cardfile_create_link('Photo', 'node/' . $photo_nid);
         }
         $photo_links = implode(', ', $photo_links);
       } else {
         $photo_links = '';
       }
       $artist->photo_links = $photo_links;
-
-       dblog('FOREACH END OF LOOP - artist = ', $artist);
-     
     }
-
-
 
     return [
       '#theme' => 'ums_cardfile_artists',
@@ -88,8 +62,46 @@ class DefaultController extends ControllerBase {
       ],
       '#cache' => [ 'max-age' => 0 ]
     ];
+  }
 
-    dblog('artists:', count($artists));
-         
+  public function cf_artist($aid = 0) {
+    $db = \Drupal::database();
+
+    $artist = _ums_cardfile_get_artist($aid);
+    if ($artist['aid']) {
+      return [
+        '#theme' => 'ums_cardfile_artist',
+        '#artist' => $artist,
+
+        '#cache' => [ 'max-age' => 0 ]
+      ];
+    } else {
+      drupal_set_message("Unable to find artist with ID:$aid");
+      drupal_goto('cardfile/artists');
+    }
+  }
+
+  function cf_venues() {
+    dblog('cf_venues: ENTERED');
+    $db = \Drupal::database();
+    $venues = $db->query('SELECT * FROM ums_venues ORDER BY name')->fetchAll();
+    dblog('cf_venues: venues=', $venues);
+
+    $rows = [];
+    foreach ($venues as $venue) {
+      dblog('cf_venues: -------------------- venue=', $venue);
+      $link = ums_cardfile_create_link('X', "cardfile/venues/delete/$venue->vid");
+      dblog('$link = ', $link);
+      $rows[] = ['name' => $venue->name, 
+                'delete_link' => '[' . ums_cardfile_create_link('X', "cardfile/venues/delete/$venue->vid") . ']'
+              ];
+    }
+    dblog('cf_venues: rows=', $rows);
+    
+    return [
+        '#theme' => 'ums_cardfile_venues',
+        '#rows' => $rows,
+        '#cache' => [ 'max-age' => 0 ]
+      ];
   }
 }

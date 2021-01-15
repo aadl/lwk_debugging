@@ -104,7 +104,7 @@ function ums_cardfile_schema() {
         'type' => 'varchar',
         'length' => 128,
         'not null' => TRUE,
-        'default  ' => '',
+        'default' => '',
       ],
       'name_plain' => [
         'type' => 'varchar',
