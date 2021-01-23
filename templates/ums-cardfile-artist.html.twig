@@ -1,66 +1,46 @@
 
 <h1 class="t-center ruled-heading large-heading">
-  <span>UMS Cardfile Artist {{ artist.name }}</span>
-</h1>
-
-
-	      $output .= '<p>[ ' . l('edit artist info', 'cardfile/artist/edit/' . $artist['aid']) . ' ]</p>';
-	      if ($artist['alias']) {
-	        $output .= '<p>Alias: ' . $artist['alias'] . '</p>';
-	      }
-	      if ($artist['notes']) {
-	        $output .= '<p>Notes: ' . $artist['notes'] . '</p>';
-	      }
-	      if (is_array($artist['photos'])) {
-	        $output .= '<p>
-	<strong>View Photos:</strong>
-	';
-	        $output .= implode(' | ', $artist['photos']);
-	        $output .= '</p>';
-	      }
-	
-	      $output .= '<h2>Repertoire as a Creator:</h2>';
-		      if (count($artist['works'])) {
-		        foreach ($artist['works'] as $work) {
-		          $output .= '<p>' . $work['name'] . ': ' . l($work['title'], 'cardfile/work/' . $work['wid']) . '</p>';
-		        }
-		      } else {
-		        $output .= '<p>No repertoire as a creator.</p>';
-		      }
-		
-		      $output .= '<h2>Repertoire as a Performer:</h2>';
-		      if (count($artist['performances'])) {
-		        foreach ($artist['performances'] as $performance) {
-		          $output .= '<p>' . $performance['role'] . ': ' .
-		          l($performance['work']['title'], 'cardfile/performance/' . $performance['pid']) .
-		          ', ' . l($performance['event']['date'], 'cardfile/event/' . $performance['event']['eid']) .
-		          ' at ' . $performance['event']['venue'] .
-		          '</p>';
-		        }
-		      } else {
-		        $output .= '<p>No repertoire as a performer.</p>';
-		      }
-		
-		      $output .= '<p>[ ' . l('See full artist list', 'cardfile/artists') . ' ]</p>';
-
-
-
-
-
-
-
-<h1 class="t-center ruled-heading large-heading">
-	<span>UMS Cardfile Artist</span>
+  <span>UMS Cardfile Artist: {{ artist.name }}</span>
 </h1>
 
 <div class="l-overflow-clear">
 	<p>
-		<a href="/cardfile/artist/edit" class="align-left base-margin-right">Add New Artist</a>
+    <a href="/cardfile/artist/edit/{{ artist.aid }}" class="align-left base-margin-right">edit artist info</a>
 	</p>
+  {% if artist.alias %}
+    <p>Alias:  {{ artist.alias }}</p>
+  {% endif %}
+  {% if artist.notes %}
+    <p>Notes: {{ artist.notes }}</p>
+  {% endif %}
+  {% if artist.notes %}
+    <p><strong>View Photos:</strong>{{ artist.photos }}</p>
+  {% endif %}
 
+	<h2>Repertoire as a Creator:</h2>
+  {% if artist.works|length > 0 %}
+    {% for work in artist.works %}
+      <a href="cardfile/work/{{ work.wid }}">{{work.title}}</a>
+    {% endfor %}</ul>
+  {% else %}
+    <p>No repertoire as a creator.</p>
+  {% endif %}
+		
+  <h2>Repertoire as a Performer:</h2>
 
+  {% if artist.performances|length > 0 %}
+    {% for performance in artist.performances %}
 
+      <p>{{ performance.role }}:
+        <a href="cardfile/performance/{{ performance.pid }}">{{ performance.work.title }}</a>,
+        <a href="cardfile/event/{{ performance.event.eid }}">{{ performance.event.date }}</a>
+        at  {{ performance.event.venue }}.
+      </p>
+    {% endfor %}
+  {% else %}
+    <p>No repertoire as a performer.</p>
+  {% endif %}
 
+<div class="l-overflow-clear">
+  <a href="/cardfile/artists" class="align-left base-margin-right">See full artist list</a>
 </div>
-
-

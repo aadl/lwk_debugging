@@ -6,7 +6,10 @@
 namespace Drupal\ums_cardfile\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Default controller for the ums_cardfile module.
@@ -67,6 +70,7 @@ class DefaultController extends ControllerBase {
   }
 
   public function cf_artist($aid = 0) {
+    dblog('cf_artist: ENTERED, $aid = ' . $aid);
     $db = \Drupal::database();
 
     $artist = _ums_cardfile_get_artist($aid);
@@ -78,31 +82,33 @@ class DefaultController extends ControllerBase {
         '#cache' => [ 'max-age' => 0 ]
       ];
     } else {
-      drupal_set_message("Unable to find artist with ID:$aid");
-      drupal_goto('cardfile/artists');
+      \Drupal::messenger()->addMessage("Unable to find artist with ID:$aid");
+      ums_cardfile_drupal_goto('cardfile/artists');
     }
   }
 
-  function cf_venues() {
-    dblog('cf_venues: ENTERED');
+  public function cf_venues() {
     $db = \Drupal::database();
     $venues = $db->query('SELECT * FROM ums_venues ORDER BY name')->fetchAll();
-    dblog('cf_venues: venues=', $venues);
-
     $rows = [];
     foreach ($venues as $venue) {
-      dblog('cf_venues: -------------------- venue =', $venue);
-      dblog('VenueName: ',$venue->vid, ', link = ', ums_cardfile_create_link('X', "cardfile/venues/delete/$venue->vid"));
-      $rows[] = ['name' => $venue->name, 
-                'delete_link' => '[' . ums_cardfile_create_link('X', "cardfile/venues/delete/$venue->vid") . ']'
+       $rows[] = ['name' => $venue->name, 
+                'id' => $venue->vid
               ];
     }
-    // dblog('cf_venues: rows=', $rows);
-    dblog("cf_home: RETURNING: '#theme' => 'ums_cardfile_venues'");
     return [
         '#theme' => 'ums-cardfile-venues',
         '#rows' => $rows,
         '#cache' => [ 'max-age' => 0 ]
       ];
   }
+
+  public function cf_delete_venue($vid) {  
+    $db = \Drupal::database();
+    $db->query("DELETE FROM ums_venues WHERE vid = :vid", [':vid' => $vid]);
+    \Drupal::messenger()->addMessage('Removed the venue from the database');
+    return [
+    ];
+  }
+
 }

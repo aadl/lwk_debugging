@@ -16,7 +16,7 @@ ums_cardfile.artists:
     _permission: 'access ums_cardfile'
 
 ums_cardfile.artist:
-  path: '/cardfile/artist'
+  path: '/cardfile/artist/{aid}'
   defaults:
     _title: 'UMS Cardfile Artist'
     _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_artist'
@@ -42,11 +42,12 @@ ums_cardfile.venues:
     _permission: 'access ums_cardfile'
 
 ums_cardfile.venues_delete:
-  path: '/cardfile/venues/delete'
+  path: '/cardfile/venue/delete/{vid}'
   defaults:
     _title: 'UMS Cardfile Delete Venue'
-    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_venues'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_delete_venue'
     filter: ''
+    vid: ''
   requirements:
     _permission: 'access ums_cardfile'
 
