@@ -1,5 +1,5 @@
 
-<h1 class="t-center ruled-heading large-heading">
+<h1>
   <span>UMS Cardfile Artist: {{ artist.name }}</span>
 </h1>
 
@@ -7,6 +7,8 @@
 	<p>
     <a href="/cardfile/artist/edit/{{ artist.aid }}" class="align-left base-margin-right">edit artist info</a>
 	</p>
+</div>
+<div class="l-overflow-clear">
   {% if artist.alias %}
     <p>Alias:  {{ artist.alias }}</p>
   {% endif %}
@@ -20,7 +22,7 @@
 	<h2>Repertoire as a Creator:</h2>
   {% if artist.works|length > 0 %}
     {% for work in artist.works %}
-      <a href="cardfile/work/{{ work.wid }}">{{work.title}}</a>
+      <p>Composer: <a href="cardfile/work/{{ work.wid }}">{{work.title}}</a></p>
     {% endfor %}</ul>
   {% else %}
     <p>No repertoire as a creator.</p>
@@ -30,10 +32,9 @@
 
   {% if artist.performances|length > 0 %}
     {% for performance in artist.performances %}
-
       <p>{{ performance.role }}:
         <a href="cardfile/performance/{{ performance.pid }}">{{ performance.work.title }}</a>,
-        <a href="cardfile/event/{{ performance.event.eid }}">{{ performance.event.date }}</a>
+        <a href="cardfile/event/{{ performance.event.eid }}">{{ performance.event.date | date("m/d/Y") }}, {{ performance.event.date | date("H:i") }}</a>
         at  {{ performance.event.venue }}.
       </p>
     {% endfor %}
