@@ -1,0 +1,75 @@
+<h1>
+	<span>UMS Cardfile Events</span>
+</h1>
+
+<div class="l-overflow-clear">
+	<p>
+		<a href="/cardfile/artist/edit/{{ artist.aid }}" class="align-left base-margin-right">Add New Event</a>
+	</p>
+	<p>
+		<br/>
+		<a href="/cardfile/venues{{ artist.aid }}" class="align-left base-margin-right">Edit Venue List</a>
+	</p>
+	<p>
+		<br/>
+		<a href="/cardfile/series" class="align-left base-margin-right">Edit Series List</a>
+	</p>
+	<p>
+		<br/>
+		<br/>
+		<a href="/cardfile/events/all" class="align-left base-margin-right">VIEW ALL YEARS</a>
+	</p>
+
+</div>
+{% if year > 0 %}
+  {% if rows|length > 0 %}
+    <p>DISPLAYING EVENTS FOR {{ year }}</p>
+  {% else %}
+    <p>No Events for {{ year }}</p>
+  {% endif %}
+{% else %}
+  {% if rows|length > 0 %}
+    <table id="ums_artists-table">
+      <thead>
+        <tr>
+          <th role="columnheader">Year</th>
+          <th role="columnheader"># of Events</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>
+              <a href="/cardfile/events/{{ row.year }}" class="align-left base-margin-right">{{ row.year }}</a>
+            </td>
+            <td>
+              {{ row.numberOfEvents  }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No Events defined</p>
+  {% endif %}
+{% endif %}
+
+
+{# $rows = array();
+		      $result = db_query('SELECT YEAR(date) AS event_year, COUNT(eid) AS event_count FROM ums_events GROUP BY event_year ORDER BY event_year');
+		      while ($row = db_fetch_object($result)) {
+		        $row = array(
+		          'Year' => l($row->event_year, 'cardfile/events/' . $row->event_year),
+		          '# of Events' => $row->event_count,
+		        );
+		        $rows[] = $row;
+		        if (empty($header)) {
+		          $header = array_keys($row);
+		        }
+		      }
+		      if (count($rows)) {
+		        $output .= '<p>[ ' . l('VIEW ALL YEARS', 'cardfile/events/all') . ' ]</p>';
+		        $output .= theme('table', $header, $rows);
+		      } else {
+		        $output .= "<p>No Events defined</p>";
+		      } #}

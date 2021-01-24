@@ -1,6 +1,6 @@
 {{ attach_library('ums_cardfile/ums-cardfile-functions') }}
 
-<h1 class="t-center ruled-heading large-heading">
+<h1>
 	<span>UMS Cardfile Venues</span>
 </h1>
 
@@ -13,7 +13,7 @@
 	</thead>
 	<tbody>
 
-		{% for row in rows %}
+		{% for row in venues %}
 			<tr>
 				<td>
 					{{ row.name }}

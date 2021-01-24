@@ -61,17 +61,29 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
     ],
     'ums-cardfile-artist' => [
       'variables' => [
-        'artist' => NULL,
+      'artist' => NULL,
       ]
     ],
     'ums-cardfile-venues' => [
       'variables' => [
-        'rows' => NULL,
+      'venues' => NULL,
       ]
     ],
     'ums-cardfile-venue' => [
       'variables' => [
-        'venue' => NULL,
+      'venue' => NULL,
+      ]
+    ],
+    'ums-cardfile-events' => [
+      'variables' => [
+      'year' => NULL,
+      'rows' => NULL,
+      ]
+    ],
+    'ums-cardfile-event' => [
+      'variables' => [
+        'event' => NULL,
+        'rows' => NULL,
       ]
     ],
   ];
