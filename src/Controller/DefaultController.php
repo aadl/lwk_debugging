@@ -56,7 +56,7 @@ class DefaultController extends ControllerBase {
       $artist->photo_links = $photo_links;
     }
 
-    dblog("cf_home: RETURNING: '#theme' => 'ums_cardfile_artists'");
+    dblog("cf_artists: RETURNING: '#theme' => 'ums_cardfile_artists'");
     return [
       '#theme' => 'ums-cardfile-artists',
       '#artists' => $artists,
@@ -112,7 +112,7 @@ class DefaultController extends ControllerBase {
   }
 
   public function cf_events($year = '') {
-    dblog('ums_cardfile_events, ENTERED year = ', $year);
+    dblog('cf_events  ENTERED year = ', $year);
     $db = \Drupal::database();
 
     if ($year) {
@@ -121,7 +121,6 @@ class DefaultController extends ControllerBase {
       } else {
         $events = $db->query("SELECT eid FROM ums_events WHERE YEAR(date) = :year ORDER BY date", [':year' => $year])->fetchAll();
       }
-
       foreach($events as $e) {
         $event = _ums_cardfile_get_event($e->eid);
         if ($event['program_nid']) {
@@ -150,30 +149,25 @@ class DefaultController extends ControllerBase {
         } else {
           $photo_links = '';
         }
-
-        $row = array('ID' => $event['eid'],
-                    'Date' => $event['date'],
-                    'Title' => $event['title'],
-                    'Venue' => $event['venue'],
-                    'Series' => $event['series'],
-                    'Notes' => strlen($event['notes']) > 30 ? substr($event['notes'], 0, 30) . '...' : $event['notes'],
-                    'Program' => $program_links,
-                    'Photo' => $photo_links,
+        $row = array('eid' => $event['eid'],
+                    'date' => $event['date'],
+                    'title' => $event['title'],
+                    'venue' => $event['venue'],
+                    'series' => $event['series'],
+                    'notes' => strlen($event['notes']) > 30 ? substr($event['notes'], 0, 30) . '...' : $event['notes'],
+                    'program_links' => $program_links,
+                    'photo_links' => $photo_links,
                     'View' => ums_cardfile_create_link('VIEW', 'cardfile/event/' . $e->eid),
                     'Edit' => ums_cardfile_create_link('EDIT', 'cardfile/event/edit/' . $e->eid),
                     'Delete' => ums_cardfile_create_link('DELETE', 'cardfile/event/delete/' . $e->eid),
                   );
         $rows[] = $row;
-        if (empty($header)) {
-          $header = array_keys($row);
-        }
       }
     }
     else {
       $rows = [];
       $event_years = $db->query('SELECT YEAR(date) AS event_year, COUNT(eid) AS event_count FROM ums_events GROUP BY event_year ORDER BY event_year')->fetchAll();
-     dblog('ums_cardfile_events, event_years = ', $event_years);
-     foreach ($event_years as $e_year) {
+      foreach ($event_years as $e_year) {
         $row = array(
           'year' => $e_year->event_year,  // ums_cardfile_drupal_goto($e_year->event_year, 'cardfile/events/' . $e_year->event_year),
           'numberOfEvents' => $e_year->event_count,
@@ -184,7 +178,7 @@ class DefaultController extends ControllerBase {
         }
       }
     }
-    dblog('ums_cardfile_events, row = ', $rows);
+    dblog('cf_events RETURNING, row = ', $rows);
     return [
         '#theme' => 'ums-cardfile-events',
         '#year' => $year,

@@ -1,6 +1,11 @@
 <h1>
-	<span>UMS Cardfile Events</span>
+  {% if year > 0 %}
+    <span>UMS Cardfile Events for {{ year }}</span>
+  {% else %}
+    <span>UMS Cardfile Events</span>
+  {% endif %}
 </h1>
+
 
 <div class="l-overflow-clear">
 	<p>
@@ -23,7 +28,70 @@
 </div>
 {% if year > 0 %}
   {% if rows|length > 0 %}
-    <p>DISPLAYING EVENTS FOR {{ year }}</p>
+    <div>
+      <table id="ums_artists-table">
+        <thead>
+          <tr>
+             <th role="columnheader">ID</th>
+            <th role="columnheader">Date</th>
+            <th role="columnheader">Title</th>
+            <th role="columnheader">Venue</th>
+            <th role="columnheader">Series</th>
+            <th role="columnheader">Notes</th>
+            <th role="columnheader">Program</th>
+            <th role="columnheader">Photo</th>
+            <th>View</th>
+            <th>Edit</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          {% for event in rows %}
+            <tr>
+              <td>
+                {{ event.eid }}
+              </td>
+              <td>
+                {{ event.date | date("m/d/Y") }}
+              </td>
+              <td>
+                {{ event.title }}
+              </td>
+              <td>
+                {{ event.venue }}
+              </td>
+              <td>
+                {{ event.series }}
+              </td>
+              <td>
+                {{ event.notes }}
+              </td>
+              <td>
+                {{ event.program_links | raw}}
+              </td>
+              <td>
+                {{ event.photo_links | raw}}
+              </td>
+              <td>
+                <a href="/cardfile/event/{{ event.eid }}" class="button delete cardfile-venue">View</a>
+              </td>
+
+              <td>
+                <a href="/cardfile/event/edit/{{ event.eid }}" class="button delete cardfile-venue">Edit</a>
+              </td>
+
+              <td>
+                <a href="/cardfile/event/delete/{{ event.eid }}" class="button delete cardfile-venue">Delete</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+
+
   {% else %}
     <p>No Events for {{ year }}</p>
   {% endif %}

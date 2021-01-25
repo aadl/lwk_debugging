@@ -179,8 +179,6 @@ function _ums_cardfile_get_artist($aid = 0) {
       $artist['photos'][] = ums_cardfile_create_link('Photo', 'node/' . $photo_nid);
     }
   }
-  //dblog('_ums_cardfile_get_artist: RETURNING $artist:', $artist);
-
   return $artist;
 }
 
@@ -218,8 +216,6 @@ function _ums_cardfile_get_performance($pid = 0) {
   foreach ($perf_artists as $perf_artist) {
     $performance['artists'][] = $perf_artist;
   }
-
-  //dblog('_ums_cardfile_get_performance: RETURNING $performance:', $performance);
   return $performance;
 }
 
@@ -278,8 +274,6 @@ function _ums_cardfile_get_event($eid = 0) {
       $event['photos'][] = ums_cardfile_create_link('Photo', 'node/' . $photo_nid);
     }
   }
-  //dblog('_ums_cardfile_get_event: RETURNING $event:', $event);
-
   return $event;
 }
 
@@ -341,7 +335,5 @@ function _ums_cardfile_get_work($wid = 0) {
   } else {
     $work = FALSE;
   }
-  //dblog('_ums_cardfile_get_work: RETURNING $work:', $work);
-
   return $work;
 }
