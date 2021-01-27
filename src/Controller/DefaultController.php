@@ -16,7 +16,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  */
 class DefaultController extends ControllerBase {
   public function cf_home() {
-    dblog("cf_home: RETURNING: '#theme' => 'ums_cardfile-home'");
     return [
       '#theme' => 'ums-cardfile-home'
     ];
@@ -56,7 +55,6 @@ class DefaultController extends ControllerBase {
       $artist->photo_links = $photo_links;
     }
 
-    dblog("cf_artists: RETURNING: '#theme' => 'ums_cardfile_artists'");
     return [
       '#theme' => 'ums-cardfile-artists',
       '#artists' => $artists,
@@ -178,13 +176,81 @@ class DefaultController extends ControllerBase {
         }
       }
     }
-    dblog('cf_events RETURNING, row = ', $rows);
     return [
         '#theme' => 'ums-cardfile-events',
         '#year' => $year,
         '#rows' => $rows,
         '#cache' => [ 'max-age' => 0 ]
       ];
+  }
+
+  public function cf_event($eid = 0) {
+    dblog('cf_event: ENTERED, $aid = ' . $eid);
+    $db = \Drupal::database();
+
+    $event = _ums_cardfile_get_event($eid);
+    if ($event['eid']) {
+      if (count($event['performances']) > 0) {
+        $performance_rows = [];
+        foreach($event['performances'] as $performance) {
+          $performance_details = _ums_cardfile_get_performance($performance['pid']);
+
+          $performance['event'] = $performance_details['event'];
+          $performance['work'] = $performance_details['work'];
+          $performance['artists'] = $performance_details['artists'];
+
+          $work = $performance['work'];
+          $performance['work_artists_list'] = '';
+
+          if (count($work['artists'])) {
+            $work_artists = [];
+            foreach ($work['artists'] as $artist) {
+              $work_artists[$artist['aid']]['name'] = $artist['name'];
+              $work_artists[$artist['aid']]['roles'][] = $artist['role'];
+            }
+            $performance['work_artists_list'] = [];
+            foreach ($work_artists as $work_artist) {
+              $string = $work_artist['name'] . ' (' . implode(', ', $work_artist['roles']) . ')';
+              array_push($performance['work_artists_list'], $string);
+            }
+          }
+
+          if (count($performance['artists'])) {
+            $performance_artists = [];
+            foreach ($performance['artists'] as $artist) {
+              $performance_artists[$artist['aid']]['name'] = $artist['name'];
+              $performance_artists[$artist['aid']]['roles'][] = $artist['role'];
+            }
+            $performance['performance_artists_list'] = [];
+            foreach ($performance_artists as $perf_artist) {
+              $string = implode(', ', $perf_artist['roles']) .': ' . $perf_artist['name'];
+              array_push($performance['performance_artists_list'], $string) ;
+            }
+          }
+          $performance_rows[] = $performance;
+        }
+        $event['performances'] = $performance_rows;
+        
+      }
+
+      return [
+        '#theme' => 'ums-cardfile-event',
+        '#event' => $event,
+        '#event_add_performance_form' => \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\EventAddPerformanceForm'),
+        '#cache' => [ 'max-age' => 0 ]
+      ];
+    } else {
+      \Drupal::messenger()->addMessage("Unable to find event with ID:$eid");
+      ums_cardfile_drupal_goto('cardfile/events');
+    }
+  }
+
+  public function cf_delete_event($eid) {  
+    $db = \Drupal::database();
+    $db->query("DELETE FROM ums_events WHERE eid = :eid", [':eid' => $eid]);
+    \Drupal::messenger()->addMessage('Removed the event from the database');
+    return [
+    ];
   }
 
 }

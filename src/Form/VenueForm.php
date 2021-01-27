@@ -13,16 +13,16 @@ use Drupal\Core\Render\Element;
 
 class VenueForm extends FormBase {
   public function getFormId() {
-    return 'artist_edit_form';
+    return 'venue_edit_form';
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $aid = 0) {
-    dblog('ArtistForm buildForm ENTERED');
+    dblog('VenueForm buildForm ENTERED');
     
     $db = \Drupal::database();
     $form = [];
     $form['title'] = array(
-      '#markup' => '<h1>' . $this->t('Edit UMS artist') . '</h1>',
+      '#markup' => '<h1>' . $this->t('Edit UMS venue') . '</h1>',
     );
     if (isset($_GET['wid'])) {
       $work = _ums_cardfile_get_work(['wid']);

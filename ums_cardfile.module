@@ -83,7 +83,7 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
     'ums-cardfile-event' => [
       'variables' => [
         'event' => NULL,
-        'rows' => NULL,
+        'event_add_performance_form' => NULL,
       ]
     ],
   ];
@@ -121,10 +121,7 @@ function ums_cardfile_write_db_record($table_name, $fields_array, $key_array) {
 }
 
 function ums_cardfile_drupal_goto($path, $options = []) {
-  dblog('ums_cardfile_drupal_goto: $path =', $path, ', $options = ', $options);
   $link_text = Url::fromRoute($path, $options)->toString();
-  dblog('ums_cardfile_drupal_goto: $link_text = <<', $link_text, '>>');
-
   return $link_text;
 }
 
@@ -150,7 +147,6 @@ function _ums_cardfile_get_artist($aid = 0) {
                   "AND ums_artist_works.wid = ums_works.wid " .
                   "ORDER BY ums_works.title ASC", [':aid' => $aid])->fetchAll(PDO::FETCH_ASSOC);
   
-  dblog('_ums_cardfile_get_artist: $works COUNT = ', count($works));
   foreach ($works as $work) {
     $artist['works'][] = $work;
   }
@@ -164,15 +160,11 @@ function _ums_cardfile_get_artist($aid = 0) {
                   "AND ums_performances.eid = ums_events.eid " .
                   "ORDER BY ums_events.date ASC", [':aid' => $aid])->fetchAll(PDO::FETCH_ASSOC);
   
-  dblog('_ums_cardfile_get_artist: $performances COUNT = ', count($performances));
   foreach ($performances as $perf) {
-    dblog('_ums_cardfile_get_artist: FOREACH $perf = ', $perf);
-    dblog('_ums_cardfile_get_artist: FOREACH $perf->pid = ', $perf['pid']);
     $performance = _ums_cardfile_get_performance($perf['pid']);
     $performance['role'] = $perf['name'];
     $artist['performances'][] = $performance;
   }
-
   // Turn photo nid into links
   if ($artist['photo_nid']) {
     foreach (explode(',', $artist['photo_nid']) as $photo_nid) {
@@ -212,7 +204,6 @@ function _ums_cardfile_get_performance($pid = 0) {
                   "AND ums_performance_roles.prid = ums_artist_performances.prid " .
                   "ORDER BY ums_artists.name ASC", [':pid' => $pid])->fetchAll(PDO::FETCH_ASSOC);
   
-  dblog('_ums_cardfile_get_performance: $perf_artists COUNT = ', count($perf_artists));
   foreach ($perf_artists as $perf_artist) {
     $performance['artists'][] = $perf_artist;
   }
@@ -245,7 +236,6 @@ function _ums_cardfile_get_event($eid = 0) {
                   "AND ums_performances.wid = ums_works.wid " .
                   "ORDER BY ums_performances.weight ASC", [':eid' => $eid])->fetchAll(PDO::FETCH_ASSOC);
 
-  dblog('_ums_cardfile_get_event: $performances COUNT = ', count($performances));
   $event['performances'] = [];
   foreach ($performances as $performance) {
     $event['performances'][] = $performance;
@@ -303,7 +293,6 @@ function _ums_cardfile_get_work($wid = 0) {
                     "AND ums_work_roles.wrid = ums_artist_works.wrid " .
                     "ORDER BY ums_artists.name ASC", [':wid' => $wid])->fetchAll(PDO::FETCH_ASSOC);
 
-    dblog('_ums_cardfile_get_work: $work_artists COUNT = ', count($work_artists));
     foreach ($work_artists as $work_artist) {
       $work['artists'][] = $work_artist;
     }
@@ -328,7 +317,6 @@ function _ums_cardfile_get_work($wid = 0) {
                     "AND ums_performances.wid = :wid " .
                     "ORDER BY ums_events.date ASC", [':wid' => $wid])->fetchAll(PDO::FETCH_ASSOC);
 
-    dblog('_ums_cardfile_get_work: $work_events COUNT = ', count($work_events));
     foreach ($work_events as $work_event) {
       $work['events'][] = $work_event;
     }
