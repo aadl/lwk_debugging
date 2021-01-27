@@ -6,7 +6,15 @@ ums_cardfile.home:
   requirements:
     _permission: 'access ums_cardfile'
 
-ums_cardfile.artists:
+ums_cardfile.searchadd:
+  path: '/cardfile/searchadd'
+  defaults:
+    _title: 'UMS Cardfile Search Add'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_search_add'
+  requirements:
+    _permission: 'access ums_cardfile'
+
+    ums_cardfile.artists:
   path: '/cardfile/artists/{filter}'
   defaults:
     _title: 'UMS Cardfile Artists'

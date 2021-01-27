@@ -24,15 +24,17 @@ class EventForm extends FormBase {
  // get venues
     $venue_options = [];
     $venues = $db->query("SELECT * FROM ums_venues ORDER BY name");
-    foreach $venue as $venues) {
+    foreach ($venues as $venue) {
       $venue_options[$venue->vid] = $venue->name;
     }
+    dblog('EventForm', $venue_options);
     // get series
     $series_options = [];
     $all_series = $db->query("SELECT * FROM ums_series ORDER BY name");
-    foreach ($series as $all_series) {
+    foreach ($all_series as $series) {
       $series_options[$series->sid] = $series->name;
     }
+    dblog('EventForm', $series_options);
 
     $form = [];
     $form['form_title'] = array(
@@ -86,7 +88,7 @@ class EventForm extends FormBase {
       '#title' => t('YouTube URL(s)'),
       '#default_value' => $event['youtube_url'],
     );
-    $form['program_nid'] = array(
+    $form['program_nid'] = array( 
       '#type' => 'textfield',
       '#title' => t('Program ID'),
       '#size' => 64,
@@ -106,7 +108,7 @@ class EventForm extends FormBase {
       '#prefix' => '<div class="container-inline">',
       '#type' => 'submit',
       '#value' => t('Save Event'),
-      '#suffix' => '&nbsp;' . ums_cardfile_create_linkl('Cancel', 'cardfile/events') . '</div>',
+      '#suffix' => '&nbsp;' . ums_cardfile_create_link('Cancel', 'cardfile/events') . '</div>',
     );
 
     return $form;
@@ -139,6 +141,7 @@ class EventForm extends FormBase {
 
     drupal_set_message('Event saved');
     $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/event/' . $event->eid);
-    return new RedirectResponse($drupal_goto_url);
 
+    return new RedirectResponse($drupal_goto_url);
+  }
 }
