@@ -1,0 +1,89 @@
+<h1>
+  <span>UMS Cardfile Event {{event.title ? ': ' ~ event.title}}</span>
+</h1>
+
+
+<div class="l-overflow-clear">
+	<p>
+    <a href="/cardfile/event/edit/{{ event.eid }}" class="align-left base-margin-right">edit event info</a>
+	</p>
+</div>
+<div class="l-overflow-clear">
+
+  <p><strong>Date:</strong> {{ event.date |  date("m/d/Y")}}</p>
+  <p><strong>Venue:</strong> {{ event.venue }}</p>
+  <p><strong>Series:</strong> {{ event.series }}</p>
+
+{% if event.program_nid %}
+  <p><strong>View Program(s):</strong> <a href="/node/{{ nid }}">Program</a></p>
+{% endif %}
+
+
+
+{% if event.notes %}
+    <p><strong>Notes:</strong> {{ event.notes }}</p>
+    
+  {% endif %}
+  
+  {% if event.youtube_url %}
+    <p><strong>YouTube URL(s):</strong>{{ event.youtube_url }}</p>
+  {% endif %}
+
+  {% if event.photos %}
+    <p><strong>View Photos:</strong>{{ event.photos }}</p>
+  {% endif %}
+
+  {% if event.performances|length > 0 %}
+    <h2>Repertoire Performed</h2>
+    {% for performance in event.performances %}
+      {% set work = performance.work %}
+      <table id="ums_event-table">
+	      <tbody></tbody>
+
+         <tr>
+            <td style="vertical-align: top;">
+              <h3>
+                {{ performance.weight }}.
+                {% if work %} 
+                  <a href="/cardfile/work/'{{ work.wid }}">{{ work.title }}</a>
+                {% else %}
+                  Program Unknown
+                {% endif %}
+              </h3>
+
+              {% for work_artist in performance.work_artists_list %}
+                {{ work_artist }} <br />
+              {% endfor %}
+              
+            </td>
+            <td style="text-align:right;vertical-align:top;">
+              {% for perf_artist in performance.performance_artists_list %}
+                {{ perf_artist }} <br />
+              {% endfor %}
+
+              {% if performance.notes %}
+                <p><strong>Notes:</strong> {{ performance.notes }}</p>
+              {% endif %}
+
+  
+              <p>
+                [<a href="/cardfile/performance/{{work.wid}}">Edit Repertoire Performance Details</a>]<br>
+                [<a href="/cardfile/performance/delete/{{work.wid}}">Delete Repertoire Performance</a>]
+              </p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    {% endfor %}
+    {% if event.performances | length  > 1 %}
+      <p>[<a href="/cardfile/event/reorder/{{event.eid}}">Reorder Repertoire Performances</a>]</p>
+    {% endif %}
+
+  {% endif %}
+
+  {{ event_add_performance_form }}
+
+{% set year = event.date | date("Y") %}
+
+<p><a href="/cardfile/events/{{ year }}">Return to Event list for  {{ year }}</a>]</p>
+

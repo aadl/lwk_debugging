@@ -253,4 +253,9 @@ class DefaultController extends ControllerBase {
     ];
   }
 
+  public function cf_search_add($eid) {
+  }
+
+
+
 }
