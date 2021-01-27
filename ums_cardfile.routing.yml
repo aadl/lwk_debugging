@@ -14,7 +14,7 @@ ums_cardfile.searchadd:
   requirements:
     _permission: 'access ums_cardfile'
 
-    ums_cardfile.artists:
+ums_cardfile.artists:
   path: '/cardfile/artists/{filter}'
   defaults:
     _title: 'UMS Cardfile Artists'
