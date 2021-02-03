@@ -28,11 +28,11 @@ ums_cardfile.artist:
   defaults:
     _title: 'UMS Cardfile Artist'
     _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_artist'
-    aid: ''
+    aid: 0
   requirements:
-    _permission: 'access ums_cardfile'
+    _permission: 'access content'
 
-ums_cardfile.artist_edit:
+ums_cardfile.artist.edit:
   path: '/cardfile/artist/edit/{aid}'
   defaults:
     _form: '\Drupal\ums_cardfile\Form\ArtistForm'
@@ -50,7 +50,7 @@ ums_cardfile.venues:
   requirements:
     _permission: 'access ums_cardfile'
 
-ums_cardfile.venues_delete:
+ums_cardfile.venues.delete:
   path: '/cardfile/venue/delete/{vid}'
   defaults:
     _title: 'UMS Cardfile Delete Venue'
@@ -77,7 +77,7 @@ ums_cardfile.event:
   requirements:
     _permission: 'access ums_cardfile'
 
-ums_cardfile.event_edit:
+ums_cardfile.event.edit:
   path: '/cardfile/event/edit/{eid}'
   defaults:
     _form: '\Drupal\ums_cardfile\Form\EventForm'
@@ -86,7 +86,7 @@ ums_cardfile.event_edit:
   requirements:
     _permission: 'access ums_cardfile'
 
-  ums_cardfile.events_delete:
+ums_cardfile.events.delete:
   path: '/cardfile/event/delete/{eid}'
   defaults:
     _title: 'UMS Cardfile Delete Event'
