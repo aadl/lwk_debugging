@@ -53,9 +53,7 @@ class EventForm extends FormBase {
     ];
 
     if ($eid) {
-      dblog('EventForm buildForm INTO IF', $eid);
       $event = _ums_cardfile_get_event($eid);
-      
       $form['eid'] = [
         '#type' => 'value',
         '#value' => $eid,

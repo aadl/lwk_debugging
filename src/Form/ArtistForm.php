@@ -143,8 +143,8 @@ class ArtistForm extends FormBase {
                                 ['oldid' => $form_state->getValue('aid'), //, ['aid' => $aid]);
                                  'mergeid' => $form_state->getValue('merge_id')]); //, ['aid' => $aid]);
 
-     return; 
-   }
+      return; 
+    }
 
     $artist = [
       'name'      => $form_state->getValue('name'),
@@ -165,7 +165,6 @@ class ArtistForm extends FormBase {
       // new event
       ums_cardfile_save('ums_artists', $artist, NULL);
     }
-    dblog('EventForm: submitForm: ums_cardfile_save aid =', $aid);
 
     $db = \Drupal::database();
     $result = $db->query("SELECT aid FROM ums_artists ORDER BY aid desc limit 1")->fetch();

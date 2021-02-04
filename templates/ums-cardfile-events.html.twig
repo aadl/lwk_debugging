@@ -1,3 +1,5 @@
+{{ attach_library('ums_cardfile/ums-cardfile-functions') }}
+
 <h1>
   {% if year > 0 %}
     <span>UMS Cardfile Events for {{ year }}</span>
@@ -6,10 +8,9 @@
   {% endif %}
 </h1>
 
-
 <div class="l-overflow-clear">
 	<p>
-		<a href="/cardfile/artist/edit/{{ artist.aid }}" class="align-left base-margin-right">Add New Event</a>
+		<a href="/cardfile/event/edit/{{ artist.aid }}" class="align-left base-margin-right">Add New Event</a>
 	</p>
 	<p>
 		<br/>
@@ -26,23 +27,24 @@
 	</p>
 
 </div>
-{% if year > 0 %}
+
+{% if (year > 0) or (year == 'all') %}
   {% if rows|length > 0 %}
     <div>
-      <table id="ums_artists-table">
+      <table id="ums-events-table">
         <thead>
           <tr>
-             <th role="columnheader">ID</th>
-            <th role="columnheader">Date</th>
-            <th role="columnheader">Title</th>
-            <th role="columnheader">Venue</th>
-            <th role="columnheader">Series</th>
-            <th role="columnheader">Notes</th>
-            <th role="columnheader">Program</th>
-            <th role="columnheader">Photo</th>
-            <th>View</th>
-            <th>Edit</th>
-            <th>Delete</th>
+            <th role="columnheader" width="50">ID</th>
+            <th role="columnheader" width="130">Date</th>
+            <th role="columnheader" width="250">Title</th>
+            <th role="columnheader" width="250">Venue</th>
+            <th role="columnheader" width="100">Series</th>
+            <th role="columnheader" width="100">Notes</th>
+            <th role="columnheader" width="100">Program</th>
+            <th role="columnheader" width="100">Photo</th>
+            <th width="60">View</th>
+            <th width="54">Edit</th>
+            <th width="90">Delete</th>
           </tr>
         </thead>
         <tbody>
@@ -53,7 +55,9 @@
                 {{ event.eid }}
               </td>
               <td>
-                {{ event.date | date("m/d/Y") }}
+                {% if (event.date | date("Y") != "-0001") %}
+                  {{ event.date | date("m/d/Y") }}
+                {% endif %}
               </td>
               <td>
                 {{ event.title }}
@@ -74,24 +78,19 @@
                 {{ event.photo_links | raw}}
               </td>
               <td>
-                <a href="/cardfile/event/{{ event.eid }}" class="button delete cardfile-venue">View</a>
+                <a href="/cardfile/event/{{ event.eid }}" class="button cardfile-event">View</a>
               </td>
-
               <td>
-                <a href="/cardfile/event/edit/{{ event.eid }}" class="button delete cardfile-venue">Edit</a>
+                <a href="/cardfile/event/edit/{{ event.eid }}" class="button cardfile-event">Edit</a>
               </td>
-
               <td>
-                <a href="/cardfile/event/delete/{{ event.eid }}" class="button delete cardfile-venue">Delete</a>
+                <a href="/cardfile/event/delete/{{ event.eid }}" class="button delete cardfile-event" data-name="{{ event.title }}">Delete</a>
               </td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
-
-
-
   {% else %}
     <p>No Events for {{ year }}</p>
   {% endif %}

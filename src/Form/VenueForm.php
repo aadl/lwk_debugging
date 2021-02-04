@@ -131,49 +131,15 @@ class VenueForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('submitForm: ENTERED');
-    // Check for merge ID
-    
-    if ($form_state->getValue('aid') && $form_state->getValue('merge_id')) {
-      if ($_REQUEST['destination']) {
-        unset($_REQUEST['destination']);
-      }
-      ums_cardfile_drupal_goto('cardfile/artists/merge/' . $form_state->getValue('aid') . '/' . $form_state->getValue('merge_id'));
-    }
+    dblog('VenueForm::submitForm: ENTERED');
 
-    $artist = [];
-    $artist->name = $form_state->getValue('name');
-    $artist->alias = $form_state->getValue('alias');
-    $artist->notes = $form_state->getValue('notes');
-    $artist->photo_nid = $form_state->getValue('photo_nid');
-
+    $venue = [
+      'name' => $form_state->getValue('name'),
+    ];
     // Convert Name to NamePlain for matching
-    $artist->name_plain = ums_cardfile_normalize($artist->name);
+    ums_cardfile_write_db_record('ums_venue', $venue, ['aid' => null]);
+    drupal_set_message('Added new Venue');
 
-    if ($form_state->getValue('aid')) {
-      // update existing record
-      $artist->aid = $form_state->getValue('aid');
-      ums_cardfile_write_db_record('ums_artists', $artist, ['aid' => $artist->aid] );
-    } else {
-      // new artist
-      ums_cardfile_write_db_record('ums_artists', $artist, ['aid' => null]);
-    }
-
-    if ($form_state->getValue('wid')) {
-      // Create new work artist
-      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/join/work/' . $form_state->getValue('wid') . '/artist/' . $artist->aid,
-        array('wrid' => $form_state->getValue('wrid')));
-    } 
-    elseif ($form_state->getValue('pid')) {
-      // Create new work artist
-      $url = ums_cardfile_drupal_goto(
-        'cardfile/join/performance/' . $form_state->getValue('pid') . '/artist/' . $artist->aid,
-        array('prid' => $form_state->getValue('prid')));
-    }
-    else {
-     drupal_set_message('Artist saved');
-     $drupal_goto_string = ums_cardfile_drupal_goto('cardfile/artist/' . $artist->aid);
-    }
-    return new RedirectResponse($drupal_goto_url);
+    return;
   }
 }

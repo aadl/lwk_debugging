@@ -3,7 +3,6 @@
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
-
 // $Id$
 // UMS cardfile module will provide for adding, editing and querying of records into the UMS card file
 
@@ -112,17 +111,45 @@ function ums_cardfile_create_link($link_text, $url) {
   return $project_link->toString();
 }
 
+
+
 function ums_cardfile_write_db_record($table_name, $fields_array, $key_array) {
+  dblog('ums_cardfile_write_db_record: fields_array:', $fields_array);
+  dblog('ums_cardfile_write_db_record: key_array:', $key_array);
   $db = \Drupal::database();
   $db->merge($table_name)
-  ->key($key_array)
-  ->fields($fields_array)
-  ->execute();
+  ->fields($fields_array);
+  if ($key_array) {
+    foreach ($key_array as $key => $value) {
+      $db->condition($key, $value);
+    }
+  }
+  ksm($db);
+  dblog('     QUERY:', json_encode($db));
+  //$db->execute();
 }
 
+function ums_cardfile_save($table_name, $fields_array, $field_key) {
+  $db = \Drupal::database();
+
+  $keyValue = NULL;
+  if ($field_key && $fields_array[$field_key]) {
+    $keyValue = $fields_array[$field_key];
+    unset($fields_array[$field_key]);
+    $db->update($table_name)->fields($fields_array)->condition($field_key, $keyValue)->execute();
+  }
+  else {
+    $pid = $db->insert($table_name)->fields($fields_array)->execute();
+  }
+}
+
+
+
 function ums_cardfile_drupal_goto($path, $options = []) {
-  $link_text = Url::fromRoute($path, $options)->toString();
-  return $link_text;
+  $url = Url::fromRoute($path, $options);
+  dblog('ums_cardfile_drupal_goto: url=', $url->toString());
+
+  return $url;
 }
 
 /*== ARTISTS =================================================================*/
@@ -242,6 +269,7 @@ function _ums_cardfile_get_event($eid = 0) {
   }
 
   // Turn program nid into links
+  dblog('_ums_cardfile_get_event: event =',$event);
   if ($event['program_nid']) {
     foreach (explode(',', $event['program_nid']) as $program_nid) {
       $program_nid = trim($program_nid);
@@ -264,6 +292,7 @@ function _ums_cardfile_get_event($eid = 0) {
       $event['photos'][] = ums_cardfile_create_link('Photo', 'node/' . $photo_nid);
     }
   }
+  dblog('_ums_cardfile_get_event: EXITING'); 
   return $event;
 }
 
@@ -324,4 +353,337 @@ function _ums_cardfile_get_work($wid = 0) {
     $work = FALSE;
   }
   return $work;
+}
+
+
+/*== HELPER FUNCTIONS ========================================================*/
+function ums_cardfile_searchadd($source_type, $source_id, $type, $search) {
+  $output = '';
+  if ($source_type == 'event') {
+    $event = _ums_cardfile_get_event($source_id);
+    $output .= '<h2>Adding repertoire to event: ' . $event['date'] . ' at ' . $event['venue'] . '</h2>';
+  } elseif ($source_type == 'performance') {
+    $performance = _ums_cardfile_get_performance($source_id);
+    $role = db_fetch_object(db_query('SELECT * FROM ums_performance_roles WHERE prid = %d', $_GET['prid']));
+    $query_args = array('prid' => $role->prid);
+    $output .= '<h2>Adding a <strong>' . $role->name . '</strong> to ' . $performance['work']['title'] . ' at event: ' .
+               $performance['event']['date'] . ' at ' . $performance['event']['venue'] . '</h2>';
+  } elseif ($source_type == 'work') {
+    $work = _ums_cardfile_get_work($source_id);
+    $role = db_fetch_object(db_query('SELECT * FROM ums_work_roles WHERE wrid = %d', $_GET['wrid']));
+    $query_args = array('wrid' => $role->wrid);
+    $output .= '<h2>Adding a <strong>' . $role->name . '</strong> to ' . $work['title'] . '</h2>';
+  }
+
+  // Special Handling for copying performances from one event to another
+  if (preg_match('/event:([\d]+)/', $search, $matches)) {
+    $source_eid = $matches[1];
+    $source_event = _ums_cardfile_get_event($source_eid);
+    $output .= '<p>Copy Repertoire Performances from Event ' . $source_event['date'] . ' at ' . $source_event['venue'] . '?</p>';
+    $output .= '<ul>';
+    foreach ($source_event['performances'] as $source_perf) {
+      $output .= '<li>' . $source_perf['title'] . '</li>';
+    }
+    $output .= '</ul><p>' . l('COPY PERFORMANCES TO THIS EVENT', "cardfile/join/$source_type/$source_id/source_event/$source_eid") . '</p>';
+  } else {
+    // Split search string into keywords
+    $search_terms = explode(' ', str_replace(',', '', $search));
+    $output .= '<p>Searching for "' . implode('" AND "', $search_terms) . '"</p>';
+    $search_query_parts = array();
+    $search_args = array();
+
+    if ($type == 'work') {
+      $wids = array();
+
+      foreach ($search_terms as $search_term) {
+        $search_query_part = "(ums_works.title LIKE '%%%s%%'";
+        $works_search_args[] = $search_term;
+        $artists_search_args[] = $search_term;
+        $search_query_part .= " OR ums_works.alternate LIKE '%%%s%%'";
+        $works_search_args[] = $search_term;
+        $artists_search_args[] = $search_term;
+        $search_query_part .= " OR ums_works.notes LIKE '%%%s%%'";
+        $works_search_args[] = $search_term;
+        $artists_search_args[] = $search_term;
+
+        $works_query_parts[] = $search_query_part . ')';
+
+        $search_query_part .= " OR ums_artists.name LIKE '%%%s%%'";
+        $artists_search_args[] = $search_term;
+        $search_query_part .= " OR ums_artists.name_plain LIKE '%%%s%%'";
+        $artists_search_args[] = $search_term;
+        $search_query_part .= " OR ums_artists.alias LIKE '%%%s%%'";
+        $artists_search_args[] = $search_term;
+        $search_query_part .= " OR ums_artists.notes LIKE '%%%s%%')";
+        $artists_search_args[] = $search_term;
+
+        $artists_query_parts[] = $search_query_part;
+      }
+
+      $res = db_query(
+        "SELECT wid " .
+                      "FROM ums_works " .
+                      "WHERE " .
+                      implode(' AND ', $works_query_parts) .
+                      " ORDER BY wid",
+        $works_search_args
+      );
+      while ($match = db_fetch_object($res)) {
+        $wids[$match->wid] = $match->wid;
+      }
+
+      $res = db_query(
+        "SELECT ums_works.wid AS wid " .
+                      "FROM ums_works, ums_artist_works, ums_artists " .
+                      "WHERE ums_works.wid = ums_artist_works.wid " .
+                      "AND ums_artist_works.aid = ums_artists.aid " .
+                      "AND " . implode(' AND ', $artists_query_parts) .
+                      " ORDER BY wid",
+        $artists_search_args
+      );
+      while ($match = db_fetch_object($res)) {
+        $wids[$match->wid] = $match->wid;
+      }
+
+      if (count($wids)) {
+        $works = array();
+        $res = db_query("SELECT ums_works.wid as wid, " .
+                        "ums_works.title as title, " .
+                        "ums_works.alternate as alternate, " .
+                        "ums_works.notes as notes, " .
+                        "ums_works.youtube_url as youtube_url," .
+                        "ums_artists.name as artist_name, " .
+                        "ums_work_roles.name AS role " .
+                        "FROM ums_works " .
+                        "LEFT JOIN ums_artist_works ON ums_works.wid = ums_artist_works.wid " .
+                        "LEFT JOIN ums_work_roles ON ums_artist_works.wrid = ums_work_roles.wrid " .
+                        "LEFT JOIN ums_artists ON ums_artist_works.aid = ums_artists.aid " .
+                        "WHERE ums_works.wid IN (" .
+                        implode(',', $wids) .
+                        ") ORDER BY ums_works.title");
+
+        while ($match = db_fetch_object($res)) {
+          if ($works[$match->wid]) {
+            // Work data already captured, just add artist info
+            $works[$match->wid]['Artists'] .= "<br /><strong>$match->role:</strong> $match->artist_name";
+          } else {
+            $works[$match->wid] = array(
+              'Work ID' => $match->wid,
+              'Title' => $match->title,
+              'Alternate' => $match->alternate,
+              'Artists' => "<strong>$match->role:</strong> $match->artist_name",
+              'Notes' => $match->notes,
+              'SELECT' => l('SELECT', "cardfile/join/$source_type/$source_id/work/" . $match->wid),
+            );
+          }
+        }
+
+        $output .= theme('table', array_keys(reset($works)), $works);
+        $output .= '<p><strong>- OR -</strong></p>';
+      } else {
+        $output .= '<p>No existing repertoire matches found</p>';
+      }
+
+      $output .= '<p>' . l('ADD NEW REPERTOIRE', 'cardfile/work/edit', array('query' => array('eid' => $source_id, 'title' => $search))) . '</p>';
+    } elseif ($type == 'artist') {
+      foreach ($search_terms as $search_term) {
+        $search_query_part = "(name LIKE '%%%s%%'";
+        $search_args[] = $search_term;
+        $search_query_part .= " OR name_plain LIKE '%%%s%%'";
+        $search_args[] = $search_term;
+        $search_query_part .= " OR alias LIKE '%%%s%%'";
+        $search_args[] = $search_term;
+        $search_query_part .= " OR notes LIKE '%%%s%%')";
+        $search_args[] = $search_term;
+        $search_query_parts[] = $search_query_part;
+      }
+      $res = db_query(
+        "SELECT * FROM ums_artists " .
+                      "WHERE " .
+                      implode(' AND ', $search_query_parts) .
+                      "ORDER BY name ASC",
+        $search_args
+      );
+
+      $rows = array();
+      while ($artist = db_fetch_array($res)) {
+        $rows[] = array(
+          'Artist ID' => $artist['aid'],
+          'Name' => $artist['name'],
+          'Alias' => $artist['alias'],
+          'Notes' => $artist['notes'],
+          'SELECT' => l(
+            'SELECT',
+            "cardfile/join/$source_type/$source_id/artist/" . $artist['aid'],
+            array('query' => $query_args)
+          ),
+        );
+      }
+      $output .= theme('table', array_keys($rows[0]), $rows);
+      $output .= '<p><strong>- OR -</strong></p>';
+      if ($source_type == 'performance') {
+        $source_id_name = 'pid';
+      } elseif ($source_type == 'work') {
+        $source_id_name = 'wid';
+      }
+      $output .= '<p>' . l('ADD NEW ARTIST', 'cardfile/artist/edit', array('query' => array($source_id_name => $source_id, 'name' => $search))) . '</p>';
+    }
+  }
+
+  return $output;
+}
+
+function ums_cardfile_join($type1, $id1, $type2, $id2) {
+  if ($type1 == 'event' && $type2 == 'source_event') {
+    // Copy all performances from source_event to event
+    $res = db_query("SELECT * FROM ums_performances WHERE eid = %d", $id2);
+    while ($copy_perf = db_fetch_object($res)) {
+      $copy_pid = $copy_perf->pid;
+      unset($copy_perf->pid);
+      $copy_perf->eid = $id1;
+      drupal_write_record('ums_performances', $copy_perf);
+      $res2 = db_query("SELECT * FROM ums_artist_performances WHERE pid = %d", $copy_pid);
+      while ($copy_artist_perf = db_fetch_object($res2)) {
+        $copy_artist_perf->pid = $copy_perf->pid;
+        drupal_write_record('ums_artist_performances', $copy_artist_perf);
+      }
+    }
+    drupal_set_message("All Performances copied from event $id2 to event $id1");
+    drupal_goto('cardfile/event/' . $id1);
+  }
+  if ($type1 == 'event' && $type2 == 'work') {
+    // New Performance
+    $max = db_fetch_object(db_query("SELECT MAX(weight) as max_weight FROM ums_performances WHERE eid = %d", $id1));
+    $perf = new stdClass;
+    $perf->eid = $id1;
+    $perf->wid = $id2;
+    $perf->weight = $max->max_weight + 1;
+    drupal_write_record('ums_performances', $perf);
+    drupal_set_message('Created new Repertoire Performance for Event ID: ' . $id1 .
+                       '<br />Add Artist Info below:');
+    drupal_goto('cardfile/performance/' . $perf->pid);
+  } elseif ($type1 == 'performance' && $type2 == 'artist') {
+    $artist_perf = new stdClass;
+    $artist_perf->pid = $id1;
+    $artist_perf->aid = $id2;
+    $artist_perf->prid = $_GET['prid'];
+    drupal_write_record('ums_artist_performances', $artist_perf);
+    drupal_set_message("Added new Repertoire Artist to the Performance");
+    ums_cardfile_recent_artists($id2);
+    drupal_goto('cardfile/performance/' . $artist_perf->pid);
+  } elseif ($type1 == 'work' && $type2 == 'artist') {
+    $artist_work = new stdClass;
+    $artist_work->wid = $id1;
+    $artist_work->aid = $id2;
+    $artist_work->wrid = $_GET['wrid'];
+    drupal_write_record('ums_artist_works', $artist_work);
+    drupal_set_message("Added new Creator to the Repertoire");
+    ums_cardfile_recent_artists($id2);
+    drupal_goto('cardfile/work/' . $artist_work->wid);
+  }
+}
+
+function ums_cardfile_autocomplete($type) {
+  $search = strtolower($_GET['search']);
+  if ($type == 'artist') {
+    $res = db_query(
+      "SELECT * FROM ums_artists " .
+                    "WHERE name LIKE '%%%s%%' " .
+                    "OR name_plain LIKE '%%%s%%' " .
+                    "OR alias LIKE '%%%s%%' " .
+                    "ORDER BY name ASC LIMIT 25",
+      $search,
+      $search,
+      $search
+    );
+    while ($match = db_fetch_array($res)) {
+      echo $match['name'] . ' (aid:' . $match['aid'] . ")\n";
+    }
+  } elseif ($type == 'event') {
+    $res = db_query(
+      "SELECT * FROM ums_events " .
+                    "WHERE date LIKE '%%%s%%' " .
+                    "ORDER BY date ASC LIMIT 25",
+      $search
+    );
+    while ($match = db_fetch_array($res)) {
+      $match_event = _ums_cardfile_get_event($match['eid']);
+      echo $match_event['date'] . ' at ' . $match_event['venue'] . ' (eid:' . $match['eid'] . ")\n";
+    }
+  } elseif ($type == 'work') {
+    $res = db_query(
+      "SELECT * FROM ums_works " .
+                    "WHERE title LIKE '%%%s%%' " .
+                    "OR alternate LIKE '%%%s%%' " .
+                    "OR notes LIKE '%%%s%%' " .
+                    "ORDER BY title ASC LIMIT 25",
+      $search,
+      $search,
+      $search
+    );
+    while ($match = db_fetch_array($res)) {
+      echo $match['title'] . ' (wid:' . $match['wid'] . ")\n";
+    }
+  }
+}
+
+function ums_cardfile_recent_artists($new_aid = 0) {
+  global $user;
+  $artists = array();
+
+  $var_key = 'ums_cardfile_recent_artists_' . $user->uid;
+
+  $res = db_query('SELECT value FROM variable WHERE name = "%s"', $var_key);
+  $row = db_fetch_object($res);
+  if ($row->value) {
+    $artists = unserialize($row->value);
+    $existing_list = TRUE;
+  }
+
+  if ($new_aid) {
+    // If already in the list, remove it
+    if ($artists[$new_aid]) {
+      $artist_name = $artists[$new_aid];
+      unset($artists[$new_aid]);
+    } else {
+      $row = db_fetch_object(db_query("SELECT name FROM ums_artists WHERE aid = %d", $new_aid));
+      $artist_name = $row->name;
+    }
+
+    // Add to the beginning of the list
+    $artists = array_reverse($artists, TRUE);
+    $artists[$new_aid] = $artist_name;
+    $artists = array_reverse($artists, TRUE);
+
+    // If > 20 elements, pop the last one off the list
+    if (count($artists) > 20) {
+      array_pop($artists);
+    }
+
+    // Store updated list
+    if ($existing_list) {
+      db_query(
+        'UPDATE variable SET value = "%s" WHERE name = "%s"',
+        serialize($artists),
+        $var_key
+      );
+    } else {
+      db_query(
+        'INSERT INTO variable (name, value) VALUES ("%s", "%s")',
+        $var_key,
+        serialize($artists)
+      );
+    }
+  }
+
+  return $artists;
+}
+
+function ums_cardfile_normalize($string) {
+  $a = 'ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûýýþÿŔŕ';
+  $b = 'AAAAAAACEEEEIIIIDNOOOOOOUUUUYBSaaaaaaaceeeeiiiidnoooooouuuyybyRr';
+  $string = utf8_decode($string);
+  $string = strtr($string, utf8_decode($a), $b);
+
+  return utf8_encode($string);
 }

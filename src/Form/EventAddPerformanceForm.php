@@ -9,6 +9,7 @@ namespace Drupal\ums_cardfile\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class EventAddPerformanceForm extends FormBase {
   public function getFormId() {
@@ -51,6 +52,7 @@ class EventAddPerformanceForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     dblog('EventAddPerformanceForm: ENTERED');
     
-    ums_cardfile_drupal_goto('cardfile/searchadd/event/' . $form_state['values']['eid'] . '/work/' . $form_state['values']['search']);
+    $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/searchadd/event/' . $form_state['values']['eid'] . '/work/' . $form_state['values']['search']);
+    return new RedirectResponse($drupal_goto_url);
   }
 }

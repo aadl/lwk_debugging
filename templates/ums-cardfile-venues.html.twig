@@ -4,7 +4,7 @@
 	<span>UMS Cardfile Venues</span>
 </h1>
 
-<table id="umsvenues-table">
+<table id="ums-venues-table">
 	<thead>
 		<tr>
 			<th role="columnheader">Venue Name</th>
@@ -12,14 +12,13 @@
 		</tr>
 	</thead>
 	<tbody>
-
 		{% for row in venues %}
 			<tr>
 				<td>
 					{{ row.name }}
 				</td>
 				<td>
-          <a href="/cardfile/venue/delete/{{ row.id }}" class="button delete cardfile-venue" data-venue_name="{{ row.name }}">Delete</a>
+          <a href="/cardfile/venue/delete/{{ row.id }}" class="button delete cardfile-venue" data-name="{{ row.name }}">Delete</a>
 				</td>
 			</tr>
 		{% endfor %}
