@@ -1,0 +1,48 @@
+<h1>
+  <span>UMS Repertoire</span>
+</h1>
+
+
+<div class="l-overflow-clear">
+  <p>
+    <a href="/cardfile/work/edit/{{ work.wid }}" class="align-left base-margin-right">Edit Repertoire data</a>
+  </p>
+</div>
+<div class="l-overflow-clear">
+  <p><strong>Title:</strong> {{ work.title }}</p>
+  <p><strong>Alternate:</strong> {{ work.alternate }}</p>
+  {% if work.notes %}
+    <p><strong>Notes:</strong> {{ work.notes }}</p>
+  {% endif %}
+
+  {% if work.youtube_url %}
+    <p><strong>YouTube URL(s):</strong>{{ event.youtube_url }}</p>
+  {% endif %}
+
+  {% if work.artists|length > 0 %}
+    <h2>Creators</h2>
+    {% for work_artist in work.artists %}
+      <p><strong>work_artist.role</strong> <a href="/cardfile/artist/{{ work_artist.aid }}">{{ work_artist.name }}</a>
+        [<a href="/cardfile/work/delete_artist/{{ wid }}/{{ work_artist.aid }}">X</a>]</p>
+    {% endfor %}
+  {% endif %}
+
+  {{ work_add_artist_form }}
+
+  {% if work.events|length > 0 %}
+    <h3>Performed at these Events</h3>
+    {% for work_event in work.events %}
+      <p>
+        <a href="/cardfile/event/{{ work_event.eid }}">{{ work_event.date | date(" m/d/y H:i:s") }}</a>
+        {% if work_event.venue %}
+          &nbsp;at&nbsp;<strong>{{ work_event.venue }}</strong>
+        {% endif %}
+        {% if work_event.series %}
+          &nbsp;,&nbsp;{{ work_event.series }}
+        {% endif %}
+        &nbsp;[<a href="/cardfile/performance/{{ work_event.pid }}">Edit Repertoire Performance Details</a>]</p>
+    {% endfor %}
+  {% endif %}
+</div>
+
+

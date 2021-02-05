@@ -101,6 +101,12 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
         'filter' => NULL,
         'base_url' => $GLOBALS['base_url']     ]
     ],
+    'ums-cardfile-work' => [
+      'variables' => [
+        'work' => NULL,
+        'work_add_artist_form' => NULL,
+      ]
+    ],
   ];
 }
 
