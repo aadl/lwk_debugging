@@ -66,6 +66,7 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
     'ums-cardfile-venues' => [
       'variables' => [
       'venues' => NULL,
+      'venue_add_form' => NULL,
       ]
     ],
     'ums-cardfile-venue' => [
@@ -137,11 +138,11 @@ function ums_cardfile_save($table_name, $fields_array, $field_key) {
     $db->update($table_name)->fields($fields_array)->condition($field_key, $keyValue)->execute();
   }
   else {
+    dblog('ums_cardfile_save: INSERT', $table_name, $fields_array);
     $pid = $db->insert($table_name)->fields($fields_array)->execute();
+    dblog('ums_cardfile_save: AFTER INSERT', $pid);
   }
 }
-
-
 
 function ums_cardfile_drupal_goto($path, $options = []) {
   $url = Url::fromRoute($path, $options);

@@ -116,10 +116,13 @@ class DefaultController extends ControllerBase {
                 'id' => $venue->vid
               ];
     }
-    dblog('cf_venues rows count =', count($rows));
+
+    $venue_add_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\VenueAddForm');
+
     return [
         '#theme' => 'ums-cardfile-venues',
         '#venues' => $rows,
+        '#venue_add_form' => $venue_add_form,
         '#cache' => [ 'max-age' => 0 ]
       ];
   }
@@ -332,6 +335,7 @@ class DefaultController extends ControllerBase {
    * cf_work - handle works display
    */
   public function cf_works($filter = '') {
+    dblog('cf_works ENTERED filter =', $filter);
     $rows = [];
     $db = \Drupal::database();
     $page = pager_find_page();
@@ -358,6 +362,7 @@ class DefaultController extends ControllerBase {
       ->fields('ums_works', ['wid']);
 
     if (NULL != $filter) {
+      dblog('filter not null - ', $filter);
       $query->condition('title', $db->escapeLike($filter) . "%", 'like');
     }
     $query->orderBy('title');

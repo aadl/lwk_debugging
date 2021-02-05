@@ -131,10 +131,11 @@ ums_cardfile.series.delete:
 # ---------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------
 ums_cardfile.works:
-  path: '/cardfile/works'
+  path: '/cardfile/works/{filter}'
   defaults:
     _title: 'UMS Cardfile Works'
     _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_works'
+    filter: ''
   requirements:
     _permission: 'access ums_cardfile'
 

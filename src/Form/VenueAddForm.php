@@ -9,19 +9,19 @@ namespace Drupal\ums_cardfile\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\Core\Render\Element;
 
-class SeriesAddForm extends FormBase {
+class VenueAddForm extends FormBase {
   public function getFormId() {
-    return 'series_add_form';
+    return 'venue_edit_form';
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $sid = 0) {
-    dblog('SeriesAddForm buildForm ENTERED');
+    dblog('VenueAddForm buildForm ENTERED');
 
     $form['name'] = array(
       '#type' => 'textfield',
-      '#title' => t('Add a Series'),
+      '#title' => t('Add a Venue'),
       '#size' => 64,
       '#maxlength' => 128,
     );
@@ -37,12 +37,12 @@ class SeriesAddForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('SeriesAddForm: ENTERED');
+    dblog('VenueAddForm: ENTERED');
     
-    $series = [];
-    $series['name'] = $form_state->getValue('name');
-
-    ums_cardfile_save('ums_series', $series, NULL);
-    drupal_set_message('Series saved');
+    $venue = [];
+    $venue['name'] = $form_state->getValue('name');
+    dblog('VenueForm::submitForm', $venue);
+    ums_cardfile_save('ums_venues', $venue, NULL);
+    drupal_set_message('Venue saved');
   }
 }
