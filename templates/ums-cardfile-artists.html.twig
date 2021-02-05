@@ -32,53 +32,53 @@
   </div>
   <div>
     <table id="ums-artists-table">
-		<thead>
-			<tr>
-				<th role="columnheader">Id</th>
-				<th role="columnheader">Name</th>
-				<th role="columnheader">Alias</th>
-				<th role="columnheader">Notes</th>
-				<th data-sort-default role="ascending">Photo</th>
-				<th>View</th>
-				<th>Edit</th>
-				<th>Delete</th>
-			</tr>
-		</thead>
-		<tbody>
-
-			{% for artist in artists %}
-				<tr>
-					<td>
-						{{ artist.aid }}
-					</td>
-					<td>
-						{{ artist.name }}
-					</td>
-					<td>
-						{{ artist.alias }}
-					</td>
-					<td>
-						{{ artist.notes }}
-					</td>
-					<td>
-            {{ artist.photo_links | raw}}
-					</td>
-          <td>
-            <a href="/cardfile/artist/{{ artist.aid }}" class="button cardfile-artist">View</a>
-          </td>
-          <td>
-            <a href="/cardfile/artist/edit/{{ artist.aid }}" class="button cardfile-artist">Edit</a>
-          </td>
-          <td>
-            <a href="/cardfile/artist/delete/{{ artist.aid }}" class="button delete cardfile-artist" data-name="{{ row.name }}">Delete</a>
-          </td>
+      <thead>
+        <tr>
+          <th role="columnheader">Id</th>
+          <th role="columnheader">Name</th>
+          <th role="columnheader">Alias</th>
+          <th role="columnheader">Notes</th>
+          <th data-sort-default role="ascending">Photo</th>
+          <th>View</th>
+          <th>Edit</th>
+          <th>Delete</th>
         </tr>
-			{% endfor %}
-		</tbody>
-	</table>
-</div>
+      </thead>
+      <tbody>
 
-<div class="l-overflow-clear">
-	{{ pager }}
-</div>
+        {% for artist in artists %}
+          <tr>
+            <td>
+              {{ artist.aid }}
+            </td>
+            <td>
+              {{ artist.name }}
+            </td>
+            <td>
+              {{ artist.alias }}
+            </td>
+            <td>
+              {{ artist.notes }}
+            </td>
+            <td>
+              {{ artist.photo_links | raw}}
+            </td>
+            <td>
+              <a href="/cardfile/artist/{{ artist.aid }}" class="button cardfile-artist">View</a>
+            </td>
+            <td>
+              <a href="/cardfile/artist/edit/{{ artist.aid }}" class="button cardfile-artist">Edit</a>
+            </td>
+            <td>
+              <a href="/cardfile/artist/delete/{{ artist.aid }}" class="button delete cardfile-artist" data-name="{{ row.name }}">Delete</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+	  </table>
+  </div>
 
+  <div class="l-overflow-clear">
+    {{ pager }}
+  </div>
+</div>

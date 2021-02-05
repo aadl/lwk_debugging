@@ -317,7 +317,7 @@ class DefaultController extends ControllerBase {
   }
 
   /**
-   * cf_series - handle venue deletion
+   * cf_series - handle series deletion
    */
   public function cf_delete_series($sid) {  
     dblog('cf_delete_series sid =', $sid);
@@ -328,6 +328,121 @@ class DefaultController extends ControllerBase {
     ];
   }
 
+  /**
+   * cf_work - handle works display
+   */
+  public function cf_works($filter = '') {
+    $rows = [];
+    $db = \Drupal::database();
+    $page = pager_find_page();
+ 
+    dblog('cf_works: ENTERED, $filter = ' . $filter . ', $page = ', $page);
+    $per_page = 50;
+    $offset = $per_page * $page;
+
+    // if ($filter) {
+    //   $result = pager_query('SELECT wid FROM ums_works WHERE title LIKE "%s%%" ORDER BY title', $per_page, 0, NULL, $filter);
+    // } else {
+    //   $result = pager_query('SELECT wid FROM ums_works ORDER BY title', $per_page);
+    // }
+
+    // $query = $db->select('ums_works', 'works')
+    //   ->fields('works', ['aid','title','alternate','notes', 'youtube_url']);
+
+    // if (NULL != $filter) {
+    //   $query->condition('title', $db->escapeLike($filter) . "%", 'like');
+    // }
+    // $query->orderBy('title');
+
+    $query = $db->select('ums_works', 'ums_works')
+      ->fields('ums_works', ['wid']);
+
+    if (NULL != $filter) {
+      $query->condition('title', $db->escapeLike($filter) . "%", 'like');
+    }
+    $query->orderBy('title');
+
+    $num_rows = $query->countQuery()->execute()->fetchField();
+    $works = $query->range($offset, $per_page)->execute()->fetchAll();
+    $pager = pager_default_initialize($num_rows, $per_page);
+
+    dblog('cf_works: ENTERED, count works = ', count($works));
+    $rows = [];
+    foreach ($works as $work) {
+      dblog("------------------------------------------------------- cf_works: $work->wid =", $work->wid);
+
+      $work_details = _ums_cardfile_get_work($work->wid);
+      if ($work_details) {
+    // Format Creators
+        $creators = '';
+        dblog("cf_works: work_details count =", count($work_details['artists']));
+        if (count($work_details['artists'])) {
+          $creators .= '<span style="font-size: smaller">';
+          foreach ($work_details['artists'] as $artist) {
+            $link = ums_cardfile_create_link($artist['name'], 'cardfile/artist/' . $artist['aid']);
+            $creators .= '<br />&nbsp;&bull; ' . $artist['role'] . ': ' . $link;
+                          ;
+          }
+          $creators .= '</span>';
+        }
+
+        $row = [  
+          'id' => $work_details['wid'],
+          'creators' => '<strong>' . $work_details['title'] . '</strong>' . $creators,
+          'alternate' => $work_details['alternate'],
+          'notes' => strlen($work_details['notes']) > 30 ? substr($work_details['notes'], 0, 30) . '...' : $work_details['notes'],
+        ];
+        dblog('cf_works: row =', $row);
+        $rows[] = $row;
+      }
+    }
+
+    return [
+      '#theme' => 'ums-cardfile-works',
+      '#works' => $rows,
+      '#filter' => $filter,
+      '#pager' => [
+        '#type' => 'pager',
+        '#quantity' => 5
+      ],
+      '#cache' => [ 'max-age' => 0 ]
+    ];
+  }
+
+  /**
+   * cf_work - handle work edits
+   */
+  public function cf_work($wid = 0) {
+    dblog('cf_work: ENTERED, $wid = ' . $wid);
+    $db = \Drupal::database();
+
+    $work = _ums_cardfile_get_work($wid);
+    if ($work['wid']) {
+      return [
+        '#theme' => 'ums-cardfile-work',
+        '#work' => $work,
+
+        '#cache' => [ 'max-age' => 0 ]
+      ];
+    } else {
+      \Drupal::messenger()->addMessage("Unable to find work with ID:$wid");
+      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/works');
+      return new RedirectResponse($drupal_goto_url);
+    }
+  }
+
+  /**
+   * cf_delete_work - handle work deletion
+   */
+  public function cf_delete_work($wid) {  
+    $db = \Drupal::database();
+    $db->query("DELETE FROM ums_works WHERE wid = :wid", [':wid' => $wid]);
+    \Drupal::messenger()->addMessage('Removed the work from the database');
+    return [
+    ];
+  }
+
+  
 
   public function cf_search_add($eid) {
   }

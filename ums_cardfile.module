@@ -92,6 +92,14 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
         'series_add_form' => NULL,
       ]
     ],
+
+    'ums-cardfile-works' => [
+      'variables' => [
+        'works' => NULL,
+        'pager' => NULL,
+        'filter' => NULL,
+        'base_url' => $GLOBALS['base_url']     ]
+    ],
   ];
 }
 
@@ -113,27 +121,10 @@ function dblog(...$thingsToLog) {
 }
 
 function ums_cardfile_create_link($link_text, $url) {
+  dblog('ums_cardfile_create_link entered, link_text. url =', $link_text, $url);
   $url = Url::fromUri('internal:/' . $url);
   $project_link = Link::fromTextAndUrl(t($link_text), $url);
   return $project_link->toString();
-}
-
-
-
-function ums_cardfile_write_db_record($table_name, $fields_array, $key_array) {
-  dblog('ums_cardfile_write_db_record: fields_array:', $fields_array);
-  dblog('ums_cardfile_write_db_record: key_array:', $key_array);
-  $db = \Drupal::database();
-  $db->merge($table_name)
-  ->fields($fields_array);
-  if ($key_array) {
-    foreach ($key_array as $key => $value) {
-      $db->condition($key, $value);
-    }
-  }
-  ksm($db);
-  dblog('     QUERY:', json_encode($db));
-  //$db->execute();
 }
 
 function ums_cardfile_save($table_name, $fields_array, $field_key) {

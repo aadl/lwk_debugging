@@ -127,3 +127,40 @@ ums_cardfile.series.delete:
     sid: ''
   requirements:
     _permission: 'access ums_cardfile'
+
+# ---------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
+ums_cardfile.works:
+  path: '/cardfile/works'
+  defaults:
+    _title: 'UMS Cardfile Works'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_works'
+  requirements:
+    _permission: 'access ums_cardfile'
+
+ums_cardfile.work:
+  path: '/cardfile/work/{wid}'
+  defaults:
+    _title: 'UMS Cardfile Work'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_work'
+    wid: ''
+  requirements:
+    _permission: 'access ums_cardfile'
+
+ums_cardfile.work.edit:
+  path: '/cardfile/work/edit/{wid}'
+  defaults:
+    _form: '\Drupal\ums_cardfile\Form\WorkForm'
+    _title: 'Edit Work'
+    wid: ''
+  requirements:
+    _permission: 'access ums_cardfile'
+
+ums_cardfile.work.delete:
+  path: '/cardfile/work/delete/{wid}'
+  defaults:
+    _title: 'UMS Cardfile Delete Work'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_delete_work'
+    wid: ''
+  requirements:
+    _permission: 'access ums_cardfile'
