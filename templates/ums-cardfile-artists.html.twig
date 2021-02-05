@@ -1,5 +1,4 @@
 {{ attach_library('ums_cardfile/ums-cardfile-functions') }}
-
 <h1>
 	<span>UMS Cardfile Artists</span>
 </h1>
@@ -65,15 +64,13 @@
             {{ artist.photo_links | raw}}
 					</td>
           <td>
-          <a href="/cardfile/artist/{{ artist.aid }}" class="button cardfile-artist">View</a>
+            <a href="/cardfile/artist/{{ artist.aid }}" class="button cardfile-artist">View</a>
           </td>
-
           <td>
-          <a href="/cardfile/artist/edit/{{ artist.aid }}" class="button cardfile-artist">Edit</a>
+            <a href="/cardfile/artist/edit/{{ artist.aid }}" class="button cardfile-artist">Edit</a>
           </td>
-
           <td>
-          <a href="/cardfile/artist/delete/{{ artist.aid }}" class="button delete cardfile-artist" data-name="{{ row.name }}>Delete</a>
+            <a href="/cardfile/artist/delete/{{ artist.aid }}" class="button delete cardfile-artist" data-name="{{ row.name }}">Delete</a>
           </td>
         </tr>
 			{% endfor %}

@@ -44,6 +44,7 @@ class DefaultController extends ControllerBase {
     $artists = $query->range($offset, $per_page)->execute()->fetchAll();
     $pager = pager_default_initialize($num_rows, $per_page);
 
+    dblog('cf_artists: ENTERED, count artists = ', count($artists));
     foreach ($artists as $artist) {
       if ($artist->photo_nid) {
         $photo_links = [];
@@ -90,6 +91,17 @@ class DefaultController extends ControllerBase {
       $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/artists');
       return new RedirectResponse($drupal_goto_url);
     }
+  }
+
+  /**
+   * cf_delete_artist - handle venue deletion
+   */
+  public function cf_delete_artist($aid) {  
+    $db = \Drupal::database();
+    $db->query("DELETE FROM ums_artists WHERE aid = :aid", [':aid' => $aid]);
+    \Drupal::messenger()->addMessage('Removed the artist from the database');
+    return [
+    ];
   }
 
   /**
@@ -279,6 +291,43 @@ class DefaultController extends ControllerBase {
     return [
     ];
   }
+
+  /**
+   * cf_series - handle series display
+   */
+  public function cf_series() {
+    $db = \Drupal::database();
+    $series = $db->query('SELECT * FROM ums_series ORDER BY name')->fetchAll();
+    $rows = [];
+    foreach ($series as $aseries) {
+       $rows[] = ['name' => $aseries->name, 
+                'id' => $aseries->sid
+              ];
+    }
+    dblog('cf_series rows count =', count($rows));
+
+    $series_add_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\SeriesAddForm');
+
+    return [
+        '#theme' => 'ums-cardfile-series',
+        '#series' => $rows,
+        '#series_add_form' => $series_add_form,
+        '#cache' => [ 'max-age' => 0 ]
+      ];
+  }
+
+  /**
+   * cf_series - handle venue deletion
+   */
+  public function cf_delete_series($sid) {  
+    dblog('cf_delete_series sid =', $sid);
+    $db = \Drupal::database();
+    $db->query("DELETE FROM ums_series WHERE sid = :sid", [':sid' => $sid]);
+    \Drupal::messenger()->addMessage('Removed the series from the database');
+    return [
+    ];
+  }
+
 
   public function cf_search_add($eid) {
   }

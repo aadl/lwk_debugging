@@ -6,20 +6,28 @@
         //var maxLockerItemsCheck = drupalSettings.arborcat.max_locker_items_check;
         $(function () {
           // ---------------------------------INITIALIZATION/SETUP ---------------------------------
-          function doDeleteConfirmation(typeName, currentElement) {
+          function handleButtonClick(typeName, currentElement) {
+            var buttonName = currentElement.text();           // --- Handle Cancel pickup requests
             var buttonLink = currentElement.attr('href');
-            var itemName = currentElement.data('name');            
-            var deleteVenueConfirmed = confirm('Are you sure you wish to delete the ' + typeName + ' - "' + itemName + '" ?');
-            if (true == deleteVenueConfirmed) {
-              // visually grey the whole row immediately after the dialog is closed with a true confirmation
-              currentElement.parents("tr:first").css("background", "lightslategrey");
-              currentElement.css("background", "lightslategrey");
-              $.ajax({
+            var itemName = currentElement.data('name');  
+            var executeHREF = false;
+
+            if (buttonName.startsWith('Delete'))  {
+              executeHREF = confirm('Are you sure you wish to delete the ' + typeName + ' - "' + itemName + '" ?');
+            }
+            else {
+              executeHREF = true;
+            }
+
+            if (true == executeHREF) {
+               $.ajax({
                 url: buttonLink,
                 type: "GET",
                 success: function (result) {
                   // after successful deletion from the DB, remove the row from the table
-                  currentElement.parents("tr:first").remove();                // Remove the row fron the table 
+                  if (buttonName.startsWith('Delete'))  {
+                    currentElement.parents("tr:first").remove();
+                  }           // Remove the row fron the table 
                 },
                 error: function (error) {
                   console.log('delete ' + typeName + 'confirmation - ajax error' + JSON.stringify(error));
@@ -27,37 +35,23 @@
               });
             }
           }
-           // --------------------------------- EVENT HANDLERS ---------------------------------
+                    // --------------------------------- EVENT HANDLERS ---------------------------------
           $('#ums-venues-table tbody td a').click(function (e) {
-            console.log('ums-venues-table tbody CLICK');
-            var buttonName = $(this).text();           // --- Handle Cancel pickup requests
-            console.log('ums-venues-table buttonName = ' + buttonName);
-            if (buttonName.startsWith('Delete'))  {
-              doDeleteConfirmation('venue', $(this));
-            }
-            return false;
+            handleButtonClick('venue', $(this));
           });
           
           $('#ums-events-table tbody td a').click(function (e) {
-            console.log('ums-events-table tbody CLICK');
-            var buttonName = $(this).text();           // --- Handle Cancel pickup requests
-            console.log('ums-events-table buttonName = ' + buttonName);
-           if (buttonName.startsWith('Delete'))  {
-              doDeleteConfirmation('event', $(this));
-            }
-            return false;
+            handleButtonClick('event', $(this));
           });        
 
           $('#ums-artists-table tbody td a').click(function (e) {
-            console.log('ums-artists-table tbody CLICK');
-            var buttonName = $(this).text();           // --- Handle Cancel pickup requests
-            console.log('ums-artists-table buttonName = ' + buttonName);
-           if (buttonName.startsWith('Delete'))  {
-              doDeleteConfirmation('artist', $(this));
-            }
-            return false;
+            handleButtonClick('artist', $(this));
           });        
 
+          $('#ums-series-table tbody td a').click(function (e) {
+            handleButtonClick('series', $(this));
+          });        
+          
         });
       });
     }

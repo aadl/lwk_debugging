@@ -13,7 +13,8 @@ ums_cardfile.searchadd:
     _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_search_add'
   requirements:
     _permission: 'access ums_cardfile'
-
+# ---------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
 ums_cardfile.artists:
   path: '/cardfile/artists/{filter}'
   defaults:
@@ -41,6 +42,17 @@ ums_cardfile.artist.edit:
   requirements:
     _permission: 'access ums_cardfile'
 
+ums_cardfile.artist.delete:
+  path: '/cardfile/artist/delete/{aid}'
+  defaults:
+    _title: 'UMS Cardfile Delete Artist'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_delete_artist'
+    aid: ''
+  requirements:
+    _permission: 'access ums_cardfile'
+
+# ---------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
 ums_cardfile.venues:
   path: '/cardfile/venues/{filter}'
   defaults:
@@ -50,7 +62,7 @@ ums_cardfile.venues:
   requirements:
     _permission: 'access ums_cardfile'
 
-ums_cardfile.venues.delete:
+ums_cardfile.venue.delete:
   path: '/cardfile/venue/delete/{vid}'
   defaults:
     _title: 'UMS Cardfile Delete Venue'
@@ -59,6 +71,8 @@ ums_cardfile.venues.delete:
   requirements:
     _permission: 'access ums_cardfile'
 
+# ---------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
 ums_cardfile.events:
   path: '/cardfile/events/{year}'
   defaults:
@@ -86,11 +100,30 @@ ums_cardfile.event.edit:
   requirements:
     _permission: 'access ums_cardfile'
 
-ums_cardfile.events.delete:
+ums_cardfile.event.delete:
   path: '/cardfile/event/delete/{eid}'
   defaults:
     _title: 'UMS Cardfile Delete Event'
     _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_delete_event'
     eid: ''
+  requirements:
+    _permission: 'access ums_cardfile'
+
+# ---------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
+ums_cardfile.series:
+  path: '/cardfile/series'
+  defaults:
+    _title: 'UMS Cardfile Series'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_series'
+  requirements:
+    _permission: 'access ums_cardfile'
+
+ums_cardfile.series.delete:
+  path: '/cardfile/series/delete/{sid}'
+  defaults:
+    _title: 'UMS Cardfile Delete Series'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_delete_series'
+    sid: ''
   requirements:
     _permission: 'access ums_cardfile'

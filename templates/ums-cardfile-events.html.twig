@@ -21,11 +21,12 @@
 		<a href="/cardfile/series" class="align-left base-margin-right">Edit Series List</a>
 	</p>
 	<p>
-		<br/>
-		<br/>
-		<a href="/cardfile/events/all" class="align-left base-margin-right">VIEW ALL YEARS</a>
+    {% if year > 0 %}
+      <br/>
+      <br/>
+      <a href="/cardfile/events/all" class="align-left base-margin-right">VIEW ALL YEARS</a>
+    {% endif %}
 	</p>
-
 </div>
 
 {% if (year > 0) or (year == 'all') %}
@@ -120,23 +121,3 @@
     <p>No Events defined</p>
   {% endif %}
 {% endif %}
-
-
-{# $rows = array();
-		      $result = db_query('SELECT YEAR(date) AS event_year, COUNT(eid) AS event_count FROM ums_events GROUP BY event_year ORDER BY event_year');
-		      while ($row = db_fetch_object($result)) {
-		        $row = array(
-		          'Year' => l($row->event_year, 'cardfile/events/' . $row->event_year),
-		          '# of Events' => $row->event_count,
-		        );
-		        $rows[] = $row;
-		        if (empty($header)) {
-		          $header = array_keys($row);
-		        }
-		      }
-		      if (count($rows)) {
-		        $output .= '<p>[ ' . l('VIEW ALL YEARS', 'cardfile/events/all') . ' ]</p>';
-		        $output .= theme('table', $header, $rows);
-		      } else {
-		        $output .= "<p>No Events defined</p>";
-		      } #}

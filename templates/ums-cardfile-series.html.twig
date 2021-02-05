@@ -1,0 +1,35 @@
+{{ attach_library('ums_cardfile/ums-cardfile-functions') }}
+
+<h1>
+	<span>UMS Cardfile Series</span>
+</h1>
+
+
+{{ series_add_form }}
+
+<table id="ums-series-table">
+	<thead>
+		<tr>
+			<th role="columnheader">Series Name</th>
+			<th role="columnheader">DELETE?</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for row in series %}
+			<tr>
+				<td>
+					{{ row.name }}
+				</td>
+				<td>
+          <a href="/cardfile/series/delete/{{ row.id }}" class="button delete cardfile-series" data-name="{{ row.name }}">Delete</a>
+				</td>
+			</tr>
+		{% endfor %}
+
+	</tbody>
+</table>
+<div class="l-overflow-clear">
+	<p>
+		<a href="/cardfile/events" class="align-left base-margin-right">UMS Events List</a>
+</p>
+</div>

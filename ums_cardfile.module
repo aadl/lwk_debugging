@@ -85,6 +85,13 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
         'event_add_performance_form' => NULL,
       ]
     ],
+
+    'ums-cardfile-series' => [
+      'variables' => [
+        'series' => NULL,
+        'series_add_form' => NULL,
+      ]
+    ],
   ];
 }
 
