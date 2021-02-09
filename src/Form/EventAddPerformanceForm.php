@@ -24,21 +24,16 @@ class EventAddPerformanceForm extends FormBase {
       '#title' => t('Add Repertoire Performance'),
       //'#description' => t($desc_html),
       '#open' => FALSE, // Controls the HTML5 'open' attribute. Defaults to FALSE.
+      '#attributes' => [
+        'style' => 'width: 400px;'
+      ],
     ];
 
-    // $form = array(
-    //   '#prefix' => '<fieldset class="collapsible collapsed"><legend>Add Repertoire Performance</legend><div class="container-inline">',
-    //   '#suffix' => '</div></fieldset>',
-    // );
-    $form['collapsible'] = [
-      '#type' => 'value',
-      '#value' => $eid,
-    ];
     $form['collapsible']['search'] = [
       '#type' => 'textfield',
       '#title' => t('Search for existing repertoire'),
-      '#size' => 32,
-      '#maxlength' => 32,
+      '#size' => 150,
+      '#maxlength' => 150,
     ];
     $form['collapsible']['submit'] = [
       '#type' => 'submit',
