@@ -131,7 +131,6 @@ class DefaultController extends ControllerBase {
         $arrows = (!empty($old_artist_data) && empty($artist[$field]) ? '>>>>' : '');
         $merge_table[] = ["$field", $old_artist_data, $arrows, $artist[$field]];
       }
-      dblog('cf_artists_merge: merge_table =', $merge_table);
 
       return [
         '#theme' => 'ums-cardfile-merge-artists',
