@@ -107,15 +107,35 @@ class ArtistForm extends FormBase {
     ];
 
     if ($artist['aid']) {
-      $form['merge_id'] = [
-        '#type' => 'textfield',
-        '#title' => $this->t('Merge this artist into Artist ID'),
-        '#size' => 8,
-        '#maxlength' => 8,
-        '#description' => $this->t("Enter another Artist ID number to merge this artist information into that artist record"),
-        '#prefix' => "<fieldset class=\"collapsible collapsed\"><legend>MERGE ARTIST</legend>",
-        '#suffix' => "</fieldset>",
+        // $form['merge_id'] = [
+        //   '#type' => 'textfield',
+        //   '#title' => $this->t('Merge this artist into Artist ID'),
+        //   '#size' => 8,
+        //   '#maxlength' => 8,
+        //   '#description' => $this->t("Enter another Artist ID number to merge this artist information into that artist record"),
+        //   '#prefix' => "<fieldset class=\"collapsible collapsed\"><legend>MERGE ARTIST</legend>",
+        //   '#suffix' => "</fieldset>",
+        // ];
+
+      // $form['collapsible']['eid'] = [
+      //   '#type' => 'value',
+      //   '#value' => $eid,
+      // ];
+
+      $form['collapsible'] = [
+        '#type' => 'details',
+       '#title' => t('MERGE ARTIST'),
+        //'#description' => t($desc_html),
+        '#open' => FALSE, // Controls the HTML5 'open' attribute. Defaults to FALSE.
       ];
+
+      $form['collapsible']['merge_id'] = [
+          '#type' => 'textfield',
+          '#title' => t('Merge this artist into Artist ID'),
+          '#description' => t('Enter another Artist ID number to merge this artist information into that artist record'),
+          '#size' => 32,
+          '#maxlength' => 32,
+        ];
     }
 
     $form['submit'] = [
@@ -134,24 +154,28 @@ class ArtistForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     dblog('submitForm: ENTERED');
     //Check for merge ID
-  
-    if ($form_state->getValue('aid') && $form_state->getValue('merge_id')) {
-      if ($_REQUEST['destination']) {
-        unset($_REQUEST['destination']);
-      }
-      $form_state->setRedirect('ums_cardfile.artists.merge',
-                                ['oldid' => $form_state->getValue('aid'), //, ['aid' => $aid]);
-                                 'mergeid' => $form_state->getValue('merge_id')]); //, ['aid' => $aid]);
+    $values_array = $form_state->getValues();   //['collapsible']['merge_id']
+    $merge_id = $values_array['merge_id'];
+    $aid = $values_array['aid'];
 
+    dblog('ArtistForm:: submitForm - merge_id ===>>> aid =',$merge_id, $aid);
+
+    if ($form_state->getValue('aid') && $merge_id) {
+      // if ($_REQUEST['destination']) {
+      //   unset($_REQUEST['destination']);
+      // }
+      $form_state->setRedirect('ums_cardfile.artists.merge',
+                                ['old_id' => $aid, //, ['aid' => $aid]);
+                                 'merge_id' => $merge_id]); //, ['aid' => $aid]);
       return; 
     }
 
-    $artist = [
-      'name'      => $form_state->getValue('name'),
-      'alias'     => $form_state->getValue('alias'),
-      'notes'     => $form_state->getValue('notes'),
-      'photo_nid' => $form_state->getValue('photo_nid')
-    ];
+    $artist = [];
+    $artist['name'] = $form_state['values']['name'];
+    $artist['alias'] = $form_state['values']['alias'];
+    $artist['notes'] = $form_state['values']['notes'];
+    $artist['photo_nid'] = $form_state['values']['photo_nid'];
+
     // Convert Name to NamePlain for matching
     $artist['name_plain'] = ums_cardfile_normalize($artist['name']);
 

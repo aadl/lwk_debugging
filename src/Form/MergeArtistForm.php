@@ -11,44 +11,32 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
-class EventAddPerformanceForm extends FormBase {
+class MergeArtistForm extends FormBase {
   public function getFormId() {
     return 'event_add_performance_form';
   }
 
-  public function buildForm(array $form, FormStateInterface $form_state, $eid = 0) {
-    dblog('EventAddPerformanceForm buildForm ENTERED');
+  public function buildForm(array $form, FormStateInterface $form_state, $aid = 0) {
+    dblog('MergeArtistForm buildForm ENTERED');
 
     $form['collapsible'] = [
       '#type' => 'details',
-      '#title' => t('Add Repertoire Performance'),
+      '#title' => t('MERGE ARTIST'),
       //'#description' => t($desc_html),
       '#open' => FALSE, // Controls the HTML5 'open' attribute. Defaults to FALSE.
     ];
 
-    // $form = array(
-    //   '#prefix' => '<fieldset class="collapsible collapsed"><legend>Add Repertoire Performance</legend><div class="container-inline">',
-    //   '#suffix' => '</div></fieldset>',
-    // );
-    $form['collapsible'] = [
-      '#type' => 'value',
-      '#value' => $eid,
-    ];
-    $form['collapsible']['search'] = [
+    $form['collapsible']['search'] = array(
       '#type' => 'textfield',
-      '#title' => t('Search for existing repertoire'),
+      '#title' => t('Merge this artist into Artist ID'),
+      '#description' => t('Enter another Artist ID number to merge this artist information into that artist record'),
       '#size' => 32,
       '#maxlength' => 32,
-    ];
-    $form['collapsible']['submit'] = [
+    );
+    $form['collapsible']['submit'] = array(
       '#type' => 'submit',
       '#value' => t('Search'),
-    ];
-    $form['collapsible']['addNew'] = [
-      '#type' => 'button',
-      '#prefix' => '<strong> - OR - </strong>',
-     '#value' => ums_cardfile_create_link('ADD NEW REPERTOIRE', 'cardfile/work/edit', ['query' => ['eid' => $eid]]),
-    ];
+    );
 
     return $form;
   }
@@ -57,7 +45,7 @@ class EventAddPerformanceForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('EventAddPerformanceForm: ENTERED');
+    dblog('MergeArtistForm: ENTERED');
     
     $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/searchadd/event/' . $form_state['values']['eid'] . '/work/' . $form_state['values']['search']);
     return new RedirectResponse($drupal_goto_url);

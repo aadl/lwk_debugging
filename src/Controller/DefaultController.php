@@ -104,6 +104,49 @@ class DefaultController extends ControllerBase {
     ];
   }
 
+  public function cf_artists_merge($old_id, $merge_id, $confirm = '') {
+    if ($confirm) {
+      _ums_cardfile_merge_artist($old_id, $merge_id);
+      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/artist' . $merge_id);
+      return new RedirectResponse($drupal_goto_url);
+    }
+
+    $old_artist = _ums_cardfile_get_artist($old_id);
+    $artist = _ums_cardfile_get_artist($merge_id);
+
+    dblog('ISSET: old_artist->performances :', isset($old_artist['performances']));
+    dblog('ISSET: old_artist->works        :', isset($old_artist['works']));
+    dblog('ISSET: artist->performances     :', isset($artist['performances']));
+    dblog('ISSET: artist->works            :', isset($artist['works']));
+
+    if ($old_artist['aid'] && $artist['aid']) {
+      $old_artist['performances'] = (isset($old_artist['performances'])) ? count($old_artist['performances']) : 0;
+      $old_artist['works'] = (isset($old_artist['works'])) ? count($old_artist['works']) : 0;
+
+      $artist['performances'] = (isset($artist['performances'])) ? count($artist['performances']) : 0;
+      $artist['works'] = (isset($artist['works'])) ? count($artist['works']) : 0;
+ 
+      $merge_table = [];
+      foreach ($old_artist as $field => $old_artist_data) {
+        $arrows = (!empty($old_artist_data) && empty($artist[$field]) ? '>>>>' : '');
+        $merge_table[] = ["$field", $old_artist_data, $arrows, $artist[$field]];
+      }
+      dblog('cf_artists_merge: merge_table =', $merge_table);
+
+      return [
+        '#theme' => 'ums-cardfile-merge-artists',
+        '#merge_data' => $merge_table,
+        '#cache' => [ 'max-age' => 0 ]
+      ];
+
+    } else {
+      drupal_set_message('Invalid Artist IDs', 'error');
+      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/artists');
+      return new RedirectResponse($drupal_goto_url);
+    }
+    return [];
+  }
+
   /**
    * cf_venues - handle venues display
    */
@@ -199,7 +242,8 @@ class DefaultController extends ControllerBase {
       }
     }
     else {
-      $event_years = $db->query('SELECT YEAR(date) AS event_year, COUNT(eid) AS event_count FROM ums_events GROUP BY event_year ORDER BY event_year')->fetchAll();
+     dblog('cf_events year NULL');
+     $event_years = $db->query('SELECT YEAR(date) AS event_year, COUNT(eid) AS event_count FROM ums_events GROUP BY event_year ORDER BY event_year')->fetchAll();
       foreach ($event_years as $e_year) {
         $row = [
           'year' => $e_year->event_year,
@@ -274,7 +318,7 @@ class DefaultController extends ControllerBase {
       return [
         '#theme' => 'ums-cardfile-event',
         '#event' => $event,
-        '#event_add_performance_form' => \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\EventAddPerformanceForm'),
+        '#event_add_performance_form' => \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\EventAddPerformanceForm', $event['eid']),
         '#cache' => [ 'max-age' => 0 ]
       ];
     } else {
@@ -344,20 +388,6 @@ class DefaultController extends ControllerBase {
     $per_page = 50;
     $offset = $per_page * $page;
 
-    // if ($filter) {
-    //   $result = pager_query('SELECT wid FROM ums_works WHERE title LIKE "%s%%" ORDER BY title', $per_page, 0, NULL, $filter);
-    // } else {
-    //   $result = pager_query('SELECT wid FROM ums_works ORDER BY title', $per_page);
-    // }
-
-    // $query = $db->select('ums_works', 'works')
-    //   ->fields('works', ['aid','title','alternate','notes', 'youtube_url']);
-
-    // if (NULL != $filter) {
-    //   $query->condition('title', $db->escapeLike($filter) . "%", 'like');
-    // }
-    // $query->orderBy('title');
-
     $query = $db->select('ums_works', 'ums_works')
       ->fields('ums_works', ['wid']);
 
@@ -392,7 +422,7 @@ class DefaultController extends ControllerBase {
         }
 
         $row = [  
-          'id' => $work_details['wid'],
+          'wid' => $work_details['wid'],
           'creators' => '<strong>' . $work_details['title'] . '</strong>' . $creators,
           'alternate' => $work_details['alternate'],
           'notes' => strlen($work_details['notes']) > 30 ? substr($work_details['notes'], 0, 30) . '...' : $work_details['notes'],
@@ -421,16 +451,18 @@ class DefaultController extends ControllerBase {
     dblog('cf_work: ENTERED, $wid = ' . $wid);
     $db = \Drupal::database();
 
-    $work = _ums_cardfile_get_work($wid);
+    $work = _ums_cardfile_get_work($wid);    
+    dblog('cf_work: ENTERED, $work = ',$work);
     if ($work['wid']) {
+      $work_add_artist_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\WorkAddArtistForm', $work['wid']);
       return [
         '#theme' => 'ums-cardfile-work',
         '#work' => $work,
-
+        '#work_add_artist_form' => $work_add_artist_form,
         '#cache' => [ 'max-age' => 0 ]
       ];
     } else {
-      \Drupal::messenger()->addMessage("Unable to find work with ID:$wid");
+      \Drupal::messenger()->addMessage("Repertoire not found",'error', TRUE);
       $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/works');
       return new RedirectResponse($drupal_goto_url);
     }

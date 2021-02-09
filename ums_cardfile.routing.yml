@@ -51,6 +51,16 @@ ums_cardfile.artist.delete:
   requirements:
     _permission: 'access ums_cardfile'
 
+ums_cardfile.artists.merge:
+  path: '/cardfile/artists/merge/{old_id}/{merge_id}'
+  defaults:
+    _title: 'UMS Cardfile Merge Artist'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_artists_merge'
+    old_id: ''
+    merge_id: ''
+  requirements:
+    _permission: 'access ums_cardfile'
+
 # ---------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------
 ums_cardfile.venues:

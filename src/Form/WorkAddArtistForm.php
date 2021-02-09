@@ -18,64 +18,73 @@ class WorkAddArtistForm extends FormBase {
 
   public function buildForm(array $form, FormStateInterface $form_state, $wid = 0) {
     dblog('WorkAddArtistForm: buildForm ENTERED - WHAT IS wid', $wid);
+    $db = \Drupal::database();
 
   // get work roles
-    $work_role_options = array();
-    $res = db_query("SELECT * FROM ums_work_roles ORDER BY name");
-    while ($work_role = db_fetch_object($res)) {
+    $work_role_options = [];
+    $work_roles = $db->query("SELECT * FROM ums_work_roles ORDER BY name");
+    foreach ($work_roles as $work_role) {
       $work_role_options[$work_role->wrid] = $work_role->name;
     }
 
-    $form = array(
+
+
+    $form = [
       '#prefix' => '<fieldset class="collapsible collapsed"><legend>Add Creator</legend>' .
                   '<table><tr><th>Select Role:</th><th>Select Artist:</th></tr><tr>',
       '#suffix' => '</tr></table></fieldset>',
-    );
-    $form['wid'] = array(
+    ];
+    $form['wid'] = [
       '#type' => 'value',
       '#value' => $wid,
-    );
-    $form['role'] = array(
+    ];
+    $form['role'] = [
       '#prefix' => '<td><div class="container-inline">',
       '#suffix' => '</div></td>',
-    );
-    $form['role']['wrid'] = array(
+    ];
+
+    $current_path = \Drupal::service('path.current')->getPath();
+
+    $form['role']['wrid'] = [
       '#type' => 'select',
       '#title' => 'Role',
       '#options' => $work_role_options,
-      '#description' => '[' . l('Edit Creator Roles', 'cardfile/workroles', array('query' => array('return' => $_GET['q']))) . ']',
-    );
-    $form['search'] = array(
+      '#description' => '[' .ums_cardfile_create_link('Edit Creator Roles', 'cardfile/workroles', ['query' => ['return' => $current_path]]) . ']',
+    ];
+    $form['search'] = [
       '#prefix' => '<td><div class="container-inline">',
       '#suffix' => '</div><p><strong>- OR -</strong></p>',
-    );
-    $form['search']['search_text'] = array(
+    ];
+    $form['search']['search_text'] = [
       '#type' => 'textfield',
       '#title' => t('Search for existing artist'),
       '#size' => 32,
       '#maxlength' => 32,
-    );
-    $form['search']['submit_search'] = array(
+    ];
+    $form['search']['submit_search'] = [
       '#type' => 'submit',
       '#value' => t('Search'),
-    );
-    $form['recent'] = array(
+    ];
+    $form['recent'] = [
       '#prefix' => '<div class="container-inline">',
       '#suffix' => '</div><p><strong>- OR -</strong></p>',
-    );
-    $form['recent']['recent_aid'] = array(
+    ];
+    $form['recent']['recent_aid'] = [
       '#type' => 'select',
       '#title' => 'Recent artists',
-      '#options' => ums_cardfile_recent_artists(),
+      '#options' => ums_cardfile_recent_artists_d8(),
       '#description' => 'Select a recent artist',
-    );
-    $form['recent']['submit_recent'] = array(
+    ];
+    $form['recent']['submit_recent'] = [
       '#type' => 'submit',
       '#value' => t('Use This Artist'),
-    );
-    $form['addNew'] = array(
-      '#value' => l('ADD NEW ARTIST', 'cardfile/artist/edit', array('query' => array('wid' => $wid))) . '</p></td>',
-    );
+    ];
+    dblog('work_add_artist_form', ['query' => ['wid' => $wid]]);
+    $form['recent']['addNew'] = [
+      // '#value' => ums_cardfile_create_link('ADD NEW ARTIST', 'cardfile/artist/edit', ['query' => ['wid' => $wid)]]) . '</p></td>'
+      '#value' => ums_cardfile_create_link('ADD NEW ARTIST', 'cardfile/artist/edit', ['query' => ['wid' => $wid]]) . '</p></td>'
+    ];
+    dblog('work_add_artist_form - RETURNING $form:', $form);
     return $form;
   }
 
@@ -87,10 +96,10 @@ class WorkAddArtistForm extends FormBase {
  
     if ($form_state['clicked_button']['#parents'][0] == 'submit_recent') {
       $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/join/work/' . $form_state['values']['wid'] . '/artist/' . $form_state['values']['recent_aid'],
-                                                    array('wrid' => $form_state['values']['wrid']));
+                                                    ['wrid' => $form_state['values']['wrid']]);
     } else {
       $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/searchadd/work/' . $form_state['values']['wid'] . '/artist/' . $form_state['values']['search_text'],
-                                                    array('wrid' => $form_state['values']['wrid']));
+                                                    ['wrid' => $form_state['values']['wrid']]);
     }
     return new RedirectResponse($drupal_goto_url);
   }
