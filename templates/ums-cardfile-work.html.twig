@@ -22,7 +22,7 @@
   {% if work.artists|length > 0 %}
     <h2>Creators</h2>
     {% for work_artist in work.artists %}
-      <p><strong>work_artist.role</strong> <a href="/cardfile/artist/{{ work_artist.aid }}">{{ work_artist.name }}</a>
+      <p><strong>{{ work_artist.role }}</strong> <a href="/cardfile/artist/{{ work_artist.aid }}">{{ work_artist.name }}</a>
         [<a href="/cardfile/work/delete_artist/{{ wid }}/{{ work_artist.aid }}">X</a>]</p>
     {% endfor %}
   {% endif %}
