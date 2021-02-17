@@ -137,11 +137,12 @@ function dblog(...$things_to_log) {
   error_log($complete_line, 3, "LWKLWK.log");
 }
 
-function ums_cardfile_create_link($link_text, $url) {
-  dblog('ums_cardfile_create_link entered, link_text. url =', $link_text, $url);
-  $url = Url::fromUri('internal:/' . $url);
-  $project_link = Link::fromTextAndUrl(t($link_text), $url);
-  return $project_link->toString();
+function ums_cardfile_create_link($link_text, $url, $url_options = []) {
+  dblog('ums_cardfile_create_link ENTERED: link_text, url, orl_options:', $link_text, $url, $url_options);
+  $url = Url::fromUri('internal:/' . $url, $url_options);
+  $link = Link::fromTextAndUrl(t($link_text), $url);
+  dblog('ums_cardfile_create_link RETURNING, link =', $link->toString());
+  return $link->toString();
 }
 
 function ums_cardfile_save($table_name, $fields_array, $field_key) {
