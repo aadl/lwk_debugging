@@ -6,14 +6,6 @@ ums_cardfile.home:
   requirements:
     _permission: 'access ums_cardfile'
 
-ums_cardfile.searchadd:
-  path: '/cardfile/searchadd'
-  defaults:
-    _title: 'UMS Cardfile Search Add'
-    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_search_add'
-  requirements:
-    _permission: 'access ums_cardfile'
-# ---------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------
 ums_cardfile.artists:
   path: '/cardfile/artists/{filter}'
@@ -62,7 +54,6 @@ ums_cardfile.artists.merge:
     _permission: 'access ums_cardfile'
 
 # ---------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------
 ums_cardfile.venues:
   path: '/cardfile/venues/{filter}'
   defaults:
@@ -81,7 +72,6 @@ ums_cardfile.venue.delete:
   requirements:
     _permission: 'access ums_cardfile'
 
-# ---------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------
 ums_cardfile.events:
   path: '/cardfile/events/{year}'
@@ -120,7 +110,6 @@ ums_cardfile.event.delete:
     _permission: 'access ums_cardfile'
 
 # ---------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------
 ums_cardfile.series:
   path: '/cardfile/series'
   defaults:
@@ -138,7 +127,6 @@ ums_cardfile.series.delete:
   requirements:
     _permission: 'access ums_cardfile'
 
-# ---------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------
 ums_cardfile.works:
   path: '/cardfile/works/{filter}'
@@ -172,6 +160,24 @@ ums_cardfile.work.delete:
   defaults:
     _title: 'UMS Cardfile Delete Work'
     _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_delete_work'
+    wid: ''
+  requirements:
+    _permission: 'access ums_cardfile'
+
+# ---------------------------------------------------------------------------------------------
+ums_cardfile.searchadd:
+  path: '/cardfile/searchadd/{source_type}/{source_id}/{type}/{search}'
+  defaults:
+    _title: 'UMS Cardfile Search Add'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_searchadd'
+  requirements:
+    _permission: 'access ums_cardfile'
+
+ums_cardfile.join:
+  path: '/cardfile/join/{wid}'
+  defaults:
+    _title: 'UMS Cardfile Delete Work'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_join'
     wid: ''
   requirements:
     _permission: 'access ums_cardfile'

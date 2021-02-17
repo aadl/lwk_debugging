@@ -27,62 +27,68 @@ class WorkAddArtistForm extends FormBase {
       $work_role_options[$work_role->wrid] = $work_role->name;
     }
 
+    $form['collapsible'] = [
+      '#type' => 'details',
+      '#title' => t('Add Creator'),
+        //'#description' => t($desc_html),
+        '#open' => FALSE, // Controls the HTML5 'open' attribute. Defaults to FALSE.
+        '#prefix' => '<div id="LWK" style="width:1000px">',
+        '#suffix' => '</div>'
+      ];
 
 
-    $form = [
-      '#prefix' => '<fieldset class="collapsible collapsed"><legend>Add Creator</legend>' .
-                  '<table><tr><th>Select Role:</th><th>Select Artist:</th></tr><tr>',
+    $form['collapsible']['table'] = [
+      '#prefix' => '<table><tr><th>Select Role:</th><th>Select Artist:</th></tr><tr>',
       '#suffix' => '</tr></table></fieldset>',
     ];
-    $form['wid'] = [
+    $form['collapsible']['table']['wid'] = [
       '#type' => 'value',
       '#value' => $wid,
     ];
-    $form['role'] = [
+    $form['collapsible']['table']['role'] = [
       '#prefix' => '<td><div class="container-inline">',
       '#suffix' => '</div></td>',
     ];
 
     $current_path = \Drupal::service('path.current')->getPath();
 
-    $form['role']['wrid'] = [
+    $form['collapsible']['table']['role']['wrid'] = [
       '#type' => 'select',
       '#title' => 'Role',
       '#options' => $work_role_options,
       '#description' => '[' .ums_cardfile_create_link('Edit Creator Roles', 'cardfile/workroles', ['query' => ['return' => $current_path]]) . ']',
     ];
-    $form['search'] = [
+    $form['collapsible']['table']['search'] = [
       '#prefix' => '<td><div class="container-inline">',
       '#suffix' => '</div><p><strong>- OR -</strong></p>',
     ];
-    $form['search']['search_text'] = [
+    $form['collapsible']['table']['search']['search_text'] = [
       '#type' => 'textfield',
       '#title' => t('Search for existing artist'),
       '#size' => 32,
       '#maxlength' => 32,
     ];
-    $form['search']['submit_search'] = [
+    $form['collapsible']['table']['search']['submit_search'] = [
       '#type' => 'submit',
       '#value' => t('Search'),
     ];
-    $form['recent'] = [
+    $form['collapsible']['table']['recent'] = [
       '#prefix' => '<div class="container-inline">',
       '#suffix' => '</div><p><strong>- OR -</strong></p>',
     ];
-    $form['recent']['recent_aid'] = [
+    $form['collapsible']['table']['recent']['recent_aid'] = [
       '#type' => 'select',
       '#title' => 'Recent artists',
       '#options' => ums_cardfile_recent_artists_d8(),
       '#description' => 'Select a recent artist',
     ];
-    $form['recent']['submit_recent'] = [
+    $form['collapsible']['table']['recent']['submit_recent'] = [
       '#type' => 'submit',
       '#value' => t('Use This Artist'),
     ];
     dblog('work_add_artist_form', ['query' => ['wid' => $wid]]);
-    $form['recent']['addNew'] = [
-      // '#value' => ums_cardfile_create_link('ADD NEW ARTIST', 'cardfile/artist/edit', ['query' => ['wid' => $wid)]]) . '</p></td>'
-      '#value' => ums_cardfile_create_link('ADD NEW ARTIST', 'cardfile/artist/edit', ['query' => ['wid' => $wid]]) . '</p></td>'
+    $form['collapsible']['table']['addNew'] = [
+      '#suffix' => ums_cardfile_create_link('ADD NEW ARTIST', 'cardfile/artist/edit', ['query' => ['wid' => $wid]]) . '</p></td>'
     ];
     dblog('work_add_artist_form - RETURNING $form:', $form);
     return $form;
@@ -101,6 +107,7 @@ class WorkAddArtistForm extends FormBase {
       $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/searchadd/work/' . $form_state['values']['wid'] . '/artist/' . $form_state['values']['search_text'],
                                                     ['wrid' => $form_state['values']['wrid']]);
     }
+    dblog('WorkAddAtistForm:submitForm: $drupal_goto_url = [' . $drupal_goto_url . ']');
     return new RedirectResponse($drupal_goto_url);
   }
 }
