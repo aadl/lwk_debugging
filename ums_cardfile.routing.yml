@@ -25,6 +25,7 @@ ums_cardfile.artist:
   requirements:
     _permission: 'access content'
 
+    # FORM
 ums_cardfile.artist.edit:
   path: '/cardfile/artist/edit/{aid}'
   defaults:
@@ -34,6 +35,7 @@ ums_cardfile.artist.edit:
   requirements:
     _permission: 'access ums_cardfile'
 
+    # D6 FORM - THIS IS HANDLED in IN THE VENUES FORM WITH FRONT-END JS delete confirmation
 ums_cardfile.artist.delete:
   path: '/cardfile/artist/delete/{aid}'
   defaults:
@@ -44,12 +46,13 @@ ums_cardfile.artist.delete:
     _permission: 'access ums_cardfile'
 
 ums_cardfile.artists.merge:
-  path: '/cardfile/artists/merge/{old_id}/{merge_id}'
+  path: '/cardfile/artists/merge/{old_id}/{merge_id}/{confirm}'
   defaults:
     _title: 'UMS Cardfile Merge Artist'
     _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_artists_merge'
     old_id: ''
     merge_id: ''
+    confirm: ''
   requirements:
     _permission: 'access ums_cardfile'
 
@@ -63,6 +66,7 @@ ums_cardfile.venues:
   requirements:
     _permission: 'access ums_cardfile'
 
+    # D6  - THIS IS HANDLED in IN THE VENUES FORM WITH FRONT-END JS delete confirmation
 ums_cardfile.venue.delete:
   path: '/cardfile/venue/delete/{vid}'
   defaults:
@@ -100,6 +104,7 @@ ums_cardfile.event.edit:
   requirements:
     _permission: 'access ums_cardfile'
 
+# D6 FORM - THIS IS HANDLED in IN THE VENUES FORM WITH FRONT-END JS delete confirmation
 ums_cardfile.event.delete:
   path: '/cardfile/event/delete/{eid}'
   defaults:
@@ -108,6 +113,15 @@ ums_cardfile.event.delete:
     eid: ''
   requirements:
     _permission: 'access ums_cardfile'
+
+# $items['cardfile/event/reorder'] = array(
+#     'title' => 'Reorder Event Performances',
+#     'page callback' => 'drupal_get_form',
+#     'page arguments' => array('ums_cardfile_event_reorder_form', 3),
+#     'access arguments' => array('edit ums card file records'),
+#     'type' => MENU_NORMAL_ITEM
+#   );
+
 
 # ---------------------------------------------------------------------------------------------
 ums_cardfile.series:
@@ -164,6 +178,63 @@ ums_cardfile.work.delete:
   requirements:
     _permission: 'access ums_cardfile'
 
+# $items['cardfile/work/delete_artist'] = array(
+#     'title' => t('Delete Creator'),
+#     'page callback' => 'drupal_get_form',
+#     'page arguments' => array('ums_cardfile_work_delete_artist_confirm', 3, 4),
+#     'access arguments' => array('edit ums card file records'),
+#     'type' => MENU_CALLBACK,
+#   );
+
+# ---------------------------------------------------------------------------------------------
+ums_cardfile.performance:
+  path: '/cardfile/performance/{pid}'
+  defaults:
+    _title: 'UMS Cardfile Performance'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_performance'
+    pid: ''
+  requirements:
+    _permission: 'access ums_cardfile'
+
+ums_cardfile.performance.edit:
+  path: '/cardfile/performance/edit/{pid}'
+  defaults:
+    _form: '\Drupal\ums_cardfile\Form\PerformanceForm'
+    _title: 'Beta UMS Edit Performance'
+    pid: ''
+  requirements:
+    _permission: 'access ums_cardfile'
+
+ums_cardfile.performance.delete:
+  path: '/cardfile/work/performance/{pid}'
+  defaults:
+    _title: 'Delete UMS Performance'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_delete_performance'
+    pid: ''
+  requirements:
+    _permission: 'access ums_cardfile'
+
+ums_cardfile.performance.delete_artist:
+  path: '/cardfile/work/performance/delete_artist/{aid}/{pid}'
+  defaults:
+    _title: 'Delete Performance Artist'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_performance_delete_artist'
+    aid: ''
+    pid: ''
+  requirements:
+    _permission: 'access ums_cardfile'
+
+  # $items['cardfile/performance/delete_artist'] = array(
+  #   'title' => t('Delete Performance Artist'),
+  #   'page callback' => 'drupal_get_form',
+  #   'page arguments' => array('ums_cardfile_performance_delete_artist_confirm', 3, 4),
+  #   'access arguments' => array('edit ums card file records'),
+  #   'type' => MENU_CALLBACK,
+  # );
+
+
+
+
 # ---------------------------------------------------------------------------------------------
 ums_cardfile.searchadd:
   path: '/cardfile/searchadd/{source_type}/{source_id}/{type}/{search}'
@@ -174,10 +245,13 @@ ums_cardfile.searchadd:
     _permission: 'access ums_cardfile'
 
 ums_cardfile.join:
-  path: '/cardfile/join/{wid}'
+  path: '/cardfile/join/{type1}/{id1}/{type2}/{id2}/{options}'
   defaults:
     _title: 'UMS Cardfile Delete Work'
     _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_join'
-    wid: ''
+    type1: ''
+    id1: ''
+    type2: ''
+    id2: ''
   requirements:
     _permission: 'access ums_cardfile'

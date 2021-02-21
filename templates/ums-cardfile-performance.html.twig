@@ -1,0 +1,59 @@
+<div class="l-overflow-clear">
+
+  <h1>
+    <span>UMS Repertoire Performance</span>
+  </h1>
+
+  <p>Performance #{{ performance.weight}} at <strong>Event:</strong> {{ performance.event.date }}  at {{ performance.event.venue }}.</p>
+
+  {% if performance.notes %}
+    <p>
+      <strong>Notes:</strong> {{ performance.notes }}
+    </p>
+  {% endif %}
+
+  {% if performance.youtube_url %}
+    <p>
+      <strong>YouTube URL(s):</strong> {{ performance.youtube_url }}
+    </p>
+  {% endif %}
+
+  <p>[
+    <a href="/cardfile/performance/edit/{{ performance.pid }}">edit performance notes and order</a>
+  ]</p>
+
+  <h3>Repertoire:
+  <a href="/cardfile/work/{{ performance.work.wid }}">{{ performance.work.title }}</a>
+  </h3>
+
+  {% if performance.work.artists | length > 0 %}
+    <p>
+      {% for artist in performance.work.artists %}
+        <a href="/cardfile/artist/{{ artist.aid }}">{{ artist.name }}</a>({{artist.role }})<br/>
+      {% endfor %}
+    </p>
+  {% endif %}
+
+  {{ work_add_artist_form }}
+
+
+  {% if performance.artists | length > 0 %}
+    <h3>Performance Artists</h3>
+      {% for perf_artist in performance.artists %}
+        <p>
+          <strong>{{ perf_artist.role }}:</strong>
+          <a href="cardfile/artist/{{ perf_artist.aid }}">{{ perf_artist.name }}</a>
+          [<a href="cardfile/performance/delete_artist/{{ performance.pid }}/{{perf_artist.aid }}">X</a>]
+        </p>
+      {% endfor %}
+    </p>
+  {% endif %}
+
+  {{ performance_add_artist_form }}
+  {{ performance_copy_artist_form }}
+
+  <a href="cardfile/event/{{ performance.eid }}">Return to Event</a>
+
+</div>
+
+

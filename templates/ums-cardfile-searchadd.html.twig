@@ -2,45 +2,43 @@
   Adding a {{ heading_text | raw }}
 </h2>
 
-{# <div class="l-overflow-clear">
-	<p>
-    <a href="/cardfile/artist/edit/{{ artist.aid }}" class="align-left base-margin-right">edit artist info</a>
-	</p>
-</div>
-<div class="l-overflow-clear">
-  {% if artist.alias %}
-    <p>Alias:  {{ artist.alias }}</p>
-  {% endif %}
-  {% if artist.notes %}
-    <p>Notes: {{ artist.notes }}</p>
-  {% endif %}
-  {% if artist.photos %}
-    <p><strong>View Photos:</strong>{{ artist.photos }}</p>
-  {% endif %}
+{% if copy_performance_flag %}
+  <p>Copy Repertoire Performances from Event {{ source_event.date }} at {{ source_event.venue }}?</p>
+	  <ul>
+      {% for source_perf in source_event.performances %}  
+        <li>{{ source_perf.title }}</li>
+      {% endfor %}
+	  </ul>
+  <p>
+    <a href="cardfile/join/{{ source_type }}/{{ source_id }}/source_event/{{ source_eid }}">COPY PERFORMANCES TO THIS EVENT</a>
+  </p>
+{% else %}
+  <p>Searching for {{ search_terms_list }} </p>
 
-	<h2>Repertoire as a Creator:</h2>
-  {% if artist.works|length > 0 %}
-    {% for work in artist.works %}
-      <p>Composer: <a href="cardfile/work/{{ work.wid }}">{{work.title}}</a></p>
-    {% endfor %}</ul>
-  {% else %}
-    <p>No repertoire as a creator.</p>
-  {% endif %}
-		
-  <h2>Repertoire as a Performer:</h2>
-
-  {% if artist.performances|length > 0 %}
-    {% for performance in artist.performances %}
-      <p>{{ performance.role }}:
-        <a href="cardfile/performance/{{ performance.pid }}">{{ performance.work.title }}</a>,
-        <a href="cardfile/event/{{ performance.event.eid }}">{{ performance.event.date | date("m/d/Y") }}, {{ performance.event.date | date("H:i") }}</a>
-        at  {{ performance.event.venue }}.
+  {% if type = 'work' %}
+    {% if works | length > 0 %}   {# WORKS #}
+      {# TABLE $output .= theme('table', array_keys(reset($works)), $works); #}
+      <p>
+        <strong>- OR -</strong>
       </p>
-    {% endfor %}
-  {% else %}
-    <p>No repertoire as a performer.</p>
-  {% endif %}
+    {% else %}
+      <p>No existing repertoire matches found</p>
+    {% endif %}
+    <p>
+      <a href="cardfile/work/edit&eid={{ source_id }}?title= {{ search }}">ADD NEW REPERTOIRE</a>
+    </p)
+  {% elseif type = 'artist' %}
+    {% if artists | length > 0 %} {# ARTISTS #}
+      {# TABLE $output .= theme('table', array_keys(reset($works)), $artists); #}
+      <p>
+        <strong>- OR -</strong>
+      </p>
+    {% else %}
+      <p>No existing ARTISTS matches found</p>
+    {% endif %}
+    <p>
+      <a href="cardfile/artist/edit&eid={{ source_id }}?name= {{ search }}">ADD NEW ARTIST</a>
+    </p)
+  {% end if %}
+{% endif %}
 
-<div class="l-overflow-clear">
-  <a href="/cardfile/artists" class="align-left base-margin-right">See full artist list</a>
-</div> #}

@@ -19,7 +19,7 @@ class WorkForm extends FormBase {
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $wid = 0) {
-    dblog('WorkForm buildForm ENTERED');
+    dblog('WorkForm buildForm ENTERED, wid =', $wid);
 
     $db = \Drupal::database();
 

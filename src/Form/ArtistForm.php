@@ -26,8 +26,13 @@ class ArtistForm extends FormBase {
     $form['title'] = [
       '#markup' => '<h1>' . $this->t('Edit UMS artist') . '</h1>'
     ];
-    if (isset($_GET['wid'])) {
-      $work = _ums_cardfile_get_work(['wid']);
+    $url_wid = \Drupal::request()->query->get('wid');
+    $url_pid = \Drupal::request()->query->get('pid');
+    $url_name = \Drupal::request()->query->get('name');
+    $current_path = \Drupal::service('path.current')->getPath();
+
+    if (isset($url_wid)) {
+      $work = _ums_cardfile_get_work($url_wid);
       $form['#prefix'] = '<p>Adding NEW Artist as a Creator of ' . $work['title'] . '</p>';
       $form['wid'] = [
         '#type' => 'value',
@@ -43,11 +48,11 @@ class ArtistForm extends FormBase {
         '#type' => 'select',
         '#title' => 'Role',
         '#options' => $work_role_options,
-        '#description' => '[' . ums_cardfile_create_link('Edit Creator Roles', 'cardfile/workroles', array('query' => array('return' => $_GET['q']))) . ']',
+        '#description' => '[' . ums_cardfile_create_link('Edit Creator Roles', 'cardfile/workroles', ['query' => ['return' => $current_path]]) . ']',
       ];
     } 
-    elseif (isset($_GET['pid'])) {
-      $performance = _ums_cardfile_get_performance($_GET['pid']);
+    elseif (isset($url_pid)) {
+      $performance = _ums_cardfile_get_performance($url_pid);
       $form['#prefix'] = '<p>Adding NEW Artist as a Repertoire Performance Artist of ' . $performance['work']['title'] . '</p>';
       $form['pid'] = [
         '#type' => 'value',
@@ -63,7 +68,8 @@ class ArtistForm extends FormBase {
         '#type' => 'select',
         '#title' => 'Role',
         '#options' => $perf_role_options,
-        '#description' => '[' . ums_cardfile_create_link('Edit Artist Roles', 'cardfile/perfroles', array('query' => array('return' => $_GET['q']))) . ']',
+        '#description' => '[' . ums_cardfile_create_link('Edit Artist Roles', 'cardfile/perfroles', 
+                                                     ['query' => ['return' => $current_path]]) . ']',
       ];
     }
 
@@ -81,7 +87,7 @@ class ArtistForm extends FormBase {
       '#title' => $this->t('Name'),
       '#size' => 64,
       '#maxlength' => 128,
-      '#default_value' => (isset($_GET['name']) ? $_GET['name'] : $artist['name']),
+      '#default_value' => (isset($url_name) ? $url_name : $artist['name']),
       '#description' => $this->t('Name of Artist'),
     ];
     $form['alias'] = [
@@ -107,19 +113,14 @@ class ArtistForm extends FormBase {
     ];
 
     if ($artist['aid']) {
-        // $form['merge_id'] = [
-        //   '#type' => 'textfield',
-        //   '#title' => $this->t('Merge this artist into Artist ID'),
-        //   '#size' => 8,
-        //   '#maxlength' => 8,
-        //   '#description' => $this->t("Enter another Artist ID number to merge this artist information into that artist record"),
-        //   '#prefix' => "<fieldset class=\"collapsible collapsed\"><legend>MERGE ARTIST</legend>",
-        //   '#suffix' => "</fieldset>",
-        // ];
-
-      // $form['collapsible']['eid'] = [
-      //   '#type' => 'value',
-      //   '#value' => $eid,
+      // $form['merge_id'] = [
+      //   '#type' => 'textfield',
+      //   '#title' => $this->t('Merge this artist into Artist ID'),
+      //   '#size' => 8,
+      //   '#maxlength' => 8,
+      //   '#description' => $this->t("Enter another Artist ID number to merge this artist information into that artist record"),
+      //   '#prefix' => "<fieldset class=\"collapsible collapsed\"><legend>MERGE ARTIST</legend>",
+      //   '#suffix' => "</fieldset>",
       // ];
 
       $form['collapsible'] = [
@@ -155,15 +156,15 @@ class ArtistForm extends FormBase {
     dblog('submitForm: ENTERED');
     //Check for merge ID
     $values_array = $form_state->getValues();   //['collapsible']['merge_id']
-    $merge_id = $values_array['merge_id'];
+    dblog('ArtistForm:: submitForm - values_array =', $values_array);
+    $merge_id = (isset($values_array['merge_id'])) ? $values_array['merge_id'] : NULL;
     $aid = $values_array['aid'];
 
-    dblog('ArtistForm:: submitForm - merge_id ===>>> aid =',$merge_id, $aid);
-
     if ($form_state->getValue('aid') && $merge_id) {
-      // if ($_REQUEST['destination']) {
+     // if ($_REQUEST['destination']) {
       //   unset($_REQUEST['destination']);
       // }
+      dblog("ArtistForm: submitForm: SETTING artists_merge REDIRECT, aid=$aid, merge_id=$merge_id");
       $form_state->setRedirect('ums_cardfile.artists.merge',
                                 ['old_id' => $aid, //, ['aid' => $aid]);
                                  'merge_id' => $merge_id]); //, ['aid' => $aid]);
@@ -171,10 +172,10 @@ class ArtistForm extends FormBase {
     }
 
     $artist = [];
-    $artist['name'] = $form_state['values']['name'];
-    $artist['alias'] = $form_state['values']['alias'];
-    $artist['notes'] = $form_state['values']['notes'];
-    $artist['photo_nid'] = $form_state['values']['photo_nid'];
+    $artist['name'] = $values_array['name'];
+    $artist['alias'] = $values_array['alias'];
+    $artist['notes'] = $values_array['notes'];
+    $artist['photo_nid'] = $values_array['photo_nid'];
 
     // Convert Name to NamePlain for matching
     $artist['name_plain'] = ums_cardfile_normalize($artist['name']);

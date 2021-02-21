@@ -3,6 +3,8 @@
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+
 // $Id$
 // UMS cardfile module will provide for adding, editing and querying of records into the UMS card file
 
@@ -112,9 +114,30 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
         'work_add_artist_form' => NULL,
       ]
     ],
+
+    'ums-cardfile-performance' => [
+      'variables' => [
+        'performance' => NULL,
+        'work_add_artist_form' => NULL,
+        'performance_add_artist_form' => NULL,
+        'work_copy_artists_form' => NULL,      ]
+    ],
+
+
+
     'ums-cardfile-searchadd' => [
       'variables' => [
         'heading_text' => NULL,
+        'copy_performance_flag' => FALSE,
+        'source_event' => NULL,
+        'search_terms_list' => NULL,
+        'works' => NULL,
+        'artists' => NULL,
+        'source_type' => NULL,
+        'source_id' => NULL,
+        'type' => NULL,
+        'search' => NULL,
+
       ]
     ],
   ];
@@ -138,10 +161,10 @@ function dblog(...$things_to_log) {
 }
 
 function ums_cardfile_create_link($link_text, $url, $url_options = []) {
-  dblog('ums_cardfile_create_link ENTERED: link_text, url, orl_options:', $link_text, $url, $url_options);
   $url = Url::fromUri('internal:/' . $url, $url_options);
   $link = Link::fromTextAndUrl(t($link_text), $url);
-  dblog('ums_cardfile_create_link RETURNING, link =', $link->toString());
+  dblog('ums_cardfile_create_link: $link = ', $link);
+  dblog('ums_cardfile_create_link: $link string = ', $link->toString());
   return $link->toString();
 }
 
@@ -162,9 +185,11 @@ function ums_cardfile_save($table_name, $fields_array, $field_key) {
 }
 
 function ums_cardfile_drupal_goto($path, $options = []) {
-  $url = Url::fromRoute($path, $options);
-  dblog('ums_cardfile_drupal_goto: url=', $url->toString());
-
+  dblog('ums_cardfile_drupal_goto: ENTERED path=', $path, 'options=', $options);
+  $url = Url::fromUri('internal:/' . $path);
+  dblog('ums_cardfile_drupal_goto: AFTER  fromUri, url=', $url);
+  //$url = Url::fromUri('internal:/' . $path, $options);
+  // dblog('ums_cardfile_drupal_goto: url=', $url->toString());
   return $url;
 }
 
@@ -217,6 +242,66 @@ function _ums_cardfile_get_artist($aid = 0) {
   return $artist;
 }
 
+function _ums_cardfile_merge_artist($old_aid, $aid) {
+  dblog('_ums_cardfile_merge_artist: ENTERED old_aid:', $old_aid, '$aid:', $aid);
+  $db = \Drupal::database();
+  // Copy info from old artist record to new if field is blank
+  $old_artist = $db->query("SELECT * FROM ums_artists WHERE aid = :old_aid", [':old_aid' => $old_aid])->fetchAssoc();
+  $artist = $db->query("SELECT * FROM ums_artists WHERE aid = :aid", [':aid' => $aid])->fetchAssoc();
+
+  dblog('_ums_cardfile_merge_artist: AFTER DB QUERY old_artist:', $old_artist);
+  dblog('_ums_cardfile_merge_artist: AFTER DB QUERY artist:', $artist);
+
+  if (empty($old_artist['aid'])) {
+    drupal_set_message("Cannot merge artist $old_aid (artist not found)");
+    dblog('_ums_cardfile_merge_artist: CALLING RedirectResponse ===== empty old_artist->aid');
+    return new RedirectResponse('cardfile/artists');
+
+    //  $redirect_uri = '/summergame/player/' . $player['pid'] . '/' . $type;
+    //        if ($_GET['text']) {
+    //         $redirect_uri .= '?text=' . $_GET['text'];
+    //        }
+    //       return new RedirectResponse($redirect_uri);
+
+
+  } elseif (empty($artist['aid'])) {
+    drupal_set_message("Cannot merge artist into artist $aid (artist not found)");
+    dblog('_ums_cardfile_merge_artist: CALLING RedirectResponse ===== empty artist->aid');
+    return new RedirectResponse('cardfile/artists');
+  }
+
+
+
+
+
+
+
+
+
+  $updated = FALSE;
+  foreach ($old_artist as $field => $value) {
+    if (empty($artist[$field])) {
+      $artist[$field] = $value;
+      $updated = TRUE;
+    }
+  }
+  if ($updated) {
+    ums_cardfile_save('ums_artists', $artist, 'aid');
+  }
+
+  // Move performances and works from old artist to artist
+  $db->query("UPDATE IGNORE ums_artist_performances SET aid = :aid WHERE aid = :old_aid", [':aid' => $aid, ':old_aid' => $old_aid]);
+  $db->query("UPDATE IGNORE ums_artist_works SET aid = :aid WHERE aid = :old_aid", [':aid' => $aid, ':old_aid' => $old_aid]);
+
+  // DELETE old artist record
+  $db->query("DELETE FROM ums_artist_performances WHERE aid = :old_aid", [':old_aid' => $old_aid]);
+  $db->query("DELETE FROM ums_artist_works WHERE aid = :old_aid", [':old_aid' => $old_aid]);
+  $db->query("DELETE FROM ums_artists WHERE aid = :old_aid", [':old_aid' => $old_aid]);
+
+  drupal_set_message("Merged Artist #$old_aid (" . $old_artist['name'] .
+                     ") into Artist #$aid (" . $artist['name'] . ")");
+}
+
 /*== PERFORMANCES ============================================================*/
 
 function _ums_cardfile_get_performance($pid = 0) {
@@ -256,7 +341,7 @@ function _ums_cardfile_get_performance($pid = 0) {
 /*== EVENTS ==================================================================*/
 
 function _ums_cardfile_get_event($eid = 0) {
-  dblog('_ums_cardfile_get_event: ENTERED $eid:', $eid);
+  dblog('_ums_cardfile_get_event: >>>>>>>>>>>> ENTERED $eid:', $eid);
   $db = \Drupal::database();
   $event = $db->query("SELECT ums_events.eid AS eid, " .
                                    "ums_events.title AS title, " .
@@ -273,6 +358,7 @@ function _ums_cardfile_get_event($eid = 0) {
                                    "WHERE ums_events.sid = ums_series.sid " .
                                    "AND ums_events.vid = ums_venues.vid " .
                                    "AND ums_events.eid = :eid", [':eid' => $eid])->fetchAssoc();
+  dblog('_ums_cardfile_get_event: AFTER DB SELECT, event =', $event);
   // Get performances
   $performances = $db->query("SELECT * FROM ums_performances, ums_works " .
                   "WHERE ums_performances.eid = :eid " .
@@ -329,7 +415,7 @@ function _ums_cardfile_get_work($wid = 0) {
   if ($work['wid']) {
     // Get work artists
     $work['artists'] = array();
-    $work_artists = db_query("SELECT ums_artists.aid AS aid, " .
+    $work_artists = $db->query("SELECT ums_artists.aid AS aid, " .
                     "ums_artists.name AS name, " .
                     "ums_artists.alias AS alias, " .
                     "ums_work_roles.name AS role " .
@@ -379,50 +465,48 @@ function _ums_cardfile_get_work($wid = 0) {
 /*== HELPER FUNCTIONS ========================================================*/
 
 function ums_cardfile_autocomplete($type) {
-  $search = strtolower($_GET['search']);
+  $db = \Drupal::database();
+  $url_search = \Drupal::request()->query->get('search');
   if ($type == 'artist') {
-    $res = db_query(
+    $artists = $db->query(
       "SELECT * FROM ums_artists " .
-                    "WHERE name LIKE '%%%s%%' " .
-                    "OR name_plain LIKE '%%%s%%' " .
-                    "OR alias LIKE '%%%s%%' " .
+                    "WHERE name LIKE '%%:url_search%%' " .
+                    "OR name_plain LIKE '%%:url_search%%' " .
+                    "OR alias LIKE '%%:url_search%%' " .
                     "ORDER BY name ASC LIMIT 25",
-      $search,
-      $search,
-      $search
-    );
-    while ($match = db_fetch_array($res)) {
+      [':url_search' => $url_search]
+    )->fetchAll();
+    foreach($artists as $match) {
       echo $match['name'] . ' (aid:' . $match['aid'] . ")\n";
     }
   } elseif ($type == 'event') {
-    $res = db_query(
+    $events = $db->query(
       "SELECT * FROM ums_events " .
-                    "WHERE date LIKE '%%%s%%' " .
+                    "WHERE date LIKE '%%:url_search%%' " .
                     "ORDER BY date ASC LIMIT 25",
-      $search
+      [':url_search' => $url_search]
     );
-    while ($match = db_fetch_array($res)) {
+    foreach($events as $match) {
       $match_event = _ums_cardfile_get_event($match['eid']);
       echo $match_event['date'] . ' at ' . $match_event['venue'] . ' (eid:' . $match['eid'] . ")\n";
     }
   } elseif ($type == 'work') {
-    $res = db_query(
+    $works = $db->query(
       "SELECT * FROM ums_works " .
-                    "WHERE title LIKE '%%%s%%' " .
-                    "OR alternate LIKE '%%%s%%' " .
-                    "OR notes LIKE '%%%s%%' " .
+                    "WHERE title LIKE '%%:url_search%%' " .
+                    "OR alternate LIKE '%%:url_search%%' " .
+                    "OR notes LIKE '%%:url_search%%' " .
                     "ORDER BY title ASC LIMIT 25",
-      $search,
-      $search,
-      $search
+      [':url_search' => $url_search]
     );
-    while ($match = db_fetch_array($res)) {
+    foreach($works as $match) {
       echo $match['title'] . ' (wid:' . $match['wid'] . ")\n";
     }
   }
 }
 
 function ums_cardfile_recent_artists($new_aid = 0) {
+  dblog('ums_cardfile_recent_artists ENTERED, new_aid = ', $new_aid);
   global $user;
    
   $db = \Drupal::database();
@@ -431,7 +515,7 @@ function ums_cardfile_recent_artists($new_aid = 0) {
 
   $var_key = 'ums_cardfile_recent_artists_' . $user->uid;
 
-  $row = $db->query("SELECT value FROM variable WHERE name = :name", [':name' => $var_key])->fetchOne();
+  $row = $db->query("SELECT value FROM @variable WHERE name = :name", [':name' => $var_key])->fetchAssoc();
   if ($row->value) {
     $artists = unserialize($row->value);
     $existing_list = TRUE;
@@ -443,7 +527,7 @@ function ums_cardfile_recent_artists($new_aid = 0) {
       $artist_name = $artists[$new_aid];
       unset($artists[$new_aid]);
     } else {
-      $row = $db->query(db_query("SELECT name FROM ums_artists WHERE aid = %d", $new_aid)->fetchOne());
+      $row = $db->query("SELECT name FROM ums_artists WHERE aid = :new_aid", [':new_aid' => $new_aid])->fetchAssoc();
       $artist_name = $row->name;
     }
 
@@ -459,19 +543,20 @@ function ums_cardfile_recent_artists($new_aid = 0) {
 
     // Store updated list
     if ($existing_list) {
-      db_query(
-        'UPDATE @variable SET value = "%s" WHERE name = "%s"',
-        serialize($artists),
-        $var_key
+      $db->query(
+        'UPDATE @variable SET value = :serialized_artists WHERE name = :var_key',
+        [':serialized_artists' => serialize($artists), ':var_key' => $var_key]
+        
       );
     } else {
-      db_query(
-        'INSERT INTO @variable (name, value) VALUES ("%s", "%s")',
-        $var_key,
-        serialize($artists)
+      $db->query(
+        'INSERT INTO @variable (name, value) VALUES (:var_key, :serialized_artists)',
+        [':var_key' => $var_key, ':serialized_artists' => serialize($artists)]
       );
     }
   }
+
+  dblog('ums_cardfile_recent_artists EXITING, artists = ', $artists);
 
   return $artists;
 }
@@ -493,7 +578,7 @@ function ums_cardfile_recent_artists_d8($new_aid = 0) {
       $artist_name = $recent_artists[$new_aid];
       unset($recent_artists[$new_aid]);
     } else {
-      $row = $db->query(db_query("SELECT name FROM ums_artists WHERE aid = :aid", [':aid' => $new_aid])->fetchOne());
+      $row = $db->query("SELECT name FROM ums_artists WHERE aid = :aid", [':aid' => $new_aid])->fetchAssoc();
       dblog('ums_cardfile_recent_artists_d8: getting name from ums_artists: ', $row);
       $artist_name = $row->name;
     }
