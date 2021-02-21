@@ -120,7 +120,7 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
         'performance' => NULL,
         'work_add_artist_form' => NULL,
         'performance_add_artist_form' => NULL,
-        'work_copy_artists_form' => NULL,      ]
+        'performance_copy_artists_form' => NULL,      ]
     ],
 
 

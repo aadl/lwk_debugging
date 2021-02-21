@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\ums_cardfile\Form\UserListCreateForm
+ * Contains \Drupal\ums_cardfile\Form\PerformanceCopyArtistsForm
  */
 
 namespace Drupal\ums_cardfile\Form;
@@ -11,28 +11,39 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
-class PerformanceCopyArtistForm extends FormBase {
+class PerformanceCopyArtistsForm extends FormBase {
   
   public function getFormId() {
-    return 'performance_copy_artist_form';
+    return 'performance_copy_artists_form';
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $pid = 0) {
-    dblog('PerformanceCopyArtistForm: buildForm ENTERED - pid', $pid);
+    dblog('PerformanceCopyArtistsForm: buildForm ENTERED - pid', $pid);
     $db = \Drupal::database();
 
     $performance = _ums_cardfile_get_performance($pid);
 
-    dblog('PerformanceCopyArtistForm: performance: ', $performance);
+    dblog('PerformanceCopyArtistsForm: performance: ', $performance);
 
-    $form = array(
-      '#prefix' => '<fieldset class="collapsible collapsed"><legend>Copy Performance Artists from other Repertoire</legend>',
-      '#suffix' => '</tr></table></fieldset>',
-    );
-    $form['pid'] = array(
+    $form['collapsible'] = [
+      '#type' => 'details',
+      '#title' => t('Copy Performance Artists from other Repertoire'),
+        //'#description' => t($desc_html),
+        '#open' => FALSE, // Controls the HTML5 'open' attribute. Defaults to FALSE.
+      '#prefix' => '<div id="LWK-PerformanceCopyArtistsForm',
+      '#suffix' => '</div>',
+    ];
+
+    // $form['collapsible']['table'] = [
+    //   '#prefix' => '<table><tr><th>Select Role:</th><th>Select Artist:</th></tr><tr>',
+    //   '#suffix' => '</tr></table>',
+    // ];
+
+    $form['collapsible']['pid'] = [
       '#type' => 'value',
       '#value' => $pid,
-    );
+    ];
+
     $other_pids = [];
     foreach ($performance['event']['performances'] as $other_performance) {
       if ($other_performance['pid'] != $pid) {
@@ -44,18 +55,20 @@ class PerformanceCopyArtistForm extends FormBase {
         $other_pids[$other_performance['pid']] = $description;
       }
     }
-    $form['source_pid'] = array(
+    dblog('PerformanceCopyArtistsForm: other_pids: ', $other_pids);
+
+    $form['collapsible']['source_pid'] = array(
       '#type' => 'radios',
       '#title' => 'Select Performance as source of Performance Artists',
       '#options' => $other_pids,
     );
 
-    $form['submit'] = array(
+    $form['collapsible']['submit'] = array(
       '#type' => 'submit',
       '#value' => 'Copy Artists',
     );
       
-    dblog('performance_add_artist_form - RETURNING' ); // $form:', $form);
+    dblog('PerformanceCopyArtistsForm - RETURNING' ); // $form:', $form);
 
     return $form;
   }
@@ -64,7 +77,7 @@ class PerformanceCopyArtistForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('PerformanceCopyArtistForm: submitForm ENTERED');
+    dblog('PerformanceCopyArtistsForm: submitForm ENTERED');
  
     $pid = $form_state['values']['pid'];
     $source_pid = $form_state['values']['source_pid'];

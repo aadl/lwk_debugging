@@ -21,6 +21,9 @@ class DefaultController extends ControllerBase {
     ];
   }
 
+ // ===============================================================================================
+ // ===============================================================================================
+
   /**
    * cf_artsts - handle artists display
    */
@@ -89,7 +92,8 @@ class DefaultController extends ControllerBase {
     } else {
       \Drupal::messenger()->addMessage("Unable to find artist with ID:$aid");
       $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/artists');
-      return new RedirectResponse($drupal_goto_url);
+      dblog("cf_artists_merge  CALLING RedirectResponse cf_artist - 'cardfile/artists'");
+      return new RedirectResponse('cardfile/artists');
     }
   }
 
@@ -105,10 +109,11 @@ class DefaultController extends ControllerBase {
   }
 
   public function cf_artists_merge($old_id, $merge_id, $confirm = '') {
+    dblog("cf_artists_merge  ENTERED old_id = $old_id, merge_id = $merge_id, confirm = $confirm");
     if ($confirm) {
       _ums_cardfile_merge_artist($old_id, $merge_id);
-      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/artist' . $merge_id);
-      return new RedirectResponse($drupal_goto_url);
+      dblog("cf_artists_merge  CALLING cf_artists_merge 1 - 'cardfile/artist/ . $merge_id'");
+      return new RedirectResponse('cardfile/artist/ . $merge_id');
     }
 
     $old_artist = _ums_cardfile_get_artist($old_id);
@@ -140,11 +145,14 @@ class DefaultController extends ControllerBase {
 
     } else {
       drupal_set_message('Invalid Artist IDs', 'error');
-      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/artists');
-      return new RedirectResponse($drupal_goto_url);
+      dblog("cf_artists_merge  CALLING cf_artists_merge 2 - 'cardfile/artist'");
+      return new RedirectResponse('cardfile/artists');
     }
     return [];
   }
+
+ // ===============================================================================================
+ // ===============================================================================================
 
   /**
    * cf_venues - handle venues display
@@ -181,6 +189,9 @@ class DefaultController extends ControllerBase {
     ];
   }
 
+ // ===============================================================================================
+ // ===============================================================================================
+
   /**
    * cf_events - handle events display
    */
@@ -196,8 +207,10 @@ class DefaultController extends ControllerBase {
         $events = $db->query("SELECT eid FROM ums_events WHERE YEAR(date) = :year ORDER BY date", [':year' => $year])->fetchAll();
       }
       // NOTE THIS IS SLOW WHEN 'ALL' IS reqyested - nearly 5000 records
+      dblog('cf_events: COUNT events = ', count($events));
       foreach($events as $e) {
-        $event = _ums_cardfile_get_event($e->eid);
+       dblog('cf_events: LOOP e = ', $e);
+       $event = _ums_cardfile_get_event($e->eid);
         if ($event['program_nid']) {
           $program_links = [];
           foreach (explode(',', $event['program_nid']) as $program_nid) {
@@ -323,7 +336,8 @@ class DefaultController extends ControllerBase {
     } else {
       \Drupal::messenger()->addMessage("Unable to find event with ID:$eid");
       $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/events');
-      return new RedirectResponse($drupal_goto_url);
+      dblog("cf_artists_merge  CALLING RedirectResponse cf_event - 'cardfile/events'");
+      return new RedirectResponse('cardfile/events');
     }
   }
 
@@ -337,6 +351,9 @@ class DefaultController extends ControllerBase {
     return [
     ];
   }
+
+ // ===============================================================================================
+ // ===============================================================================================
 
   /**
    * cf_series - handle series display
@@ -374,7 +391,9 @@ class DefaultController extends ControllerBase {
     ];
   }
 
-  /**
+ // ===============================================================================================
+ // ===============================================================================================
+ /**
    * cf_work - handle works display
    */
   public function cf_works($filter = '') {
@@ -463,7 +482,8 @@ class DefaultController extends ControllerBase {
     } else {
       \Drupal::messenger()->addMessage("Repertoire not found",'error', TRUE);
       $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/works');
-      return new RedirectResponse($drupal_goto_url);
+      dblog("cf_artists_merge  CALLING RedirectResponse cf_work - 'cardfile/works'");
+      return new RedirectResponse('cardfile/works');
     }
   }
 
@@ -478,13 +498,72 @@ class DefaultController extends ControllerBase {
     ];
   }
 
-  public function cf_join($type1, $id1, $type2, $id2) {
-    dblog("cf_join: ENTERED type1 = $type1, id1 = $id1, type2 = $type2, id2 = $id2");
+// ===============================================================================================
+// ===============================================================================================
+  /**
+   * cf_performance - handle work edits
+   */
+  public function cf_performance($pid = 0) {
+    dblog('cf_performance: ENTERED, $pid = ' . $pid);
+    $db = \Drupal::database();
+
+    $performance = _ums_cardfile_get_performance($pid);    
+    dblog('cf_performance: AFTER _ums_cardfile_get_performance, $performance = ',$performance);
+    if ($performance['pid']) {
+      $work_add_artist_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\WorkAddArtistForm', $performance['work']['wid']);
+      $performance_add_artist_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\PerformanceAddArtistForm', $performance['pid']);
+      $performance_copy_artists_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\PerformanceCopyArtistsForm', $performance['pid']);
+      return [
+        '#theme' => 'ums-cardfile-performance',
+        '#performance' => $performance,
+        '#work_add_artist_form' => $work_add_artist_form,
+        '#performance_add_artist_form' => $performance_add_artist_form,
+        '#performance_copy_artists_form' => $performance_copy_artists_form,
+        '#cache' => [ 'max-age' => 0 ]
+      ];
+    } else {
+      \Drupal::messenger()->addMessage("Performance not found",'error', TRUE);
+      dblog("cf_performance: PERFORMANCE NOT FOUND  CALLING RedirectResponse - 'cardfile/events'");
+      return new RedirectResponse('cardfile/events');
+    }
+  }
+
+  /**
+   * cf_delete_work - handle work deletion
+   */
+  public function cf_delete_performance($pid) {  
+    $performance = _ums_cardfile_get_performance($pid);
+    $eid = $performance['eid'];
+
+    $db = \Drupal::database();
+    $db->query("DELETE FROM ums_artist_performances WHERE pid = :pid", [':pid' => $pid]);
+    $db->db_query("DELETE FROM ums_performances WHERE pid = :pid", [':pid' => $pid]);
+    \Drupal::messenger()->addMessage('Repertoire performance has been deleted');
+    return new RedirectResponse('cardfile/event/' . $eid);
+  }
+
+   /**
+   * cf_delete_work - handle work deletion
+   */
+  public function cf_performance_delete_artist($aid, $pid) {  
+    $performance = _ums_cardfile_get_performance($pid);
+    $eid = $performance['eid'];
+
+    $db = \Drupal::database();
+    $db->query("DELETE FROM ums_artist_performances WHERE aid = :aid AND pid = :pid", [':aid' => $aid, ':pid' => $pid]);
+    \Drupal::messenger()->addMessage('Artist has been deleted');
+    return new RedirectResponse('cardfile/performance/' . $pid);
+  }
+// ===============================================================================================
+// ===============================================================================================
+
+  public function cf_join($type1, $id1, $type2, $id2, $options) {
+    dblog("cf_join: ENTERED type1 = $type1, id1 = $id1, type2 = $type2, id2 = $id2, options = $options", $type1, $id1, $type2, $id2, $options);
     $db = \Drupal::database();
     if ($type1 == 'event' && $type2 == 'source_event') {
       // Copy all performances from source_event to event
-      $res = $db->query("SELECT * FROM ums_performances WHERE eid = id2", [':id2' => $id2])->fetchAll();
-      while ($copy_perf = db_fetch_object($res)) {
+      $performances = $db->query("SELECT * FROM ums_performances WHERE eid = id2", [':id2' => $id2])->fetchAll(PDO::FETCH_ASSOC);
+      foreach ($performances as $copy_perf) {
         $copy_pid = $copy_perf->pid;
         unset($copy_perf->pid);
         $copy_perf->eid = $id1;
@@ -500,7 +579,7 @@ class DefaultController extends ControllerBase {
     }
     if ($type1 == 'event' && $type2 == 'work') {
       // New Performance
-      $max = db_fetch_object(db_query("SELECT MAX(weight) as max_weight FROM ums_performances WHERE eid = %d", $id1));
+      $max = $db->query("SELECT MAX(weight) as max_weight FROM ums_performances WHERE eid = :id1", [':id1' => $id1])->fetchAssoc();
       $perf = new stdClass;
       $perf->eid = $id1;
       $perf->wid = $id2;
@@ -513,7 +592,7 @@ class DefaultController extends ControllerBase {
       $artist_perf = new stdClass;
       $artist_perf->pid = $id1;
       $artist_perf->aid = $id2;
-      $artist_perf->prid = $_GET['prid'];
+      $artist_perf->prid = \Drupal::request()->query->get('prid');
       drupal_write_record('ums_artist_performances', $artist_perf);
       drupal_set_message("Added new Repertoire Artist to the Performance");
       ums_cardfile_recent_artists_d8($id2);
@@ -522,12 +601,14 @@ class DefaultController extends ControllerBase {
       $artist_work = new stdClass;
       $artist_work->wid = $id1;
       $artist_work->aid = $id2;
-      $artist_work->wrid = $_GET['wrid'];
+      $artist_work->wrid = \Drupal::request()->query->get('wrid');
       drupal_write_record('ums_artist_works', $artist_work);
       drupal_set_message("Added new Creator to the Repertoire");
       ums_cardfile_recent_artists($id2);
       drupal_goto('cardfile/work/' . $artist_work->wid);
     }
+    return [
+    ];
   }
 
   public function cf_searchadd($source_type, $source_id, $type, $search) {
@@ -541,7 +622,7 @@ class DefaultController extends ControllerBase {
       $performance = _ums_cardfile_get_performance($source_id);
       $prid = \Drupal::request()->query->get('prid');
       dblog('cf_searchadd: prid =', $prid);
-      $performance_role = $db->query('SELECT * FROM ums_performance_roles WHERE prid = :prid', [':prid' => $prid])->fetchAll();
+      $performance_role = $db->query('SELECT * FROM ums_performance_roles WHERE prid = :prid', [':prid' => $prid])->fetchAssoc();
       dblog('cf_searchadd: performance_role =', $performance_role);
       $query_args = ['prid' => $performance_role->prid];
       dblog('cf_searchadd: query_args =', $query_args);
@@ -552,92 +633,74 @@ class DefaultController extends ControllerBase {
       $work = _ums_cardfile_get_work($source_id);
       $wrid = \Drupal::request()->query->get('wrid');
       dblog('cf_searchadd: wrid =', $wrid);
-      $performance_role = $db->query('SELECT * FROM ums_work_roles WHERE wrid = :wrid', [':wrid' => $wrid])->fetchAll();
+      $performance_role = $db->query('SELECT * FROM ums_work_roles WHERE wrid = :wrid', [':wrid' => $wrid])->fetchAssoc();
       dblog('cf_searchadd: performance_role =', $performance_role);      
       $query_args = ['wrid' => $performance_role->wrid];
       dblog('cf_searchadd: query_args =', $query_args);
       $heading_text = '<strong>' . $performance_role->name . '</strong> to ' . $work['title'];
     }
 
-    return [
-      '#theme' => 'ums-cardfile-searchadd',
-      '#heading_text' => $heading_text,
-      '#cache' => [ 'max-age' => 0 ]
-    ];
-    $output = [];
+    $copy_performance_flag = FALSE;
 
     // Special Handling for copying performances from one event to another
-    if (preg_match('/event:([\d]+)/', $search, $matches)) {
+    if (preg_match('/event:([\d]+)/', $search, $matches)){
+      $copy_performance_flag = TRUE;
       $source_eid = $matches[1];
       $source_event = _ums_cardfile_get_event($source_eid);
-      $output .= '<p>Copy Repertoire Performances from Event ' . $source_event['date'] . ' at ' . $source_event['venue'] . '?</p>';
-      $output .= '<ul>';
-      foreach ($source_event['performances'] as $source_perf) {
-        $output .= '<li>' . $source_perf['title'] . '</li>';
-      }
-      $output .= '</ul><p>' . l('COPY PERFORMANCES TO THIS EVENT', "cardfile/join/$source_type/$source_id/source_event/$source_eid") . '</p>';
     } else {
       // Split search string into keywords
       $search_terms = explode(' ', str_replace(',', '', $search));
-      $output .= '<p>Searching for "' . implode('" AND "', $search_terms) . '"</p>';
+      $search_terms_list = implode('" AND "', $search_terms);
+      // $output .= '<p>Searching for "' . implode('" AND "', $search_terms) . '"</p>';
       $search_query_parts = array();
       $search_args = array();
 
       if ($type == 'work') {
-        $wids = array();
+        $wids = [];
 
         foreach ($search_terms as $search_term) {
-          $search_query_part = "(ums_works.title LIKE '%%%s%%'";
-          $works_search_args[] = $search_term;
-          $artists_search_args[] = $search_term;
-          $search_query_part .= " OR ums_works.alternate LIKE '%%%s%%'";
-          $works_search_args[] = $search_term;
-          $artists_search_args[] = $search_term;
-          $search_query_part .= " OR ums_works.notes LIKE '%%%s%%'";
-          $works_search_args[] = $search_term;
-          $artists_search_args[] = $search_term;
+          $search_query_part = "(ums_works.title LIKE '%%:$search_term%%'";
+          $works_search_args[] = [':'. $search_term => $search_term ];
+          $artists_search_args[] = [':'. $search_term => $search_term ];
+          $search_query_part .= " OR ums_works.alternate LIKE '%%:$search_term%%'";
+          $works_search_args[] = [':'. $search_term => $search_term ];
+          $artists_search_args[] = [':'. $search_term => $search_term ];
+          $search_query_part .= " OR ums_works.notes LIKE '%%:$search_term%%'";
+          $works_search_args[] = [':'. $search_term => $search_term ];
+          $artists_search_args[] = [':'. $search_term => $search_term ];
 
           $works_query_parts[] = $search_query_part . ')';
 
-          $search_query_part .= " OR ums_artists.name LIKE '%%%s%%'";
-          $artists_search_args[] = $search_term;
-          $search_query_part .= " OR ums_artists.name_plain LIKE '%%%s%%'";
-          $artists_search_args[] = $search_term;
-          $search_query_part .= " OR ums_artists.alias LIKE '%%%s%%'";
-          $artists_search_args[] = $search_term;
-          $search_query_part .= " OR ums_artists.notes LIKE '%%%s%%')";
-          $artists_search_args[] = $search_term;
+          $search_query_part .= " OR ums_artists.name LIKE '%%:$search_term%%'";
+          $artists_search_args[] = [':'. $search_term => $search_term ];
+          $search_query_part .= " OR ums_artists.name_plain LIKE '%%:$search_term%%'";
+          $artists_search_args[] = [':'. $search_term => $search_term ];
+          $search_query_part .= " OR ums_artists.alias LIKE '%%:$search_term%%'";
+          $artists_search_args[] = [':'. $search_term => $search_term ];
+          $search_query_part .= " OR ums_artists.notes LIKE '%%:$search_term%%')";
+          $artists_search_args[] = [':'. $search_term => $search_term ];
 
           $artists_query_parts[] = $search_query_part;
         }
-
-        $res = db_query(
-          "SELECT wid " .
-                        "FROM ums_works " .
-                        "WHERE " .
-                        implode(' AND ', $works_query_parts) .
-                        " ORDER BY wid",
-          $works_search_args
-        );
-        while ($match = db_fetch_object($res)) {
+        $select_statement = "SELECT wid FROM ums_works WHERE " . implode(' AND ', $works_query_parts) . " ORDER BY wid";
+        $res = $db->query($select_statement, $works_search_args)->fetchAll();
+        foreach( $res as $match) {
           $wids[$match->wid] = $match->wid;
         }
 
-        $res = db_query(
-          "SELECT ums_works.wid AS wid " .
+        $select_statement = "SELECT ums_works.wid AS wid " .
                         "FROM ums_works, ums_artist_works, ums_artists " .
                         "WHERE ums_works.wid = ums_artist_works.wid " .
                         "AND ums_artist_works.aid = ums_artists.aid " .
                         "AND " . implode(' AND ', $artists_query_parts) .
-                        " ORDER BY wid",
-          $artists_search_args
-        );
-        while ($match = db_fetch_object($res)) {
+                        " ORDER BY wid";
+        $res = db_query($select_statement, $artists_search_args)->fetchAll();
+        foreach( $res as $match) {
           $wids[$match->wid] = $match->wid;
         }
 
+        $works = [];
         if (count($wids)) {
-          $works = array();
           $res = db_query("SELECT ums_works.wid as wid, " .
                           "ums_works.title as title, " .
                           "ums_works.alternate as alternate, " .
@@ -651,10 +714,10 @@ class DefaultController extends ControllerBase {
                           "LEFT JOIN ums_artists ON ums_artist_works.aid = ums_artists.aid " .
                           "WHERE ums_works.wid IN (" .
                           implode(',', $wids) .
-                          ") ORDER BY ums_works.title");
+                          ") ORDER BY ums_works.title")->fetchAll();
 
-          while ($match = db_fetch_object($res)) {
-            if ($works[$match->wid]) {
+          foreach( $res as $match) {
+            if ($res) {
               // Work data already captured, just add artist info
               $works[$match->wid]['Artists'] .= "<br /><strong>$match->role:</strong> $match->artist_name";
             } else {
@@ -668,37 +731,28 @@ class DefaultController extends ControllerBase {
               );
             }
           }
-
-          $output .= theme('table', array_keys(reset($works)), $works);
-          $output .= '<p><strong>- OR -</strong></p>';
-        } else {
-          $output .= '<p>No existing repertoire matches found</p>';
         }
-
-        $output .= '<p>' . l('ADD NEW REPERTOIRE', 'cardfile/work/edit', array('query' => array('eid' => $source_id, 'title' => $search))) . '</p>';
+        // table of works items
+        // $output .= '<p>' . l('ADD NEW REPERTOIRE', 'cardfile/work/edit', array('query' => array('eid' => $source_id, 'title' => $search))) . '</p>';
       } elseif ($type == 'artist') {
         foreach ($search_terms as $search_term) {
-          $search_query_part = "(name LIKE '%%%s%%'";
-          $search_args[] = $search_term;
-          $search_query_part .= " OR name_plain LIKE '%%%s%%'";
-          $search_args[] = $search_term;
-          $search_query_part .= " OR alias LIKE '%%%s%%'";
-          $search_args[] = $search_term;
-          $search_query_part .= " OR notes LIKE '%%%s%%')";
-          $search_args[] = $search_term;
+          $search_query_part = "(name LIKE '%%:$search_term%%'";
+          $search_args[] = [':'. $search_term => $search_term ];
+          $search_query_part .= " OR name_plain LIKE '%%:$search_term%%'";
+          $search_args[] = [':'. $search_term => $search_term ];
+          $search_query_part .= " OR alias LIKE '%%:$search_term%%'";
+          $search_args[] = [':'. $search_term => $search_term ];
+          $search_query_part .= " OR notes LIKE '%%:$search_term%%')";
+          $search_args[] = [':'. $search_term => $search_term ];
           $search_query_parts[] = $search_query_part;
         }
-        $res = db_query(
-          "SELECT * FROM ums_artists " .
-                        "WHERE " .
-                        implode(' AND ', $search_query_parts) .
-                        "ORDER BY name ASC",
-          $search_args
-        );
+        $select_statement = "SELECT * FROM ums_artists WHERE " . implode(' AND ', $search_query_parts) .
+                        "ORDER BY name ASC";
+        $res = $db->query($select_statement, $search_args);
 
-        $rows = array();
+        $artists = array();
         while ($artist = db_fetch_array($res)) {
-          $rows[] = array(
+          $artists[] = array(
             'Artist ID' => $artist['aid'],
             'Name' => $artist['name'],
             'Alias' => $artist['alias'],
@@ -710,23 +764,30 @@ class DefaultController extends ControllerBase {
             ),
           );
         }
-        $output .= theme('table', array_keys($rows[0]), $rows);
-        $output .= '<p><strong>- OR -</strong></p>';
-        if ($source_type == 'performance') {
-          $source_id_name = 'pid';
-        } elseif ($source_type == 'work') {
-          $source_id_name = 'wid';
-        }
-        $output .= '<p>' . l('ADD NEW ARTIST', 'cardfile/artist/edit', array('query' => array($source_id_name => $source_id, 'name' => $search))) . '</p>';
+        // $output .= theme('table', array_keys($rows[0]), $rows);
+        // $output .= '<p><strong>- OR -</strong></p>';
+        // if ($source_type == 'performance') {
+        //   $source_id_name = 'pid';
+        // } elseif ($source_type == 'work') {
+        //   $source_id_name = 'wid';
+        // }
+        // $output .= '<p>' . l('ADD NEW ARTIST', 'cardfile/artist/edit', array('query' => array($source_id_name => $source_id, 'name' => $search))) . '</p>';
       }
     }
 
-      return [
-        '#theme' => 'ums-cardfile-searchadd',
-        '#heading_text' => $heading_text,
-        '#cache' => [ 'max-age' => 0 ]
-      ];
+    return [
+      '#theme' => 'ums-cardfile-searchadd',
+      '#heading_text' => $heading_text,
+      '#copy_performance_flag' => $copy_performance_flag,
+      '#source_event' => $source_event,
+      '#search_terms_list' => $search_terms_list,
+      '#works' => $works,
+      '#artists' => $artists,
+      '#source_type' => $source_type,
+      '#source_id' => $source_id,
+      '#search' => $search,
+      '#sourceid' => $source_id, 
+      '#cache' => [ 'max-age' => 0 ]
+    ];
   }
-
-
 }

@@ -39,7 +39,7 @@ class WorkAddArtistForm extends FormBase {
 
     $form['collapsible']['table'] = [
       '#prefix' => '<table><tr><th>Select Role:</th><th>Select Artist:</th></tr><tr>',
-      '#suffix' => '</tr></table></fieldset>',
+      '#suffix' => '</tr></table>',
     ];
     $form['collapsible']['table']['wid'] = [
       '#type' => 'value',
