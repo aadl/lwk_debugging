@@ -42,8 +42,8 @@
       {% for perf_artist in performance.artists %}
         <p>
           <strong>{{ perf_artist.role }}:</strong>
-          <a href="cardfile/artist/{{ perf_artist.aid }}">{{ perf_artist.name }}</a>
-          [<a href="cardfile/performance/delete_artist/{{ performance.pid }}/{{perf_artist.aid }}">X</a>]
+          <a href="/cardfile/artist/{{ perf_artist.aid }}">{{ perf_artist.name }}</a>
+          [<a href="/cardfile/performance/delete_artist/{{ performance.pid }}/{{perf_artist.aid }}">X</a>]
         </p>
       {% endfor %}
     </p>
@@ -52,7 +52,7 @@
   {{ performance_add_artist_form }}
   {{ performance_copy_artists_form }}
 
-  <a href="cardfile/event/{{ performance.eid }}">Return to Event</a>
+  <a href="/cardfile/event/{{ performance.eid }}">Return to Event</a>
 
 </div>
 

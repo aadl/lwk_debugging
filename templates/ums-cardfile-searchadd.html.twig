@@ -10,7 +10,7 @@
       {% endfor %}
 	  </ul>
   <p>
-    <a href="cardfile/join/{{ source_type }}/{{ source_id }}/source_event/{{ source_eid }}">COPY PERFORMANCES TO THIS EVENT</a>
+    <a href="/cardfile/join/{{ source_type }}/{{ source_id }}/source_event/{{ source_eid }}">COPY PERFORMANCES TO THIS EVENT</a>
   </p>
 {% else %}
   <p>Searching for {{ search_terms_list }} </p>
@@ -25,7 +25,7 @@
       <p>No existing repertoire matches found</p>
     {% endif %}
     <p>
-      <a href="cardfile/work/edit&eid={{ source_id }}?title= {{ search }}">ADD NEW REPERTOIRE</a>
+      <a href="/cardfile/work/edit&eid={{ source_id }}?title= {{ search }}">ADD NEW REPERTOIRE</a>
     </p)
   {% elseif type = 'artist' %}
     {% if artists | length > 0 %} {# ARTISTS #}
@@ -37,7 +37,7 @@
       <p>No existing ARTISTS matches found</p>
     {% endif %}
     <p>
-      <a href="cardfile/artist/edit&eid={{ source_id }}?name= {{ search }}">ADD NEW ARTIST</a>
+      <a href="/cardfile/artist/edit&eid={{ source_id }}?name= {{ search }}">ADD NEW ARTIST</a>
     </p)
   {% end if %}
 {% endif %}

@@ -727,7 +727,7 @@ class DefaultController extends ControllerBase {
                 'Alternate' => $match->alternate,
                 'Artists' => "<strong>$match->role:</strong> $match->artist_name",
                 'Notes' => $match->notes,
-                'SELECT' => l('SELECT', "cardfile/join/$source_type/$source_id/work/" . $match->wid),
+                'SELECT' => ums_cardfile_drupal_goto('SELECT', "/cardfile/join/$source_type/$source_id/work/" . $match->wid),
               );
             }
           }
@@ -757,10 +757,7 @@ class DefaultController extends ControllerBase {
             'Name' => $artist['name'],
             'Alias' => $artist['alias'],
             'Notes' => $artist['notes'],
-            'SELECT' => l(
-              'SELECT',
-              "cardfile/join/$source_type/$source_id/artist/" . $artist['aid'],
-              array('query' => $query_args)
+            'SELECT' => ums_cardfile_drupal_goto('SELECT', "/cardfile/join/$source_type/$source_id/artist/" . $artist['aid'], array('query' => $query_args)
             ),
           );
         }

@@ -22,7 +22,7 @@
 	<h2>Repertoire as a Creator:</h2>
   {% if artist.works|length > 0 %}
     {% for work in artist.works %}
-      <p>Composer: <a href="cardfile/work/{{ work.wid }}">{{work.title}}</a></p>
+      <p>Composer: <a href="/cardfile/work/{{ work.wid }}">{{work.title}}</a></p>
     {% endfor %}</ul>
   {% else %}
     <p>No repertoire as a creator.</p>
@@ -33,8 +33,8 @@
   {% if artist.performances|length > 0 %}
     {% for performance in artist.performances %}
       <p>{{ performance.role }}:
-        <a href="cardfile/performance/{{ performance.pid }}">{{ performance.work.title }}</a>,
-        <a href="cardfile/event/{{ performance.event.eid }}">{{ performance.event.date | date("m/d/Y") }}, {{ performance.event.date | date("H:i") }}</a>
+        <a href="/cardfile/performance/{{ performance.pid }}">{{ performance.work.title }}</a>,
+        <a href="/cardfile/event/{{ performance.event.eid }}">{{ performance.event.date | date("m/d/Y") }}, {{ performance.event.date | date("H:i") }}</a>
         at  {{ performance.event.venue }}.
       </p>
     {% endfor %}
