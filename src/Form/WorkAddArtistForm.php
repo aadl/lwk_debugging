@@ -101,11 +101,11 @@ class WorkAddArtistForm extends FormBase {
     dblog('WorkAddArtistForm: submitForm ENTERED    NEEDS WORK TO FINISH THIS');
  
     if ($form_state['clicked_button']['#parents'][0] == 'submit_recent') {
-      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/join/performance/' . $form_state['pid'] . '/artist/' . $form_state['recent_aid'],
-                                                    ['prid' => $form_state['prid']]);
+      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/join/performance/' . $form_state->getValue('pid') . '/artist/' . $form_state->getValue('recent_aid'),
+                                                    ['prid' => $form_state->getValue('prid')]);
     } else {
-      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/searchadd/performance/' . $form_state['pid'] . '/artist/' . $form_state['search_text'],
-                                                    ['prid' => $form_state['prid']]);
+      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/searchadd/performance/' . $form_state->getValue('pid') . '/artist/' . $form_state->getValue('search_text'),
+                                                    ['prid' => $form_state->getValue('prid')]);
     }
     dblog('WorkAddAtistForm:submitForm: $drupal_goto_url = [' . $drupal_goto_url . ']');
     return new RedirectResponse($drupal_goto_url);

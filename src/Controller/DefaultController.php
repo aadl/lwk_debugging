@@ -501,7 +501,7 @@ class DefaultController extends ControllerBase {
 // ===============================================================================================
 // ===============================================================================================
   /**
-   * cf_performance - handle work edits
+   * cf_performance - handle performance edits
    */
   public function cf_performance($pid = 0) {
     dblog('cf_performance: ENTERED, $pid = ' . $pid);
@@ -529,7 +529,7 @@ class DefaultController extends ControllerBase {
   }
 
   /**
-   * cf_delete_work - handle work deletion
+   * cf_delete_performance - handle performance deletion
    */
   public function cf_delete_performance($pid) {  
     $performance = _ums_cardfile_get_performance($pid);
@@ -543,7 +543,7 @@ class DefaultController extends ControllerBase {
   }
 
    /**
-   * cf_delete_work - handle work deletion
+   * cf_performance_delete_artist - handle performance artist deletion
    */
   public function cf_performance_delete_artist($aid, $pid) {  
     $performance = _ums_cardfile_get_performance($pid);
@@ -554,6 +554,7 @@ class DefaultController extends ControllerBase {
     \Drupal::messenger()->addMessage('Artist has been deleted');
     return new RedirectResponse('cardfile/performance/' . $pid);
   }
+  
 // ===============================================================================================
 // ===============================================================================================
 

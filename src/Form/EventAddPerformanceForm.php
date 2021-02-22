@@ -54,7 +54,7 @@ class EventAddPerformanceForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     dblog('EventAddPerformanceForm: ENTERED');
     
-    $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/searchadd/event/' . $form_state['values']['eid'] . '/work/' . $form_state['values']['search']);
+    $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/searchadd/event/' . $form_state->getValue('eid') . '/work/' . $form_state->getValue('search'));
     return new RedirectResponse($drupal_goto_url);
   }
 }

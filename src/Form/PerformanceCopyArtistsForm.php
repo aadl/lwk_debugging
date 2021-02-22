@@ -79,8 +79,8 @@ class PerformanceCopyArtistsForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     dblog('PerformanceCopyArtistsForm: submitForm ENTERED');
  
-    $pid = $form_state['values']['pid'];
-    $source_pid = $form_state['values']['source_pid'];
+    $pid = $form_state->getValue('pid');
+    $source_pid = $form_state->getValue('source_pid');
 
     // Copy all performance artists from source pid to new pid
     $res = db_query("SELECT * FROM ums_artist_performances WHERE pid = %d", $source_pid);

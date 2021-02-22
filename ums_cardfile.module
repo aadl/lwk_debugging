@@ -171,7 +171,6 @@ function ums_cardfile_create_link($link_text, $url, $url_options = []) {
 function ums_cardfile_save($table_name, $fields_array, $field_key) {
   $db = \Drupal::database();
 
-  $keyValue = NULL;
   if ($field_key && $fields_array[$field_key]) {
     $keyValue = $fields_array[$field_key];
     unset($fields_array[$field_key]);
@@ -185,11 +184,7 @@ function ums_cardfile_save($table_name, $fields_array, $field_key) {
 }
 
 function ums_cardfile_drupal_goto($path, $options = []) {
-  dblog('ums_cardfile_drupal_goto: ENTERED path=', $path, 'options=', $options);
   $url = Url::fromUri('internal:/' . $path);
-  dblog('ums_cardfile_drupal_goto: AFTER  fromUri, url=', $url);
-  //$url = Url::fromUri('internal:/' . $path, $options);
-  // dblog('ums_cardfile_drupal_goto: url=', $url->toString());
   return $url;
 }
 

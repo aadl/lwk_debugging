@@ -106,11 +106,11 @@ class PerformanceAddArtistForm extends FormBase {
     dblog('PerformanceAddArtistForm: submitForm ENTERED');
  
     if ($form_state['clicked_button']['#parents'][0] == 'submit_recent') {
-      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/join/work/' . $form_state['wid'] . '/artist/' . $form_state['recent_aid'],
-                                                    ['wrid' => $form_state['wrid']]);
+      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/join/work/' . $form_state->getValue('wid') . '/artist/' . $form_state->getValue('recent_aid'),
+                                                    ['wrid' => $form_state->getValue('wrid')]);
     } else {
-      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/searchadd/work/' . $form_state['wid'] . '/artist/' . $form_state['search_text'],
-                                                    ['wrid' => $form_state['wrid']]);
+      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/searchadd/work/' . $form_state->getValue('wid') . '/artist/' . $form_state->getValue('search_text'),
+                                                    ['wrid' => $form_state->getValue('wrid')]);
     }
     dblog('PerformanceAddArtistForm:submitForm: $drupal_goto_url = [' . $drupal_goto_url . ']');
     return new RedirectResponse($drupal_goto_url);
