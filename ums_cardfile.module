@@ -120,10 +120,16 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
         'performance' => NULL,
         'work_add_artist_form' => NULL,
         'performance_add_artist_form' => NULL,
-        'performance_copy_artists_form' => NULL,      ]
+        'performance_copy_artists_form' => NULL,
+      ]
     ],
 
-
+     'ums-cardfile-perfroles' => [
+      'variables' => [
+        'perfroles' => NULL,
+        'perf_role_add_form' => NULL,
+      ]
+    ],
 
     'ums-cardfile-searchadd' => [
       'variables' => [
@@ -249,8 +255,7 @@ function _ums_cardfile_merge_artist($old_aid, $aid) {
 
   if (empty($old_artist['aid'])) {
     drupal_set_message("Cannot merge artist $old_aid (artist not found)");
-    dblog('_ums_cardfile_merge_artist: CALLING RedirectResponse ===== empty old_artist->aid');
-    return new RedirectResponse('cardfile/artists');
+    return new RedirectResponse('/cardfile/artists');
 
     //  $redirect_uri = '/summergame/player/' . $player['pid'] . '/' . $type;
     //        if ($_GET['text']) {
@@ -261,17 +266,8 @@ function _ums_cardfile_merge_artist($old_aid, $aid) {
 
   } elseif (empty($artist['aid'])) {
     drupal_set_message("Cannot merge artist into artist $aid (artist not found)");
-    dblog('_ums_cardfile_merge_artist: CALLING RedirectResponse ===== empty artist->aid');
-    return new RedirectResponse('cardfile/artists');
+    return new RedirectResponse('/cardfile/artists');
   }
-
-
-
-
-
-
-
-
 
   $updated = FALSE;
   foreach ($old_artist as $field => $value) {

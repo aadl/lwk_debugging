@@ -52,6 +52,9 @@
             handleButtonClick('series', $(this));
           });        
           
+         $('#ums-perfrole-table tbody td a').click(function (e) {
+            handleButtonClick('performance role', $(this));
+          });        
         });
       });
     }

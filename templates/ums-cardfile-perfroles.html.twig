@@ -1,0 +1,35 @@
+{{ attach_library('ums_cardfile/ums-cardfile-functions') }}
+<h1>
+	<span>UMS Performance Roles</span>
+</h1>
+
+  
+{{ perf_role_add_form }}
+
+<table id="ums-perfrole-table">
+	<thead>
+		<tr>
+			<th role="columnheader">Role Name</th>
+			<th role="columnheader">DELETE?</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for role in perfroles %}
+			<tr>
+				<td>
+					{{ role.name }}
+				</td>
+				<td>
+					<a href="/cardfile/perfrole/delete/{{ role.prid }}" class="button delete cardfile-perfrole" data-name="{{ role.name }}">Delete</a>
+				</td>
+			</tr>
+		{% endfor %}
+
+	</tbody>
+</table>
+<div class="l-overflow-clear">
+	<p>
+		<a href="/cardfile/events" class="align-left base-margin-right">UMS Events List</a>
+	</p>
+</div>
+

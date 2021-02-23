@@ -246,3 +246,43 @@ ums_cardfile.join:
     id2: ''
   requirements:
     _permission: 'access ums_cardfile'
+
+# ---------------------------------------------------------------------------------------------
+ums_cardfile.perfroles:
+  path: '/cardfile/perfroles'
+  defaults:
+    _title: 'Beta UMS Artist Roles'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_perfroles'
+  requirements:
+    _permission: 'access ums_cardfile'
+
+ums_cardfile.perfroles.delete:
+  path: '/cardfile/perfrole/delete/{prid}'
+  defaults:
+    _title: 'Delete Artist Role'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_delete_perfrole'
+    prid: ''
+  requirements:
+    _permission: 'access ums_cardfile'
+
+  # $items['cardfile/perfroles/delete'] = array(
+  #   'title' => t('Delete Artist Role'), 
+  #   'page callback' => 'drupal_get_form',
+  #   'page arguments' => array('ums_cardfile_delete_perfrole_confirm', 3),
+  #   'access arguments' => array('edit ums card file records'),
+  #   'type' => MENU_CALLBACK,
+  # );
+
+  # $items['cardfile/workroles'] = array(
+  #   'title' => t('Beta UMS Creator Roles'),
+  #   'page callback' => 'ums_cardfile_workroles',
+  #   'access arguments' => array('edit ums card file records'),
+  #   'type' => MENU_NORMAL_ITEM,
+  # );
+  # $items['cardfile/workroles/delete'] = array(
+  #   'title' => t('Delete Creator Role'),
+  #   'page callback' => 'drupal_get_form',
+  #   'page arguments' => array('ums_cardfile_delete_workrole_confirm', 3),
+  #   'access arguments' => array('edit ums card file records'),
+  #   'type' => MENU_CALLBACK,
+  # );

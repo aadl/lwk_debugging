@@ -91,9 +91,7 @@ class DefaultController extends ControllerBase {
       ];
     } else {
       \Drupal::messenger()->addMessage("Unable to find artist with ID:$aid");
-      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/artists');
-      dblog("cf_artists_merge  CALLING RedirectResponse cf_artist - 'cardfile/artists'");
-      return new RedirectResponse('cardfile/artists');
+      return new RedirectResponse('/cardfile/artists');
     }
   }
 
@@ -112,8 +110,7 @@ class DefaultController extends ControllerBase {
     dblog("cf_artists_merge  ENTERED old_id = $old_id, merge_id = $merge_id, confirm = $confirm");
     if ($confirm) {
       _ums_cardfile_merge_artist($old_id, $merge_id);
-      dblog("cf_artists_merge  CALLING cf_artists_merge 1 - 'cardfile/artist/ . $merge_id'");
-      return new RedirectResponse('cardfile/artist/ . $merge_id');
+      return new RedirectResponse('/cardfile/artist/ . $merge_id');
     }
 
     $old_artist = _ums_cardfile_get_artist($old_id);
@@ -145,8 +142,7 @@ class DefaultController extends ControllerBase {
 
     } else {
       drupal_set_message('Invalid Artist IDs', 'error');
-      dblog("cf_artists_merge  CALLING cf_artists_merge 2 - 'cardfile/artist'");
-      return new RedirectResponse('cardfile/artists');
+      return new RedirectResponse('/cardfile/artists');
     }
     return [];
   }
@@ -335,9 +331,7 @@ class DefaultController extends ControllerBase {
       ];
     } else {
       \Drupal::messenger()->addMessage("Unable to find event with ID:$eid");
-      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/events');
-      dblog("cf_artists_merge  CALLING RedirectResponse cf_event - 'cardfile/events'");
-      return new RedirectResponse('cardfile/events');
+      return new RedirectResponse('/cardfile/events');
     }
   }
 
@@ -481,9 +475,7 @@ class DefaultController extends ControllerBase {
       ];
     } else {
       \Drupal::messenger()->addMessage("Repertoire not found",'error', TRUE);
-      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/works');
-      dblog("cf_artists_merge  CALLING RedirectResponse cf_work - 'cardfile/works'");
-      return new RedirectResponse('cardfile/works');
+      return new RedirectResponse('/cardfile/works');
     }
   }
 
@@ -523,8 +515,7 @@ class DefaultController extends ControllerBase {
       ];
     } else {
       \Drupal::messenger()->addMessage("Performance not found",'error', TRUE);
-      dblog("cf_performance: PERFORMANCE NOT FOUND  CALLING RedirectResponse - 'cardfile/events'");
-      return new RedirectResponse('cardfile/events');
+      return new RedirectResponse('/cardfile/events');
     }
   }
 
@@ -539,7 +530,7 @@ class DefaultController extends ControllerBase {
     $db->query("DELETE FROM ums_artist_performances WHERE pid = :pid", [':pid' => $pid]);
     $db->db_query("DELETE FROM ums_performances WHERE pid = :pid", [':pid' => $pid]);
     \Drupal::messenger()->addMessage('Repertoire performance has been deleted');
-    return new RedirectResponse('cardfile/event/' . $eid);
+    return new RedirectResponse('/cardfile/event/' . $eid);
   }
 
    /**
@@ -552,9 +543,47 @@ class DefaultController extends ControllerBase {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_artist_performances WHERE aid = :aid AND pid = :pid", [':aid' => $aid, ':pid' => $pid]);
     \Drupal::messenger()->addMessage('Artist has been deleted');
-    return new RedirectResponse('cardfile/performance/' . $pid);
+    return new RedirectResponse('/cardfile/performance/' . $pid);
   }
   
+ // ===============================================================================================
+ // ===============================================================================================
+
+  /**
+   * cf_perfroles - handle Performance Roles display
+   */
+  public function cf_perfroles() {
+    $db = \Drupal::database();
+    $rows = $db->query('SELECT * FROM ums_performance_roles ORDER BY name')->fetchAll();
+    $perf_roles = json_decode(json_encode($rows), TRUE);
+
+    // foreach ($rows as $arow) {
+    //   $perf_roles[] = ['name' => $rows->name,
+    //                    'prid' => $rows->prid
+    //                   ];
+    // }
+    dblog('cf_perfroles rows count =', count($perf_roles));
+    dblog('cf_perfroles perf_roles 2 =', $perf_roles);
+    $perfrole_add_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\PerfRoleAddForm');
+    return [
+        '#theme' => 'ums-cardfile-perfroles',
+        '#perfroles' => $perf_roles,
+        '#perf_role_add_form' => $perfrole_add_form,
+        '#cache' => [ 'max-age' => 0 ]
+      ];
+  }
+
+  /**
+   * cf_series - handle Performance Role deletion
+   */
+  public function cf_delete_perfrole($prid) {  
+    dblog('cf_delete_perfrole sid =', $prid);
+    $db = \Drupal::database();
+    $db->query("DELETE FROM ums_performance_roles WHERE prid = :prid", [':prid' => $prid]);
+    \Drupal::messenger()->addMessage('Removed Artist Role from database');
+    return new RedirectResponse('/cardfile/perfroles');
+  }
+
 // ===============================================================================================
 // ===============================================================================================
 
@@ -575,7 +604,8 @@ class DefaultController extends ControllerBase {
           drupal_write_record('ums_artist_performances', $copy_artist_perf);
         }
       }
-      drupal_set_message("All Performances copied from event $id2 to event $id1");
+      drupal_set_message("All Performances c
+      opied from event $id2 to event $id1");
       drupal_goto('cardfile/event/' . $id1);
     }
     if ($type1 == 'event' && $type2 == 'work') {
