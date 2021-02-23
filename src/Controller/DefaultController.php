@@ -556,25 +556,20 @@ class DefaultController extends ControllerBase {
     $db = \Drupal::database();
     $rows = $db->query('SELECT * FROM ums_performance_roles ORDER BY name')->fetchAll();
     $perf_roles = json_decode(json_encode($rows), TRUE);
+    $return_param = \Drupal::request()->query->get('return');
 
-    // foreach ($rows as $arow) {
-    //   $perf_roles[] = ['name' => $rows->name,
-    //                    'prid' => $rows->prid
-    //                   ];
-    // }
-    dblog('cf_perfroles rows count =', count($perf_roles));
-    dblog('cf_perfroles perf_roles 2 =', $perf_roles);
-    $perfrole_add_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\PerfRoleAddForm');
+    $perfrole_add_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\PerfRoleAddForm', $return_param);
     return [
         '#theme' => 'ums-cardfile-perfroles',
         '#perfroles' => $perf_roles,
         '#perf_role_add_form' => $perfrole_add_form,
+        '#return' => $return_param,
         '#cache' => [ 'max-age' => 0 ]
       ];
   }
 
   /**
-   * cf_series - handle Performance Role deletion
+   * cf_delete_perfrole - handle Performance Role deletion
    */
   public function cf_delete_perfrole($prid) {  
     dblog('cf_delete_perfrole sid =', $prid);
@@ -582,6 +577,38 @@ class DefaultController extends ControllerBase {
     $db->query("DELETE FROM ums_performance_roles WHERE prid = :prid", [':prid' => $prid]);
     \Drupal::messenger()->addMessage('Removed Artist Role from database');
     return new RedirectResponse('/cardfile/perfroles');
+  }
+
+ // ===============================================================================================
+ // ===============================================================================================
+
+  /**
+   * cf_workroles - handle Work Roles display
+   */
+  public function cf_workroles() {
+    $db = \Drupal::database();
+    $rows = $db->query('SELECT * FROM ums_work_roles ORDER BY name')->fetchAll();
+    $work_roles = json_decode(json_encode($rows), TRUE);
+    $return_param = \Drupal::request()->query->get('return');
+    $workrole_add_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\WorkRoleAddForm', $return_param);
+    return [
+        '#theme' => 'ums-cardfile-workroles',
+        '#workroles' => $work_roles,
+        '#work_role_add_form' => $workrole_add_form,
+        '#return' => $return_param,
+        '#cache' => [ 'max-age' => 0 ]
+      ];
+  }
+
+  /**
+   * cf_delete_workrole - handle Performance Role deletion
+   */
+  public function cf_delete_workrole($wrid) {  
+    dblog('cf_delete_workrole wrid =', $wrid);
+    $db = \Drupal::database();
+    $db->query("DELETE FROM ums_work_roles WHERE wrid = :wrid", [':wrid' => $wrid]);
+    \Drupal::messenger()->addMessage('Removed Creator Role from database');
+    return new RedirectResponse('/cardfile/workroles');
   }
 
 // ===============================================================================================

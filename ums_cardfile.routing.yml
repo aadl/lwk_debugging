@@ -265,24 +265,20 @@ ums_cardfile.perfroles.delete:
   requirements:
     _permission: 'access ums_cardfile'
 
-  # $items['cardfile/perfroles/delete'] = array(
-  #   'title' => t('Delete Artist Role'), 
-  #   'page callback' => 'drupal_get_form',
-  #   'page arguments' => array('ums_cardfile_delete_perfrole_confirm', 3),
-  #   'access arguments' => array('edit ums card file records'),
-  #   'type' => MENU_CALLBACK,
-  # );
+ # ---------------------------------------------------------------------------------------------
+ums_cardfile.workroles:
+  path: '/cardfile/workroles'
+  defaults:
+    _title: 'Beta UMS Creator Roles'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_workroles'
+  requirements:
+    _permission: 'access ums_cardfile'
 
-  # $items['cardfile/workroles'] = array(
-  #   'title' => t('Beta UMS Creator Roles'),
-  #   'page callback' => 'ums_cardfile_workroles',
-  #   'access arguments' => array('edit ums card file records'),
-  #   'type' => MENU_NORMAL_ITEM,
-  # );
-  # $items['cardfile/workroles/delete'] = array(
-  #   'title' => t('Delete Creator Role'),
-  #   'page callback' => 'drupal_get_form',
-  #   'page arguments' => array('ums_cardfile_delete_workrole_confirm', 3),
-  #   'access arguments' => array('edit ums card file records'),
-  #   'type' => MENU_CALLBACK,
-  # );
+ums_cardfile.workroles.delete:
+  path: '/cardfile/workrole/delete/{wrid}'
+  defaults:
+    _title: 'Delete Creator Role'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_delete_workrole'
+    wrid: ''
+  requirements:
+    _permission: 'access ums_cardfile'

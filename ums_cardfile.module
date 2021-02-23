@@ -131,6 +131,13 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
       ]
     ],
 
+     'ums-cardfile-workroles' => [
+      'variables' => [
+        'workroles' => NULL,
+        'work_role_add_form' => NULL,
+        'return' => NULL,
+      ]
+    ],
     'ums-cardfile-searchadd' => [
       'variables' => [
         'heading_text' => NULL,

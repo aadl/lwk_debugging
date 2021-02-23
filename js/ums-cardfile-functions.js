@@ -55,7 +55,12 @@
          $('#ums-perfrole-table tbody td a').click(function (e) {
             handleButtonClick('performance role', $(this));
           });        
-        });
+ 
+          $('#ums-workrole-table tbody td a').click(function (e) {
+            handleButtonClick('creator role', $(this));
+          });        
+
+       });
       });
     }
   }

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\ums_cardfile\Form\PerfRoleAddForm
+ * Contains \Drupal\ums_cardfile\Form\WorkRoleAddForm
  */
 
 namespace Drupal\ums_cardfile\Form;
@@ -11,13 +11,13 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 
-class PerfRoleAddForm extends FormBase {
+class WorkRoleAddForm extends FormBase {
   public function getFormId() {
-    return 'perf_role_edit_form';
+    return 'work_role_edit_form';
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $return = '') {
-    dblog('PerfRoleAddForm buildForm ENTERED');
+    dblog('WorkRoleAddForm buildForm ENTERED');
 
   $form = array(
     '#prefix' => '<div class="container-inline">',
@@ -31,7 +31,7 @@ class PerfRoleAddForm extends FormBase {
   }
   $form['name'] = array(
       '#type' => 'textfield',
-      '#title' => t('Add a Artist Role'),
+      '#title' => t('Add a Creator Role'),
       '#size' => 64,
       '#maxlength' => 128,
     );
@@ -47,11 +47,11 @@ class PerfRoleAddForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('PerfRoleAddForm: ENTERED');
+    dblog('WorkRoleAddForm: ENTERED');
     $new_role = [];
     $new_role['name'] = $form_state->getValue('name');
-    ums_cardfile_save('ums_performance_roles', $new_role, NULL);
-    drupal_set_message('Added new role');
+    ums_cardfile_save('ums_work_roles', $new_role, NULL);
+    drupal_set_message('Added new Creator Role');
 
     if ($return = $form_state->getValue('return')) {
       $drupal_goto_url = ums_cardfile_drupal_goto($return);
