@@ -50,8 +50,6 @@ function ums_cardfile_schema() {
       ],
       'youtube_url' => [
         'type' => 'text',
-        'not null' => TRUE,
-        'default' => '',
      ],
      ],
     'primary key' => ['eid']
@@ -157,8 +155,6 @@ function ums_cardfile_schema() {
       ],
       'youtube_url' => [
         'type' => 'text',
-        'not null' => TRUE,
-        'default' => '',
      ],
     ],
     'primary key' => ['wid'],
@@ -234,8 +230,6 @@ function ums_cardfile_schema() {
       ],
       'youtube_url' => [
         'type' => 'text',
-        'not null' => TRUE,
-        'default' => '',
       ],
     ],
     'primary key' => ['pid'],
@@ -305,8 +299,6 @@ function ums_cardfile_schema() {
       ],
       'des' => [
         'type' => 'text',
-        'not null' => TRUE,
-        'default' => '',
      ],
       'title' => [
         'type' => 'varchar',
