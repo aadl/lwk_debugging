@@ -30,7 +30,7 @@ class PerformanceForm extends FormBase {
         $form['pid'] = [
         '#type' => 'value',
         '#value' => $pid,
-      ];
+        ];
       $form['weight'] = [
         '#type' => 'textfield',
         '#title' => t('Performance Order'),

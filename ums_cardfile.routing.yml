@@ -206,7 +206,7 @@ ums_cardfile.performance.edit:
     _permission: 'access ums_cardfile'
 
 ums_cardfile.performance.delete:
-  path: '/cardfile/work/performance/{pid}'
+  path: '/cardfile/performance/{pid}'
   defaults:
     _title: 'Delete UMS Performance'
     _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_delete_performance'
@@ -215,25 +215,16 @@ ums_cardfile.performance.delete:
     _permission: 'access ums_cardfile'
 
 ums_cardfile.performance.delete_artist:
-  path: '/cardfile/work/performance/delete_artist/{aid}/{pid}'
+  path: '/cardfile/performance/delete_artist/{pid}/{aid}'
   defaults:
     _title: 'Delete Performance Artist'
-    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_performance_delete_artist'
-    aid: ''
-    pid: ''
+    _form: '\Drupal\ums_cardfile\Form\PerformanceDeleteArtistConfirmForm'
+    pid: 0
+    aid: 0
   requirements:
     _permission: 'access ums_cardfile'
-
-  # $items['cardfile/performance/delete_artist'] = array(
-  #   'title' => t('Delete Performance Artist'),
-  #   'page callback' => 'drupal_get_form',
-  #   'page arguments' => array('ums_cardfile_performance_delete_artist_confirm', 3, 4),
-  #   'access arguments' => array('edit ums card file records'),
-  #   'type' => MENU_CALLBACK,
-  # );
-
-
-
+    pid: ^\d+$
+    aid: ^\d+$
 
 # ---------------------------------------------------------------------------------------------
 ums_cardfile.searchadd:
