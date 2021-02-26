@@ -189,6 +189,18 @@ ums_cardfile.works.merge:
   requirements:
     _permission: 'access ums_cardfile'
 
+ums_cardfile.work.delete_artist:
+  path: '/cardfile/work/delete_artist/{wid}/{aid}'
+  defaults:
+    _title: 'Delete Work Artist'
+    _form: '\Drupal\ums_cardfile\Form\WorkDeleteArtistConfirmForm'
+    wid: 0
+    aid: 0
+  requirements:
+    _permission: 'access ums_cardfile'
+    wid: ^\d+$
+    aid: ^\d+$
+
 # ---------------------------------------------------------------------------------------------
 ums_cardfile.performance:
   path: '/cardfile/performance/{pid}'
