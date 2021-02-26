@@ -97,12 +97,11 @@ class WorkAddArtistForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $clicked_element = $form_state->getTriggeringElement()['#id'];
     if ($clicked_element == 'edit-submit-recent') {
-      $link_display_text = 'cardfile/searchadd/work/' . $form_state->getValue('wid') . '/artist/' . $form_state->getValue('search_text');
-      $drupal_goto_url = ums_cardfile_drupal_goto($link_display_text, ['wrid' => $form_state->getValue('wrid')]);    
-      return new RedirectResponse($drupal_goto_url);
+      $link_display_text = 'cardfile/join/work/' . $form_state->getValue('wid') . '/artist/' . $form_state->getValue('recent_aid');
+      $drupal_goto_url = ums_cardfile_drupal_goto($link_display_text, ['wrid' => $form_state->getValue('wrid')]);
     }
     else {
-      $link_display_text = 'cardfile/join/work/' . $form_state->getValue('wid') . '/artist/' . $form_state->getValue('recent_aid');
+      $link_display_text = 'cardfile/searchadd/work/' . $form_state->getValue('wid') . '/artist/' . $form_state->getValue('search_text');
       $drupal_goto_url = ums_cardfile_drupal_goto($link_display_text, ['wrid' => $form_state->getValue('wrid')]);
     }
     return new RedirectResponse($drupal_goto_url);

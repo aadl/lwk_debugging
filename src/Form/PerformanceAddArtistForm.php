@@ -17,17 +17,14 @@ class PerformanceAddArtistForm extends FormBase {
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $pid = 0) {
-    dblog('PerformanceAddArtistForm: buildForm ENTERED - pid', $pid);
     $db = \Drupal::database();
 
   // get work roles
     $perf_role_options = [];
     $performance_roles = $db->query("SELECT * FROM ums_work_roles ORDER BY name")->fetchAll();
-    //dblog('PerformanceAddArtistForm: performance_roles (2)', $performance_roles);
     foreach ($performance_roles as $performance_role) {
       $perf_role_options[$performance_role->wrid] = $performance_role->name;
     }
-    dblog('PerformanceAddArtistForm: perf_role_options: ', $perf_role_options);
 
     $form['collapsible'] = [
       '#type' => 'details',
@@ -95,7 +92,6 @@ class PerformanceAddArtistForm extends FormBase {
       '#suffix' => ums_cardfile_create_link('ADD NEW ARTIST', 'cardfile/artist/edit', ['query' => ['pid' => $pid]]) . '</p></td>'
     );
     
-    dblog('performance_add_artist_form - RETURNING' ); // $form:', $form);
     return $form;
   }
 
@@ -103,16 +99,15 @@ class PerformanceAddArtistForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('PerformanceAddArtistForm: submitForm ENTERED');
+   $clicked_element = $form_state->getTriggeringElement()['#id'];
+    if ($clicked_element == 'edit-submit-recent') {
+      $link_display_text = 'cardfile/join/performance/' . $form_state->getValue('pid') . '/artist/' . $form_state->getValue('recent_aid');
+      $drupal_goto_url = ums_cardfile_drupal_goto($link_display_text, ['prid' => $form_state->getValue('prid')]);
  
-    if ($form_state['clicked_button']['#parents'][0] == 'submit_recent') {
-      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/join/performance/' . $form_state->getValue('pid') . '/artist/' . $form_state->getValue('recent_aid'),
-                                                    ['prid' => $form_state->getValue('prid')]);
     } else {
-      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/searchadd/performance/' . $form_state->getValue('pid') . '/artist/' . $form_state->getValue('search_text'),
-                                                    ['prid' => $form_state->getValue('prid')]);
+      $link_display_text = 'cardfile/searchadd/performance/' . $form_state->getValue('pid') . '/artist/' . $form_state->getValue('search_text');
+      $drupal_goto_url = ums_cardfile_drupal_goto($link_display_text, ['prid' => $form_state->getValue('prid')]);
     }
-    dblog('PerformanceAddArtistForm:submitForm: $drupal_goto_url = [' . $drupal_goto_url . ']');
     return new RedirectResponse($drupal_goto_url);
   }
 }
