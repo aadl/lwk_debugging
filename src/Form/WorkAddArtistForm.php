@@ -52,12 +52,14 @@ class WorkAddArtistForm extends FormBase {
 
     $current_path = \Drupal::service('path.current')->getPath();
 
+    dblog('Before ums_cardfile_create_link: Edit Creator Roles');
     $form['collapsible']['table']['role']['wrid'] = [
       '#type' => 'select',
       '#title' => 'Role',
       '#options' => $work_role_options,
       '#description' => '[' .ums_cardfile_create_link('Edit Creator Roles', 'cardfile/workroles', ['query' => ['return' => $current_path]]) . ']',
     ];
+    dblog('After ums_cardfile_create_link: Edit Creator Roles');
     $form['collapsible']['table']['search'] = [
       '#prefix' => '<td><div class="container-inline">',
       '#suffix' => '</div><p><strong>- OR -</strong></p>',
@@ -85,12 +87,15 @@ class WorkAddArtistForm extends FormBase {
     $form['collapsible']['table']['recent']['submit_recent'] = [
       '#type' => 'submit',
       '#value' => t('Use This Artist'),
+      '#submit' => array([$this, 'submitForm_recent']),
+       "#weight" => 1,
     ];
+    
     dblog('work_add_artist_form', ['query' => ['wid' => $wid]]);
     $form['collapsible']['table']['addNew'] = [
       '#suffix' => ums_cardfile_create_link('ADD NEW ARTIST', 'cardfile/artist/edit', ['query' => ['wid' => $wid]]) . '</p></td>'
     ];
-    dblog('work_add_artist_form - RETURNING $form:', $form);
+    dblog('work_add_artist_form - RETURNING');
     return $form;
   }
 
@@ -98,16 +103,17 @@ class WorkAddArtistForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('WorkAddArtistForm: submitForm ENTERED    NEEDS WORK TO FINISH THIS');
- 
-    if ($form_state['clicked_button']['#parents'][0] == 'submit_recent') {
-      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/join/performance/' . $form_state->getValue('pid') . '/artist/' . $form_state->getValue('recent_aid'),
-                                                    ['prid' => $form_state->getValue('prid')]);
-    } else {
-      $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/searchadd/performance/' . $form_state->getValue('pid') . '/artist/' . $form_state->getValue('search_text'),
-                                                    ['prid' => $form_state->getValue('prid')]);
-    }
-    dblog('WorkAddAtistForm:submitForm: $drupal_goto_url = [' . $drupal_goto_url . ']');
+    dblog('WorkAddArtistForm: submitForm ENTERED');
+    $link_display_text = 'cardfile/searchadd/work/' . $form_state->getValue('wid') . '/artist/' . $form_state->getValue('search_text');
+    $drupal_goto_url = ums_cardfile_drupal_goto($link_display_text, ['wrid' => $form_state->getValue('wrid')]);    
     return new RedirectResponse($drupal_goto_url);
   }
+
+  public function submitForm_recent(array &$form, FormStateInterface $form_state) {
+    dblog('WorkAddArtistForm: submitForm_recent ENTERED');
+    $link_display_text = 'cardfile/join/work/' . $form_state->getValue('wid') . '/artist/' . $form_state->getValue('recent_aid');
+    $drupal_goto_url = ums_cardfile_drupal_goto($link_display_text, ['wrid' => $form_state->getValue('wrid')]);
+    return new RedirectResponse($drupal_goto_url);
+  }
+
 }

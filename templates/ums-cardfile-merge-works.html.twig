@@ -1,0 +1,48 @@
+{% set oldid = merge_data[0][1] %}
+{% set aid = merge_data[0][3] %}
+
+<h1>
+  <span>Merge These Repertoire Records?</span>
+</h1>
+
+<div class="l-overflow-clear">
+<p class="t-center" style="color: red">
+    Warning: Repertoire record #{{ oldid }} will be deleted as a result of this merge
+</p>
+
+<table id="ums-merge_repertoire-table">
+	<thead>
+		<tr>
+      <th role="columnheader"></th>
+			<th role="columnheader">Old Work</th>
+      <th role="columnheader">>>></th>
+			<th role="columnheader">Work</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for row in merge_data %}
+			<tr>
+				<td>
+					<strong> {{ row[0] }} </strong>
+				</td>
+				<td>
+					{{ row[1] }}
+				</td>
+				<td>
+					<strong> {{ row[2] }} </strong>
+				</td>
+				<td>
+          {{ row[3] }}
+				</td>
+			</tr>
+		{% endfor %}
+
+	</tbody>
+</table>
+<div class="l-overflow-clear">
+  <p class="t-center">
+    <a href="/cardfile/works/merge/{{ oldid }}/{{ aid }}/1" margin="auto" class="button green" margin="auto" style="width:200px; font-weight:bold;font-size:18px;">MERGE</a>
+    &nbsp;&nbsp;&nbsp;
+    <a href="/cardfile/work/{{ oldid }}" class="button" margin="auto" style="width:200px; font-size:18px">Cancel</a>
+  </p>
+</div>

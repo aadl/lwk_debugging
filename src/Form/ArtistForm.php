@@ -113,16 +113,6 @@ class ArtistForm extends FormBase {
     ];
 
     if ($artist['aid']) {
-      // $form['merge_id'] = [
-      //   '#type' => 'textfield',
-      //   '#title' => $this->t('Merge this artist into Artist ID'),
-      //   '#size' => 8,
-      //   '#maxlength' => 8,
-      //   '#description' => $this->t("Enter another Artist ID number to merge this artist information into that artist record"),
-      //   '#prefix' => "<fieldset class=\"collapsible collapsed\"><legend>MERGE ARTIST</legend>",
-      //   '#suffix' => "</fieldset>",
-      // ];
-
       $form['collapsible'] = [
         '#type' => 'details',
        '#title' => t('MERGE ARTIST'),
@@ -134,8 +124,8 @@ class ArtistForm extends FormBase {
           '#type' => 'textfield',
           '#title' => t('Merge this artist into Artist ID'),
           '#description' => t('Enter another Artist ID number to merge this artist information into that artist record'),
-          '#size' => 32,
-          '#maxlength' => 32,
+          '#size' => 8,
+          '#maxlength' => 8,
         ];
     }
 
@@ -154,13 +144,15 @@ class ArtistForm extends FormBase {
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
     dblog('submitForm: ENTERED');
-    //Check for merge ID
-    $values_array = $form_state->getValues();   //['collapsible']['merge_id']
-    dblog('ArtistForm:: submitForm - values_array =', $values_array);
-    $merge_id = (isset($values_array['merge_id'])) ? $values_array['merge_id'] : NULL;
-    $aid = $values_array['aid'];
+    // Check for merge ID
+    $merge_id = $form_state->get(['collapsible', 'merge_id']);
+    $aid = $form_state->getValue('aid');
+    dblog('submitForm: merge_id =', $merge_id, 'aid =', $aid);
+    if ($merge_id) {
+      dblog("ArtistForm:: submitForm - $form_state->get(['collapsible', 'merge_id']) =", $form_state->get(['collapsible', 'merge_id']));
+    }
 
-    if ($form_state->getValue('aid') && $merge_id) {
+    if ($aid && $merge_id) {
      // if ($_REQUEST['destination']) {
       //   unset($_REQUEST['destination']);
       // }
@@ -172,10 +164,10 @@ class ArtistForm extends FormBase {
     }
 
     $artist = [];
-    $artist['name'] = $values_array['name'];
-    $artist['alias'] = $values_array['alias'];
-    $artist['notes'] = $values_array['notes'];
-    $artist['photo_nid'] = $values_array['photo_nid'];
+    $artist['name'] = $form_state->getValue('name');
+    $artist['alias'] = $form_state->getValue('alias');
+    $artist['notes'] = $form_state->getValue('notes');
+    $artist['photo_nid'] = $form_state->getValue('photo_nid');
 
     // Convert Name to NamePlain for matching
     $artist['name_plain'] = ums_cardfile_normalize($artist['name']);
@@ -197,15 +189,20 @@ class ArtistForm extends FormBase {
 
     if ($form_state->getValue('wid')) {
       // Create new work artist
-     $form_state->setRedirect('ums_cardfile.join', 
-                              ['type1' => 'work', 'id1' => $form_state->getValue('wid'), //, ['aid' => $aid]);
-                                'type2' => 'artist', 'id2' => $aid]); //, ['aid' => $aid]);    
+      dblog('ArtistForm:submitForm -- form  wid =', $form_state->getValue('wid'));
+      dblog('ArtistForm:submitForm -- form wrid =', $form_state->getValue('wrid'));
+      $link_display_text = 'cardfile/join/work/' . $form_state->getValue('wid') . '/artist/' . $aid;
+      $url = ums_cardfile_drual_goto_url($link_display_text, ['wrid' => $form_state->getValue('wrid')]);
+      $form_state->setRedirectUrl($url);
+    //  $form_state->setRedirect('ums_cardfile.join', 
+    //                           ['type1' => 'work', 'id1' => $form_state->getValue('wid'), 'type2' => 'artist', 'id2' => $aid], 
+    //                           ['query' => ['wrid' => $form_state->getValue('wrid')]]);    
     } 
     elseif ($form_state->getValue('pid')) {
       // Create new work artist
       $form_state->setRedirect('ums_cardfile.join', 
                               ['type1' => 'performance', 'id1' => $form_state->getValue('pid'), //, ['aid' => $aid]);
-                              'type2' => 'artist', 'id2' => $aid]); //, ['aid' => $aid]);    
+                              'type2' => 'artist', 'id2' => $aid], ['prid' => $form_state->getValue('prid')]);    
     }
     else {
       drupal_set_message('Artist saved');

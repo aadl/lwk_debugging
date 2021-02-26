@@ -86,7 +86,7 @@ class PerformanceCopyArtistsForm extends FormBase {
     $res = db_query("SELECT * FROM ums_artist_performances WHERE pid = %d", $source_pid);
     while ($artist_perf = db_fetch_object($res)) {
       $artist_perf->pid = $pid;
-      drupal_write_record('ums_artist_performances', $artist_perf);
+      ums_cardfile_save('ums_artist_performances', $artist_perf, NULL);
     }
     drupal_set_message("Copied Repertoire Artists to the Performance");
   }

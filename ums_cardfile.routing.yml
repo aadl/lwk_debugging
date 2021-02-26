@@ -178,13 +178,16 @@ ums_cardfile.work.delete:
   requirements:
     _permission: 'access ums_cardfile'
 
-# $items['cardfile/work/delete_artist'] = array(
-#     'title' => t('Delete Creator'),
-#     'page callback' => 'drupal_get_form',
-#     'page arguments' => array('ums_cardfile_work_delete_artist_confirm', 3, 4),
-#     'access arguments' => array('edit ums card file records'),
-#     'type' => MENU_CALLBACK,
-#   );
+ums_cardfile.works.merge:
+  path: '/cardfile/works/merge/{old_id}/{merge_id}/{confirm}'
+  defaults:
+    _title: 'UMS Cardfile Merge Repertoire'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_works_merge'
+    old_id: ''
+    merge_id: ''
+    confirm: ''
+  requirements:
+    _permission: 'access ums_cardfile'
 
 # ---------------------------------------------------------------------------------------------
 ums_cardfile.performance:
@@ -236,7 +239,7 @@ ums_cardfile.searchadd:
     _permission: 'access ums_cardfile'
 
 ums_cardfile.join:
-  path: '/cardfile/join/{type1}/{id1}/{type2}/{id2}/{options}'
+  path: '/cardfile/join/{type1}/{id1}/{type2}/{id2}'
   defaults:
     _title: 'UMS Cardfile Delete Work'
     _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_join'

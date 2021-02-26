@@ -110,7 +110,7 @@ class DefaultController extends ControllerBase {
     dblog("cf_artists_merge  ENTERED old_id = $old_id, merge_id = $merge_id, confirm = $confirm");
     if ($confirm) {
       _ums_cardfile_merge_artist($old_id, $merge_id);
-      return new RedirectResponse('/cardfile/artist/ . $merge_id');
+      return new RedirectResponse('/cardfile/artist/' . $merge_id);
     }
 
     $old_artist = _ums_cardfile_get_artist($old_id);
@@ -490,6 +490,42 @@ class DefaultController extends ControllerBase {
     ];
   }
 
+  public function cf_works_merge($old_wid, $merge_id, $confirm = '') {
+    dblog("cf_works_merge  ENTERED old_id = $old_wid, merge_id = $merge_id, confirm = $confirm");
+    if ($confirm) {
+      _ums_cardfile_merge_work($old_wid, $merge_id);
+      return new RedirectResponse('/cardfile/work/' . $merge_id);
+    }
+
+    $old_work = _ums_cardfile_get_artist($old_wid);
+    $work = _ums_cardfile_get_artist($merge_id);
+
+    if ($old_work['wid'] && $work['wid']) {
+      $old_work['artists'] = (isset($old_work['artists'])) ? count($old_work['artists']) : 0;
+      $old_work['events'] = (isset($old_work['events'])) ? count($old_work['events']) : 0;
+
+      $work['artists'] = (isset($work['artists'])) ? count($work['artists']) : 0;
+      $work['events'] = (isset($work['events'])) ? count($work['events']) : 0;
+ 
+      $merge_table = [];
+      foreach ($old_work as $field => $old_work_data) {
+        $arrows = (!empty($old_work_data) && empty($work[$field]) ? '>>>>' : '');
+        $merge_table[] = ["$field", $old_work_data, $arrows, $work[$field]];
+      }
+
+      return [
+        '#theme' => 'ums-cardfile-merge-works',
+        '#merge_data' => $merge_table,
+        '#cache' => [ 'max-age' => 0 ]
+      ];
+
+    } else {
+      drupal_set_message('Invalid Repertoire IDs', 'error');
+      return new RedirectResponse('/cardfile/works');
+    }
+    return [];
+  }
+
 // ===============================================================================================
 // ===============================================================================================
   /**
@@ -614,56 +650,55 @@ class DefaultController extends ControllerBase {
 // ===============================================================================================
 // ===============================================================================================
 
-  public function cf_join($type1, $id1, $type2, $id2, $options) {
-    dblog("cf_join: ENTERED type1 = $type1, id1 = $id1, type2 = $type2, id2 = $id2, options = $options", $type1, $id1, $type2, $id2, $options);
+  public function cf_join($type1, $id1, $type2, $id2) {
+    dblog("cf_join: ENTERED type1 = $type1, id1 = $id1, type2 = $type2, id2 = $id2");
     $db = \Drupal::database();
     if ($type1 == 'event' && $type2 == 'source_event') {
       // Copy all performances from source_event to event
-      $performances = $db->query("SELECT * FROM ums_performances WHERE eid = id2", [':id2' => $id2])->fetchAll(PDO::FETCH_ASSOC);
+      $performances = $db->query("SELECT * FROM ums_performances WHERE eid = :id2", [':id2' => $id2])->fetchAll(PDO::FETCH_ASSOC);
       foreach ($performances as $copy_perf) {
         $copy_pid = $copy_perf->pid;
         unset($copy_perf->pid);
         $copy_perf->eid = $id1;
-        drupal_write_record('ums_performances', $copy_perf);
-        $res2 = $db->query("SELECT * FROM ums_artist_performances WHERE pid = %d", $copy_pid)->fetchAll();
+        ums_cardfile_save('ums_performances', $copy_perf, NULL);
+        $res2 = $db->query("SELECT * FROM ums_artist_performances WHERE pid = :copy_pid", [':copy_pid' => $copy_pid])->fetchAll();
         while ($copy_artist_perf = db_fetch_object($res2)) {
           $copy_artist_perf->pid = $copy_perf->pid;
-          drupal_write_record('ums_artist_performances', $copy_artist_perf);
+          ums_cardfile_save('ums_artist_performances', $copy_artist_perf, NULL);
         }
       }
-      drupal_set_message("All Performances c
-      opied from event $id2 to event $id1");
-      drupal_goto('cardfile/event/' . $id1);
+      drupal_set_message("All Performances copied from event $id2 to event $id1");
+      ums_cardfile_drupal_goto('cardfile/event/' . $id1);
     }
     if ($type1 == 'event' && $type2 == 'work') {
       // New Performance
       $max = $db->query("SELECT MAX(weight) as max_weight FROM ums_performances WHERE eid = :id1", [':id1' => $id1])->fetchAssoc();
-      $perf = new stdClass;
-      $perf->eid = $id1;
-      $perf->wid = $id2;
-      $perf->weight = $max->max_weight + 1;
-      drupal_write_record('ums_performances', $perf);
+      $perf = [];
+      $perf['eid'] = $id1;
+      $perf['wid']  = $id2;
+      $perf['weight'] = $max->max_weight + 1;
+      ums_cardfile_save('ums_performances', $perf, NULL);
       drupal_set_message('Created new Repertoire Performance for Event ID: ' . $id1 .
                         '<br />Add Artist Info below:');
-      drupal_goto('cardfile/performance/' . $perf->pid);
+      ums_cardfile_drupal_goto('cardfile/performance/' . $perf['pid']);
     } elseif ($type1 == 'performance' && $type2 == 'artist') {
-      $artist_perf = new stdClass;
-      $artist_perf->pid = $id1;
-      $artist_perf->aid = $id2;
-      $artist_perf->prid = \Drupal::request()->query->get('prid');
-      drupal_write_record('ums_artist_performances', $artist_perf);
+      $artist_perf = [];
+      $artist_perf['pid'] = $id1;
+      $artist_perff['aid'] = $id2;
+      $artist_perf['prid'] = \Drupal::request()->query->get('prid');
+      ums_cardfile_save('ums_artist_performances', $artist_perf, NULL);
       drupal_set_message("Added new Repertoire Artist to the Performance");
       ums_cardfile_recent_artists_d8($id2);
-      drupal_goto('cardfile/performance/' . $artist_perf->pid);
+      ums_cardfile_drupal_goto('cardfile/performance/' . $artist_perf['pid']);
     } elseif ($type1 == 'work' && $type2 == 'artist') {
-      $artist_work = new stdClass;
-      $artist_work->wid = $id1;
-      $artist_work->aid = $id2;
-      $artist_work->wrid = \Drupal::request()->query->get('wrid');
-      drupal_write_record('ums_artist_works', $artist_work);
+      $artist_work = [];
+      $artist_work['wid'] = $id1;
+      $artist_work['aid'] = $id2;
+      $artist_work['wrid'] = \Drupal::request()->query->get('wrid');
+      ums_cardfile_save('ums_artist_works', $artist_work, NULL);
       drupal_set_message("Added new Creator to the Repertoire");
-      ums_cardfile_recent_artists($id2);
-      drupal_goto('cardfile/work/' . $artist_work->wid);
+      ums_cardfile_recent_artists_d8($id2);
+      ums_cardfile_drupal_goto('cardfile/work/' . $artist_work['wid']);
     }
     return [
     ];
@@ -689,6 +724,7 @@ class DefaultController extends ControllerBase {
     } 
     elseif ($source_type == 'work') {
       $work = _ums_cardfile_get_work($source_id);
+      dblog('cf_join: WORK / ARTIST, param = ', json_encode(\Drupal::request()->query));
       $wrid = \Drupal::request()->query->get('wrid');
       dblog('cf_searchadd: wrid =', $wrid);
       $performance_role = $db->query('SELECT * FROM ums_work_roles WHERE wrid = :wrid', [':wrid' => $wrid])->fetchAssoc();

@@ -70,16 +70,22 @@ class WorkForm extends FormBase {
       '#title' => t('Notes'),
       '#default_value' => $work['notes'],
     ];
+
     if ($work['wid']) {
-      $form['merge_id'] = [
-        '#type' => 'textfield',
-        '#title' => t('Merge this repertoire into Repertoire ID'),
-        '#size' => 8,
-        '#maxlength' => 8,
-        '#description' => t("Enter another Repertoire ID number to merge this repertoire information into that repertoire record"),
-        '#prefix' => "<fieldset class=\"collapsible collapsed\"><legend>MERGE REPERTOIRE</legend>",
-        '#suffix' => "</fieldset>",
+      $form['collapsible'] = [
+        '#type' => 'details',
+       '#title' => t('MERGE REPERTOIRE'),
+        //'#description' => t($desc_html),
+        '#open' => FALSE, // Controls the HTML5 'open' attribute. Defaults to FALSE.
       ];
+
+      $form['collapsible']['merge_id'] = [
+          '#type' => 'textfield',
+          '#title' => t('Merge this repertoire into Repertoire ID'),
+          '#description' => t('Enter another Repertoire ID number to merge this repertoire information into that repertoire record'),
+          '#size' => 8,
+          '#maxlength' => 8,
+        ];
     }
 
     $form['submit'] = [
@@ -98,13 +104,17 @@ class WorkForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     dblog('submitForm: ENTERED');
     //Check for merge ID
+    $merge_id = $form_state->getValue('merge_id');
+    dblog('WorkForm:submitForm - merge_id = ', $merge_id);
+    dblog('WorkForm:submitForm - merge_id = ', $form_state->getValues());
+    
     if ($form_state->getValue('aid') && $form_state->getValue('merge_id')) {
       // if ($_REQUEST['destination']) {
       //   unset($_REQUEST['destination']);
       // }
       $form_state->setRedirect(
         'ums_cardfile.works.merge',
-        ['oldid' => $form_state->getValue('aid'), 'mergeid' => $form_state->getValue('merge_id')]
+        ['old_id' => $form_state->getValue('aid'), 'merge_id' => $form_state->getValue('merge_id')]
       );
 
       return;

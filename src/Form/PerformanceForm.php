@@ -59,7 +59,7 @@ class PerformanceForm extends FormBase {
       return $form;
     } else {
       drupal_set_message("Unable to find performance with ID: $pid", 'error');
-      drupal_goto('cardfile');
+      ums_cardfile_drupal_goto('cardfile');
     }
   }
 
@@ -81,7 +81,5 @@ class PerformanceForm extends FormBase {
     ums_cardfile_save('ums_performances', $perf, 'pid');
     drupal_set_message('Updated Performance');
     $form_state->setRedirect('ums_cardfile.performance', ['pid' => $pid]);
-
-    return;
   }
 }

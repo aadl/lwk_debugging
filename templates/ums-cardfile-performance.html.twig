@@ -29,7 +29,7 @@
   {% if performance.work.artists | length > 0 %}
     <p>
       {% for artist in performance.work.artists %}
-        <a href="/cardfile/artist/{{ artist.aid }}">{{ artist.name }}</a>({{artist.role }})<br/>
+        <a href="/cardfile/artist/{{ artist.aid }}">{{ artist.name }}</a> ({{artist.role }})<br/>
       {% endfor %}
     </p>
   {% endif %}

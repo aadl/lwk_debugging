@@ -114,7 +114,12 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
         'work_add_artist_form' => NULL,
       ]
     ],
-
+    'ums-cardfile-merge-works' => [
+      'variables' => [
+        'merge_data' => NULL,
+      ]
+    ],
+ 
     'ums-cardfile-performance' => [
       'variables' => [
         'performance' => NULL,
@@ -176,28 +181,41 @@ function dblog(...$things_to_log) {
 function ums_cardfile_create_link($link_text, $url, $url_options = []) {
   $url = Url::fromUri('internal:/' . $url, $url_options);
   $link = Link::fromTextAndUrl(t($link_text), $url);
-  dblog('ums_cardfile_create_link: $link = ', $link);
   dblog('ums_cardfile_create_link: $link string = ', $link->toString());
   return $link->toString();
 }
 
 function ums_cardfile_save($table_name, $fields_array, $field_key) {
   $db = \Drupal::database();
+  $record_id = NULL;
 
   if ($field_key && $fields_array[$field_key]) {
-    $keyValue = $fields_array[$field_key];
+    $record_id = $fields_array[$field_key];
     unset($fields_array[$field_key]);
-    $db->update($table_name)->fields($fields_array)->condition($field_key, $keyValue)->execute();
+    $db->update($table_name)->fields($fields_array)->condition($field_key, $record_id)->execute();
   }
   else {
     dblog('ums_cardfile_save: INSERT', $table_name, $fields_array);
-    $pid = $db->insert($table_name)->fields($fields_array)->execute();
-    dblog('ums_cardfile_save: AFTER INSERT', $pid);
+    $record_id = $db->insert($table_name)->fields($fields_array)->execute();
+    dblog('ums_cardfile_save: AFTER INSERT', $record_id);
   }
+
+  return $record_id;
 }
 
 function ums_cardfile_drupal_goto($path, $options = []) {
-  $url = Url::fromUri('internal:/' . $path);
+  dblog('ums_cardfile_drupal_goto: path = ', $path);
+  $return_path = Url::fromUri('internal:/' . $path, $options);
+  dblog('ums_cardfile_drupal_goto:  $return_path->toString() = ', $return_path->toString());
+
+  return $return_path->toString();
+}
+
+function ums_cardfile_drual_goto_url($path, $options = []) {
+  dblog('ums_cardfile_drupal_goto: path = ', $path);
+  $url = Url::fromUri('internal:/' . $path, ['query' => $options]);
+  dblog('ums_cardfile_drual_goto_url:  $url->toString() = ', $url->toString());
+
   return $url;
 }
 
@@ -459,6 +477,42 @@ function _ums_cardfile_get_work($wid = 0) {
   return $work;
 }
 
+function _ums_cardfile_merge_work($old_wid, $wid) {
+  // Copy info from old work record to new if field is blank
+  $old_work = db_fetch_array(db_query("SELECT * FROM ums_works WHERE wid = %d", $old_wid));
+  $work = db_fetch_array(db_query("SELECT * FROM ums_works WHERE wid = %d", $wid));
+
+  if (empty($old_work['wid'])) {
+    drupal_set_message("Cannot merge Repertoire $old_wid (repertoire not found)");
+    ums_cardfile_drupal_goto('cardfile/works');
+  } elseif (empty($work['wid'])) {
+    drupal_set_message("Cannot merge Repertoire into Repertoire $wid (repertoire not found)");
+    ums_cardfile_drupal_goto('cardfile/works');
+  }
+
+  $updated = FALSE;
+  foreach ($old_work as $field => $value) {
+    if (empty($work[$field])) {
+      $work[$field] = $value;
+      $updated = TRUE;
+    }
+  }
+  if ($updated) {
+    drupal_write_record('ums_works', $work, 'wid');
+  }
+
+  // Move artists and performances from old work to work
+  db_query("UPDATE IGNORE ums_artist_works SET wid = %d WHERE wid = %d", $wid, $old_wid);
+  db_query("UPDATE IGNORE ums_performances SET wid = %d WHERE wid = %d", $wid, $old_wid);
+
+  // DELETE old work record
+  db_query("DELETE FROM ums_artist_works WHERE wid = %d", $old_wid);
+  db_query("DELETE FROM ums_performances WHERE wid = %d", $old_wid);
+  db_query("DELETE FROM ums_works WHERE wid = %d", $old_wid);
+
+  drupal_set_message("Merged Repertoire #$old_wid (" . $old_work['title'] .
+                     ") into Repertoire #$wid (" . $work['title'] . ")");
+}
 
 /*== HELPER FUNCTIONS ========================================================*/
 
@@ -503,64 +557,7 @@ function ums_cardfile_autocomplete($type) {
   }
 }
 
-function ums_cardfile_recent_artists($new_aid = 0) {
-  dblog('ums_cardfile_recent_artists ENTERED, new_aid = ', $new_aid);
-  global $user;
-   
-  $db = \Drupal::database();
-
-  $artists = array();
-
-  $var_key = 'ums_cardfile_recent_artists_' . $user->uid;
-
-  $row = $db->query("SELECT value FROM @variable WHERE name = :name", [':name' => $var_key])->fetchAssoc();
-  if ($row->value) {
-    $artists = unserialize($row->value);
-    $existing_list = TRUE;
-  }
-
-  if ($new_aid) {
-    // If already in the list, remove it
-    if ($artists[$new_aid]) {
-      $artist_name = $artists[$new_aid];
-      unset($artists[$new_aid]);
-    } else {
-      $row = $db->query("SELECT name FROM ums_artists WHERE aid = :new_aid", [':new_aid' => $new_aid])->fetchAssoc();
-      $artist_name = $row->name;
-    }
-
-    // Add to the beginning of the list
-    $artists = array_reverse($artists, TRUE);
-    $artists[$new_aid] = $artist_name;
-    $artists = array_reverse($artists, TRUE);
-
-    // If > 20 elements, pop the last one off the list
-    if (count($artists) > 20) {
-      array_pop($artists);
-    }
-
-    // Store updated list
-    if ($existing_list) {
-      $db->query(
-        'UPDATE @variable SET value = :serialized_artists WHERE name = :var_key',
-        [':serialized_artists' => serialize($artists), ':var_key' => $var_key]
-        
-      );
-    } else {
-      $db->query(
-        'INSERT INTO @variable (name, value) VALUES (:var_key, :serialized_artists)',
-        [':var_key' => $var_key, ':serialized_artists' => serialize($artists)]
-      );
-    }
-  }
-
-  dblog('ums_cardfile_recent_artists EXITING, artists = ', $artists);
-
-  return $artists;
-}
-
 function ums_cardfile_recent_artists_d8($new_aid = 0) {
-  dblog('ums_cardfile_recent_artists_d8 ENTERED:', $new_aid);
     
   $db = \Drupal::database();
   $artists = [];
@@ -568,17 +565,15 @@ function ums_cardfile_recent_artists_d8($new_aid = 0) {
   $user_data = \Drupal::service('user.data');
   $user_id = \Drupal::currentUser()->id();
   $recent_artists = $user_data->get('ums_cardfile', $user_id, 'recent_artists');
-  dblog('ums_cardfile_recent_artists_d8:', $recent_artists);
  
   if ($new_aid) {
     // If already in the list, remove it
-    if ($recent_artists[$new_aid]) {
+    if (count($recent_artists) > 0 && array_key_exists($new_aid, $recent_artists)) {
       $artist_name = $recent_artists[$new_aid];
       unset($recent_artists[$new_aid]);
     } else {
       $row = $db->query("SELECT name FROM ums_artists WHERE aid = :aid", [':aid' => $new_aid])->fetchAssoc();
-      dblog('ums_cardfile_recent_artists_d8: getting name from ums_artists: ', $row);
-      $artist_name = $row->name;
+      $artist_name = $row['name'];
     }
     // Add to the beginning of the list
     $recent_artists = array_reverse($recent_artists, TRUE);
