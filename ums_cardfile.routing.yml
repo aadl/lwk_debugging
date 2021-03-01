@@ -6,6 +6,14 @@ ums_cardfile.home:
   requirements:
     _permission: 'access ums_cardfile'
 
+ums_cardfile.test_db_insert:
+  path: '/cardfile/testdbinsert'
+  defaults:
+    _title: 'UMS Cardfile'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_test_db_insert'
+  requirements:
+    _permission: 'access ums_cardfile'
+
 # ---------------------------------------------------------------------------------------------
 ums_cardfile.artists:
   path: '/cardfile/artists/{filter}'

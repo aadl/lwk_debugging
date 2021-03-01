@@ -652,6 +652,7 @@ class DefaultController extends ControllerBase {
 
   public function cf_join($type1, $id1, $type2, $id2) {
     dblog("cf_join: ENTERED type1 = $type1, id1 = $id1, type2 = $type2, id2 = $id2");
+    $redirectlink = '/cardfile';
     $db = \Drupal::database();
     if ($type1 == 'event' && $type2 == 'source_event') {
       // Copy all performances from source_event to event
@@ -668,8 +669,9 @@ class DefaultController extends ControllerBase {
         }
       }
       drupal_set_message("All Performances copied from event $id2 to event $id1");
-      ums_cardfile_drupal_goto('cardfile/event/' . $id1);
-    }
+      $redirectlink = '/cardfile/event/' . $id1;
+      dblog("cf_join: 'event / 'source_event' -- redirectlink = $redirectlink");
+   }
     if ($type1 == 'event' && $type2 == 'work') {
       // New Performance
       $max = $db->query("SELECT MAX(weight) as max_weight FROM ums_performances WHERE eid = :id1", [':id1' => $id1])->fetchAssoc();
@@ -680,8 +682,10 @@ class DefaultController extends ControllerBase {
       ums_cardfile_save('ums_performances', $perf, NULL);
       drupal_set_message('Created new Repertoire Performance for Event ID: ' . $id1 .
                         '<br />Add Artist Info below:');
-      ums_cardfile_drupal_goto('cardfile/performance/' . $perf['pid']);
-    } elseif ($type1 == 'performance' && $type2 == 'artist') {
+      $redirectlink = '/cardfile/performance/' . $perf['pid'];
+      dblog("cf_join: 'event / 'work' -- redirectlink = $redirectlink");
+    } 
+    elseif ($type1 == 'performance' && $type2 == 'artist') {
       $artist_perf = [];
       $artist_perf['pid'] = $id1;
       $artist_perff['aid'] = $id2;
@@ -689,8 +693,10 @@ class DefaultController extends ControllerBase {
       ums_cardfile_save('ums_artist_performances', $artist_perf, NULL);
       drupal_set_message("Added new Repertoire Artist to the Performance");
       ums_cardfile_recent_artists_d8($id2);
-      ums_cardfile_drupal_goto('cardfile/performance/' . $artist_perf['pid']);
-    } elseif ($type1 == 'work' && $type2 == 'artist') {
+      $redirectlink = '/cardfile/performance/' . $artist_perf['pid'];
+      dblog("cf_join: 'performance / 'artist' -- redirectlink = $redirectlink");
+    } 
+    elseif ($type1 == 'work' && $type2 == 'artist') {
       $artist_work = [];
       $artist_work['wid'] = $id1;
       $artist_work['aid'] = $id2;
@@ -698,10 +704,50 @@ class DefaultController extends ControllerBase {
       ums_cardfile_save('ums_artist_works', $artist_work, NULL);
       drupal_set_message("Added new Creator to the Repertoire");
       ums_cardfile_recent_artists_d8($id2);
-      ums_cardfile_drupal_goto('cardfile/work/' . $artist_work['wid']);
+      $redirectlink = '/cardfile/work/' . $artist_work['wid'];
+      dblog("cf_join: 'work / 'artist' -- redirectlink = $redirectlink");
+   }
+    return new RedirectResponse($redirectlink);
+  }
+
+  public function cf_test_db_insert() {
+    dblog('cf_test_db_insert ENTERED');
+    dblog('cf_test_db_insert ENTERED1');
+    dblog('cf_test_db_insert ENTERED2');
+    dblog('cf_test_db_insert ENTERED2');
+    dblog('cf_test_db_insert ENTERED3');
+
+    $db = \Drupal::database();
+
+    $query_fields = [
+        'wid' => 8179,
+        'aid' => 17698,
+        'wrid' => 16,
+    ];
+    $query = $db->select('ums_artist_works', 'uaw');
+
+    // check if he record exists
+    foreach ($query_fields as $field => $value) {
+     dblog('Adding CONDITION: ', $field, $value);
+     $query->condition('uaw.' . $field, $value, '=');
     }
+    $count_query = $query->countQuery();
+    $num_rows = $query->countQuery()->execute()->fetchField();
+    dblog('CHECK num_rows = ', $num_rows);
+
+    if ($num_rows == 0) {
+      $record_id = $db->insert('ums_artist_works')
+        ->fields($query_fields)->execute();
+      dblog('record_id = ', $record_id);
+    }
+
+
+    $num_rows = $query->countQuery()->execute()->fetchField();
+    dblog('AFTER INSERT CHECK num_rows = ', $num_rows);
+
     return [
     ];
+
   }
 
   public function cf_searchadd($source_type, $source_id, $type, $search) {
@@ -821,7 +867,7 @@ class DefaultController extends ControllerBase {
                 'Alternate' => $match->alternate,
                 'Artists' => "<strong>$match->role:</strong> $match->artist_name",
                 'Notes' => $match->notes,
-                'SELECT' => ums_cardfile_drupal_goto('SELECT', "/cardfile/join/$source_type/$source_id/work/" . $match->wid),
+                'SELECT' => ums_cardfile_create_link('SELECT', "/cardfile/join/$source_type/$source_id/work/" . $match->wid),
               );
             }
           }
@@ -851,7 +897,7 @@ class DefaultController extends ControllerBase {
             'Name' => $artist['name'],
             'Alias' => $artist['alias'],
             'Notes' => $artist['notes'],
-            'SELECT' => ums_cardfile_drupal_goto('SELECT', "/cardfile/join/$source_type/$source_id/artist/" . $artist['aid'], array('query' => $query_args)
+            'SELECT' => ums_cardfile_create_link('SELECT', "/cardfile/join/$source_type/$source_id/artist/" . $artist['aid'], array('query' => $query_args)
             ),
           );
         }
