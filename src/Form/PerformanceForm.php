@@ -19,7 +19,6 @@ class PerformanceForm extends FormBase {
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $pid = 0) {
-    dblog('PerformanceForm buildForm ENTERED, pid =', $pid);
     
     $perf = _ums_cardfile_get_performance($pid);
     if ($perf['pid']) {
@@ -59,7 +58,7 @@ class PerformanceForm extends FormBase {
       return $form;
     } else {
       drupal_set_message("Unable to find performance with ID: $pid", 'error');
-      ums_cardfile_drupal_goto('cardfile');
+      return new RedirectResponse('/cardfile');
     }
   }
 
@@ -67,9 +66,7 @@ class PerformanceForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('submitForm: ENTERED');
     $pid = $form_state->getValue('pid');
-    dblog('performanceForm:submitForm: form_state->values =', $form_state->getValues());
 
     $perf = [];
     $perf['pid'] = $pid;
@@ -77,7 +74,6 @@ class PerformanceForm extends FormBase {
     $perf['youtube_url'] = $form_state->getValue('youtube_url');
     $perf['weight'] = $form_state->getValue('weight');
 
-    dblog('performanceForm:submitForm: perf=', $perf);
     ums_cardfile_save('ums_performances', $perf, 'pid');
     drupal_set_message('Updated Performance');
     $form_state->setRedirect('ums_cardfile.performance', ['pid' => $pid]);

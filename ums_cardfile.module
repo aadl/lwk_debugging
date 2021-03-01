@@ -195,26 +195,41 @@ function ums_cardfile_save($table_name, $fields_array, $field_key) {
     $db->update($table_name)->fields($fields_array)->condition($field_key, $record_id)->execute();
   }
   else {
-    dblog('ums_cardfile_save: INSERT', $table_name, $fields_array);
-    $record_id = $db->insert($table_name)->fields($fields_array)->execute();
-    dblog('ums_cardfile_save: AFTER INSERT', $record_id);
+    $query = $db->select($table_name, 'tn');
+    // check if the record exists
+    foreach ($fields_array as $field => $value) {
+    dblog('Adding CONDITION: ', $field, $value);
+    $query->condition('tn.' . $field, $value, '=');
+    }
+    $count_query = $query->countQuery();
+    $num_rows = $query->countQuery()->execute()->fetchField();
+    dblog('ums_cardfile_save: CHECKING BEFORE INSERT num_rows = ', $num_rows);
+
+    if ($num_rows == 0) {
+        $record_id = $db->insert($table_name)
+      ->fields($fields_array)->execute();
+      dblog('ums_cardfile_save: AFTER INSERT', $record_id);
+    }
+
+    $num_rows = $query->countQuery()->execute()->fetchField();
+    dblog('ums_cardfile_save: CHECKING AFTER INSERT num_rows = ', $num_rows);
   }
 
   return $record_id;
 }
 
-function ums_cardfile_drupal_goto($path, $options = []) {
-  dblog('ums_cardfile_drupal_goto: path = ', $path);
-  $return_path = Url::fromUri('internal:/' . $path, $options);
-  dblog('ums_cardfile_drupal_goto:  $return_path->toString() = ', $return_path->toString());
+// function ums_cardfile_drupal_goto($path, $options = []) {
+//   dblog('ums_cardfile_drupal_goto: path = ', $path);
+//   $return_path = Url::fromUri('internal:/' . $path, $options);
+//   dblog('ums_cardfile_drupal_goto:  $return_path->toString() = ', $return_path->toString());
 
-  return $return_path->toString();
-}
+//   return $return_path->toString();
+// }
 
-function ums_cardfile_drual_goto_url($path, $options = []) {
-  dblog('ums_cardfile_drupal_goto: path = ', $path);
+function ums_cardfile_drupal_goto_url($path, $options = []) {
+  dblog('ums_cardfile_drupal_goto_url: path = ', $path);
   $url = Url::fromUri('internal:/' . $path, ['query' => $options]);
-  dblog('ums_cardfile_drual_goto_url:  $url->toString() = ', $url->toString());
+  dblog('ums_cardfile_drupal_goto_url:  $url->toString() = ', $url->toString());
 
   return $url;
 }
@@ -281,14 +296,6 @@ function _ums_cardfile_merge_artist($old_aid, $aid) {
   if (empty($old_artist['aid'])) {
     drupal_set_message("Cannot merge artist $old_aid (artist not found)");
     return new RedirectResponse('/cardfile/artists');
-
-    //  $redirect_uri = '/summergame/player/' . $player['pid'] . '/' . $type;
-    //        if ($_GET['text']) {
-    //         $redirect_uri .= '?text=' . $_GET['text'];
-    //        }
-    //       return new RedirectResponse($redirect_uri);
-
-
   } elseif (empty($artist['aid'])) {
     drupal_set_message("Cannot merge artist into artist $aid (artist not found)");
     return new RedirectResponse('/cardfile/artists');
@@ -331,25 +338,26 @@ function _ums_cardfile_get_performance($pid = 0) {
                                     "ums_performances.weight AS weight " .
                                     "FROM ums_performances " .
                                     "WHERE ums_performances.pid = :pid", [':pid' => $pid])->fetchAssoc();
+  if (FALSE == empty($performance)) {
+    // Get performance event & work
+    $performance['event'] = _ums_cardfile_get_event($performance['eid']);
+    $performance['work'] = _ums_cardfile_get_work($performance['wid']);
 
-  // Get performance event & work
-  $performance['event'] = _ums_cardfile_get_event($performance['eid']);
-  $performance['work'] = _ums_cardfile_get_work($performance['wid']);
-
-  // Get performance artists
-  $performance['artists'] = array();
-  $perf_artists = $db->query("SELECT ums_artists.aid AS aid, " .
-                  "ums_artists.name AS name, " .
-                  "ums_artists.alias AS alias, " .
-                  "ums_performance_roles.name AS role " .
-                  "FROM ums_artist_performances, ums_artists, ums_performance_roles " .
-                  "WHERE ums_artist_performances.pid = :pid " .
-                  "AND ums_artist_performances.aid = ums_artists.aid " .
-                  "AND ums_performance_roles.prid = ums_artist_performances.prid " .
-                  "ORDER BY ums_artists.name ASC", [':pid' => $pid])->fetchAll(PDO::FETCH_ASSOC);
-  
-  foreach ($perf_artists as $perf_artist) {
-    $performance['artists'][] = $perf_artist;
+    // Get performance artists
+    $performance['artists'] = array();
+    $perf_artists = $db->query("SELECT ums_artists.aid AS aid, " .
+                    "ums_artists.name AS name, " .
+                    "ums_artists.alias AS alias, " .
+                    "ums_performance_roles.name AS role " .
+                    "FROM ums_artist_performances, ums_artists, ums_performance_roles " .
+                    "WHERE ums_artist_performances.pid = :pid " .
+                    "AND ums_artist_performances.aid = ums_artists.aid " .
+                    "AND ums_performance_roles.prid = ums_artist_performances.prid " .
+                    "ORDER BY ums_artists.name ASC", [':pid' => $pid])->fetchAll(PDO::FETCH_ASSOC);
+    
+    foreach ($perf_artists as $perf_artist) {
+      $performance['artists'][] = $perf_artist;
+    }
   }
   return $performance;
 }
@@ -375,39 +383,41 @@ function _ums_cardfile_get_event($eid = 0) {
                                    "AND ums_events.vid = ums_venues.vid " .
                                    "AND ums_events.eid = :eid", [':eid' => $eid])->fetchAssoc();
   dblog('_ums_cardfile_get_event: AFTER DB SELECT, event =', $event);
-  // Get performances
-  $performances = $db->query("SELECT * FROM ums_performances, ums_works " .
-                  "WHERE ums_performances.eid = :eid " .
-                  "AND ums_performances.wid = ums_works.wid " .
-                  "ORDER BY ums_performances.weight ASC", [':eid' => $eid])->fetchAll(PDO::FETCH_ASSOC);
+  if (FALSE == empty($event)) {
+    // Get performances
+    $performances = $db->query("SELECT * FROM ums_performances, ums_works " .
+                    "WHERE ums_performances.eid = :eid " .
+                    "AND ums_performances.wid = ums_works.wid " .
+                    "ORDER BY ums_performances.weight ASC", [':eid' => $eid])->fetchAll(PDO::FETCH_ASSOC);
 
-  $event['performances'] = [];
-  foreach ($performances as $performance) {
-    $event['performances'][] = $performance;
-  }
+    $event['performances'] = [];
+    foreach ($performances as $performance) {
+      $event['performances'][] = $performance;
+    }
 
-  // Turn program nid into links
-  dblog('_ums_cardfile_get_event: event =',$event);
-  if ($event['program_nid']) {
-    foreach (explode(',', $event['program_nid']) as $program_nid) {
-      $program_nid = trim($program_nid);
-      if (strpos($program_nid, '#') !== FALSE) {
-        $parts = explode('#', $program_nid);
-        $event['programs'][] = ums_cardfile_create_link(
-          'Program',
-          'node/' . $parts[0],
-          array('fragment' => $parts[1])
-        );
-      } else {
-        $event['programs'][] = ums_cardfile_create_link('Program', 'node/' . $program_nid);
+    // Turn program nid into links
+    dblog('_ums_cardfile_get_event: event =', $event);
+    if ($event['program_nid']) {
+      foreach (explode(',', $event['program_nid']) as $program_nid) {
+        $program_nid = trim($program_nid);
+        if (strpos($program_nid, '#') !== FALSE) {
+          $parts = explode('#', $program_nid);
+          $event['programs'][] = ums_cardfile_create_link(
+            'Program',
+            'node/' . $parts[0],
+            array('fragment' => $parts[1])
+          );
+        } else {
+          $event['programs'][] = ums_cardfile_create_link('Program', 'node/' . $program_nid);
+        }
       }
     }
-  }
 
-  // Turn photo nid into links
-  if ($event['photo_nid']) {
-    foreach (explode(',', $event['photo_nid']) as $photo_nid) {
-      $event['photos'][] = ums_cardfile_create_link('Photo', 'node/' . $photo_nid);
+    // Turn photo nid into links
+    if ($event['photo_nid']) {
+      foreach (explode(',', $event['photo_nid']) as $photo_nid) {
+        $event['photos'][] = ums_cardfile_create_link('Photo', 'node/' . $photo_nid);
+      }
     }
   }
   dblog('_ums_cardfile_get_event: EXITING'); 
@@ -484,10 +494,10 @@ function _ums_cardfile_merge_work($old_wid, $wid) {
 
   if (empty($old_work['wid'])) {
     drupal_set_message("Cannot merge Repertoire $old_wid (repertoire not found)");
-    ums_cardfile_drupal_goto('cardfile/works');
+    return new RedirectResponse('/cardfile/works');
   } elseif (empty($work['wid'])) {
     drupal_set_message("Cannot merge Repertoire into Repertoire $wid (repertoire not found)");
-    ums_cardfile_drupal_goto('cardfile/works');
+    return new RedirectResponse('/cardfile/works');
   }
 
   $updated = FALSE;
