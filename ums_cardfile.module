@@ -180,10 +180,10 @@ function dblog(...$things_to_log) {
   error_log($complete_line, 3, "LWKLWK.log");
 }
 
-function ums_cardfile_create_link($link_text, $url, $url_options = []) {
-  $url = Url::fromUri('internal:/' . $url, $url_options);
-  $link = Link::fromTextAndUrl(t($link_text), $url);
-  return $link->toString();
+function ums_cardfile_create_link($link_text, $url_String, $url_options = []) {
+  $host = \Drupal::request()->getSchemeAndHttpHost();
+  $url = Url::fromUri($host . '/' . $url_String, $url_options);
+  return Link::fromTextAndUrl(t($link_text), $url)->toString();
 }
 
 function ums_cardfile_save($table_name, $fields_array, $field_key) {

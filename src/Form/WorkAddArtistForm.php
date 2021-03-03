@@ -50,12 +50,13 @@ class WorkAddArtistForm extends FormBase {
     ];
 
     $current_path = \Drupal::service('path.current')->getPath();
+    dblog('WorkAddArtistForm: buildForm: $current_path =', $current_path);
 
     $form['collapsible']['table']['role']['wrid'] = [
       '#type' => 'select',
       '#title' => 'Role',
       '#options' => $work_role_options,
-      '#description' => '[' .ums_cardfile_create_link('Edit Creator Roles', 'cardfile/workroles', ['query' => ['return' => $current_path]]) . ']',
+      '#description' => '[' . ums_cardfile_create_link('Edit Creator Roles', 'cardfile/workroles', ['query' => ['return' => $current_path]]) . ']',
     ];
     $form['collapsible']['table']['search'] = [
       '#prefix' => '<td><div class="container-inline">',
@@ -85,8 +86,9 @@ class WorkAddArtistForm extends FormBase {
       '#type' => 'submit',
       '#value' => t('Use This Artist'),
     ];
+    $link = ums_cardfile_create_link('ADD NEW ARTIST', 'cardfile/artist/edit', ['query' => ['wid' => $wid]]);
     $form['collapsible']['table']['addNew'] = [
-      '#suffix' => ums_cardfile_create_link('ADD NEW ARTIST', 'cardfile/artist/edit', ['query' => ['wid' => $wid]]) . '</p></td>'
+      '#suffix' => $link . '</p></td>'
     ];
     return $form;
   }
@@ -107,7 +109,7 @@ class WorkAddArtistForm extends FormBase {
     } else {
       $form_state->setRedirect('ums_cardfile.searchadd', ['source_type'     => 'work',
                                                           'source_id'       => $form_state->getValue('wid'),
-                                                          'type1'           => 'artist',
+                                                          'type'            => 'artist',
                                                           'search'          => $form_state->getValue('search_text'),
                                                           'optional_key'    => 'wrid',
                                                           'optional_value'  => $form_state->getValue('wrid'),

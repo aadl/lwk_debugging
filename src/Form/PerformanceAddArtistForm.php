@@ -111,7 +111,7 @@ class PerformanceAddArtistForm extends FormBase {
     } else {
       $form_state->setRedirect('ums_cardfile.searchadd', ['source_type'     => 'performance',
                                                           'source_id'       => $form_state->getValue('pid'),
-                                                          'type1'           => 'artist',
+                                                          'type'            => 'artist',
                                                           'search'          => $form_state->getValue('search_text'),
                                                           'optional_key'    => 'prid',
                                                           'optional_value'  => $form_state->getValue('prid'),

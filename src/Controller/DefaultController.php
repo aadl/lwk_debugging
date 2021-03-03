@@ -676,14 +676,16 @@ class DefaultController extends ControllerBase {
     if ($type1 == 'event' && $type2 == 'work') {
       // New Performance
       $max = $db->query("SELECT MAX(weight) as max_weight FROM ums_performances WHERE eid = :id1", [':id1' => $id1])->fetchAssoc();
+      dblog('cf_join: max=', $max);
       $perf = [];
       $perf['eid'] = $id1;
       $perf['wid']  = $id2;
-      $perf['weight'] = $max->max_weight + 1;
-      ums_cardfile_save('ums_performances', $perf, NULL);
+      $perf['weight'] = $max['max_weight'] + 1;
+      $pid = ums_cardfile_save('ums_performances', $perf, NULL);
+      dblog('cf_join: pid =', $pid);
       drupal_set_message('Created new Repertoire Performance for Event ID: ' . $id1 .
                         '<br />Add Artist Info below:');
-      $redirectlink = '/cardfile/performance/' . $perf['pid'];
+      $redirectlink = '/cardfile/performance/' . $pid;
       dblog("cf_join: 'event / 'work' -- redirectlink = $redirectlink");
     } 
     elseif ($type1 == 'performance' && $type2 == 'artist') {
@@ -764,7 +766,7 @@ class DefaultController extends ControllerBase {
       if ($type == 'work') {    // ----------------------- WORK
         $wids = [];
         foreach ($search_terms as $search_term) {
-          dblog('cf_searchadd: type1 == work - FOREACH, $search_term = ', $search_term);
+          dblog('cf_searchadd: type == work - FOREACH, $search_term = ', $search_term);
           $search_query_part = "(ums_works.title LIKE '%%$search_term%%'";
           $search_query_part .= " OR ums_works.alternate LIKE '%%$search_term%%'";
           $search_query_part .= " OR ums_works.notes LIKE '%%$search_term%%'";
@@ -816,13 +818,16 @@ class DefaultController extends ControllerBase {
              // Work data already captured, just add artist info
               $works[$match->wid]['Artists'] .= "<br /><strong>" . $match->role . ':</strong> ' . $match->artist_name;
             } else {
-              $works[$match->wid] = [
+            dblog('BEFORE WORK ums_cardfile_create_link');
+            $select_link = ums_cardfile_create_link('SELECT', "/cardfile/join/$source_type/$source_id/work/$match->wid");
+            dblog('searchAdd: (work) select_link=', $select_link);
+             $works[$match->wid] = [
                 'Work ID' => $match->wid,
                 'Title' => $match->title,
                 'Alternate' => $match->alternate,
                 'Artists' => "<strong>" . $match->role . ':</strong> ' . $match->artist_name,
                 'Notes' => $match->notes,
-                'SELECT' => ums_cardfile_create_link('SELECT', "/cardfile/join/$source_type/$source_id/work/$match->wid"),
+                'SELECT' => $select_link,
               ];
             }
           }
@@ -847,19 +852,21 @@ class DefaultController extends ControllerBase {
 
         $artists = [];
         foreach ($res as $$artist) {
-          $artists[] = [
-            'Artist ID' => $artist['aid'],
-            'Name' => $artist['name'],
-            'Alias' => $artist['alias'],
-            'Notes' => $artist['notes'],
-            'SELECT' => ums_cardfile_create_link('SELECT', '/cardfile/join/' .
+          dblog('BEFORE ARTIST ums_cardfile_create_link');
+          $select_link = ums_cardfile_create_link('SELECT', '/cardfile/join/' .
                                                             $source_type . '/' .
                                                             $source_id. '/' .
                                                             'artist' . '/' . 
                                                             $artist['aid'] .'/' . 
                                                             key($query_args) .'/' .
-                                                            current($query_args)
-                                                ),
+                                                            current($query_args));
+          dblog('searchAdd: (artist) select_link=', $select_link);
+          $artists[] = [
+            'Artist ID' => $artist['aid'],
+            'Name' => $artist['name'],
+            'Alias' => $artist['alias'],
+            'Notes' => $artist['notes'],
+            'SELECT' => $select_link,
           ];
         }
       }

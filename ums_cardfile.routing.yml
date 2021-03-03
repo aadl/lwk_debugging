@@ -254,7 +254,7 @@ ums_cardfile.searchadd:
     _permission: 'access ums_cardfile'
 
 ums_cardfile.join:
-  path: '/cardfile/join/{type1}/{id1}/{type2}/{id2}{optional_key}/{optional_value}'
+  path: '/cardfile/join/{type1}/{id1}/{type2}/{id2}/{optional_key}/{optional_value}'
   defaults:
     _title: 'UMS Cardfile Join Records'
     _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_join'

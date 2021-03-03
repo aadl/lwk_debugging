@@ -141,7 +141,7 @@ class WorkForm extends FormBase {
     dblog('WorkForm: submitForm: eid=', $eid);
     if ($eid) {
       $form_state->setRedirect('ums_cardfile.join',
-                                ['type1' => 'event', 
+                                [ 'type1' => 'event', 
                                   'id1' => $form_state->getValue('eid'),
                                   'type2' => 'work', 
                                   'id2' => $work['wid']

@@ -59,7 +59,7 @@ class EventAddPerformanceForm extends FormBase {
     dblog('EventAddPerformanceForm: submitForm ENTERED');               
     $form_state->setRedirect('ums_cardfile.searchadd', [ 'source_type' => 'event',
                                                           'source_id'  => $form_state->getValue('eid'),
-                                                          'type1'      => 'work',
+                                                          'type'      => 'work',
                                                           'search'     => $form_state->getValue('search')
                                                         ]);
     return;
