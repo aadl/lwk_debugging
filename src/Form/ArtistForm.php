@@ -189,26 +189,30 @@ class ArtistForm extends FormBase {
 
     if ($form_state->getValue('wid')) {
       // Create new work artist
-      dblog('ArtistForm:submitForm -- form  wid =', $form_state->getValue('wid'));
-      dblog('ArtistForm:submitForm -- form wrid =', $form_state->getValue('wrid'));
-      $link_display_text = 'cardfile/join/work/' . $form_state->getValue('wid') . '/artist/' . $aid;
-      $url = ums_cardfile_drual_goto_url($link_display_text, ['wrid' => $form_state->getValue('wrid')]);
-      $form_state->setRedirectUrl($url);
-    //  $form_state->setRedirect('ums_cardfile.join', 
-    //                           ['type1' => 'work', 'id1' => $form_state->getValue('wid'), 'type2' => 'artist', 'id2' => $aid], 
-    //                           ['query' => ['wrid' => $form_state->getValue('wrid')]]);    
+      $form_state->setRedirect('ums_cardfile.join',
+                                ['type1' => 'performance', 
+                                  'id1' => $form_state->getValue('wid'),
+                                  'type2' => 'artist', 
+                                  'id2' => $aid,
+                                  'optional_key' => 'wrid',
+                                  'optional_value' => $form_state->getValue('wrid')
+                                ]);
     } 
-    elseif ($form_state->getValue('pid')) {
+    else if ($form_state->getValue('pid')) {
       // Create new work artist
-      $form_state->setRedirect('ums_cardfile.join', 
-                              ['type1' => 'performance', 'id1' => $form_state->getValue('pid'), //, ['aid' => $aid]);
-                              'type2' => 'artist', 'id2' => $aid], ['prid' => $form_state->getValue('prid')]);    
+      $form_state->setRedirect('ums_cardfile.join',
+                                ['type1' => 'performance', 
+                                  'id1' => $form_state->getValue('wid'),
+                                  'type2' => 'artist', 
+                                  'id2' => $aid,
+                                  'optional_key' => 'prid',
+                                  'optional_value' => $form_state->getValue('prid')
+                                ]);
     }
     else {
-      drupal_set_message('Artist saved');
-      //$form_state->setRedirect('ums_cardfile.artist', ['aid' => $aid]);
-      $form_state->setRedirect('ums_cardfile.artist', ['aid' => $aid]); //, ['aid' => $aid]);
+      $form_state->setRedirect('ums_cardfile.artist', ['aid' => $aid]);
     }
+    drupal_set_message('Artist saved');
 
     return;
   }

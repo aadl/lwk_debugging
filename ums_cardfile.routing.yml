@@ -6,14 +6,6 @@ ums_cardfile.home:
   requirements:
     _permission: 'access ums_cardfile'
 
-ums_cardfile.test_db_insert:
-  path: '/cardfile/testdbinsert'
-  defaults:
-    _title: 'UMS Cardfile'
-    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_test_db_insert'
-  requirements:
-    _permission: 'access ums_cardfile'
-
 # ---------------------------------------------------------------------------------------------
 ums_cardfile.artists:
   path: '/cardfile/artists/{filter}'
@@ -43,7 +35,6 @@ ums_cardfile.artist.edit:
   requirements:
     _permission: 'access ums_cardfile'
 
-    # D6 FORM - THIS IS HANDLED in IN THE VENUES FORM WITH FRONT-END JS delete confirmation
 ums_cardfile.artist.delete:
   path: '/cardfile/artist/delete/{aid}'
   defaults:
@@ -74,7 +65,6 @@ ums_cardfile.venues:
   requirements:
     _permission: 'access ums_cardfile'
 
-    # D6  - THIS IS HANDLED in IN THE VENUES FORM WITH FRONT-END JS delete confirmation
 ums_cardfile.venue.delete:
   path: '/cardfile/venue/delete/{vid}'
   defaults:
@@ -112,7 +102,6 @@ ums_cardfile.event.edit:
   requirements:
     _permission: 'access ums_cardfile'
 
-# D6 FORM - THIS IS HANDLED in IN THE VENUES FORM WITH FRONT-END JS delete confirmation
 ums_cardfile.event.delete:
   path: '/cardfile/event/delete/{eid}'
   defaults:
@@ -251,22 +240,30 @@ ums_cardfile.performance.delete_artist:
 
 # ---------------------------------------------------------------------------------------------
 ums_cardfile.searchadd:
-  path: '/cardfile/searchadd/{source_type}/{source_id}/{type}/{search}'
+  path: '/cardfile/searchadd/{source_type}/{source_id}/{type}/{search}/{optional_key}/{optional_value}'
   defaults:
     _title: 'UMS Cardfile Search Add'
     _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_searchadd'
+    source_type: ''
+    source_id: ''
+    type: ''
+    search: ''
+    optional_key: ''
+    optional_value: ''
   requirements:
     _permission: 'access ums_cardfile'
 
 ums_cardfile.join:
-  path: '/cardfile/join/{type1}/{id1}/{type2}/{id2}'
+  path: '/cardfile/join/{type1}/{id1}/{type2}/{id2}{optional_key}/{optional_value}'
   defaults:
-    _title: 'UMS Cardfile Delete Work'
+    _title: 'UMS Cardfile Join Records'
     _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_join'
     type1: ''
     id1: ''
     type2: ''
     id2: ''
+    optional_key: ''
+    optional_value: ''
   requirements:
     _permission: 'access ums_cardfile'
 

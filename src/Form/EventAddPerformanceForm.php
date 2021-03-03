@@ -28,6 +28,10 @@ class EventAddPerformanceForm extends FormBase {
         'style' => 'width: 400px;'
       ],
     ];
+    $form['collapsible']['eid'] = array(
+      '#type' => 'value',
+      '#value' => $eid,
+    );
 
     $form['collapsible']['search'] = [
       '#type' => 'textfield',
@@ -52,9 +56,12 @@ class EventAddPerformanceForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('EventAddPerformanceForm: ENTERED');
-    
-    $drupal_goto_url = ums_cardfile_drupal_goto('cardfile/searchadd/event/' . $form_state->getValue('eid') . '/work/' . $form_state->getValue('search'));
-    return new RedirectResponse($drupal_goto_url);
+    dblog('EventAddPerformanceForm: submitForm ENTERED');               
+    $form_state->setRedirect('ums_cardfile.searchadd', [ 'source_type' => 'event',
+                                                          'source_id'  => $form_state->getValue('eid'),
+                                                          'type1'      => 'work',
+                                                          'search'     => $form_state->getValue('search')
+                                                        ]);
+    return;
   }
 }

@@ -146,6 +146,8 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
     'ums-cardfile-searchadd' => [
       'variables' => [
         'heading_text' => NULL,
+        'source_type' => NULL,
+        'source_eid' => NULL,
         'copy_performance_flag' => FALSE,
         'source_event' => NULL,
         'search_terms_list' => NULL,
@@ -155,14 +157,14 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
         'source_id' => NULL,
         'type' => NULL,
         'search' => NULL,
-
       ]
-    ],
+    ]
   ];
 }
 
-
+// ---------------------------------------------------------------------------------------------------
 // DRUPAL 8 MIGRATION NEW METHODS
+// ---------------------------------------------------------------------------------------------------
   /*
 * Debugging routine to log to the <root folder>/LWKLWK.log IN arborcat.module
 */
@@ -181,7 +183,6 @@ function dblog(...$things_to_log) {
 function ums_cardfile_create_link($link_text, $url, $url_options = []) {
   $url = Url::fromUri('internal:/' . $url, $url_options);
   $link = Link::fromTextAndUrl(t($link_text), $url);
-  dblog('ums_cardfile_create_link: $link string = ', $link->toString());
   return $link->toString();
 }
 
@@ -227,7 +228,6 @@ function ums_cardfile_save($table_name, $fields_array, $field_key) {
 // }
 
 function ums_cardfile_drupal_goto_url($path, $options = []) {
-  dblog('ums_cardfile_drupal_goto_url: path = ', $path);
   $url = Url::fromUri('internal:/' . $path, ['query' => $options]);
   dblog('ums_cardfile_drupal_goto_url:  $url->toString() = ', $url->toString());
 
@@ -382,7 +382,6 @@ function _ums_cardfile_get_event($eid = 0) {
                                    "WHERE ums_events.sid = ums_series.sid " .
                                    "AND ums_events.vid = ums_venues.vid " .
                                    "AND ums_events.eid = :eid", [':eid' => $eid])->fetchAssoc();
-  dblog('_ums_cardfile_get_event: AFTER DB SELECT, event =', $event);
   if (FALSE == empty($event)) {
     // Get performances
     $performances = $db->query("SELECT * FROM ums_performances, ums_works " .
@@ -396,7 +395,6 @@ function _ums_cardfile_get_event($eid = 0) {
     }
 
     // Turn program nid into links
-    dblog('_ums_cardfile_get_event: event =', $event);
     if ($event['program_nid']) {
       foreach (explode(',', $event['program_nid']) as $program_nid) {
         $program_nid = trim($program_nid);

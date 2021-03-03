@@ -97,13 +97,22 @@ class WorkAddArtistForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $clicked_element = $form_state->getTriggeringElement()['#id'];
     if ($clicked_element == 'edit-submit-recent') {
-      $link_display_text = 'cardfile/join/work/' . $form_state->getValue('wid') . '/artist/' . $form_state->getValue('recent_aid');
-      $drupal_goto_url = ums_cardfile_drupal_goto($link_display_text, ['wrid' => $form_state->getValue('wrid')]);
+      $form_state->setRedirect('ums_cardfile.join', ['type1'            => 'work', 
+                                                      'id1'             => $form_state->getValue('wid'),
+                                                      'type2'           => 'artist', 
+                                                      'id2'             => $form_state->getValue('recent_aid'),
+                                                      'optional_key'    => 'wrid',
+                                                      'optional_value'  => $form_state->getValue('wrid')
+                                                    ]);
+    } else {
+      $form_state->setRedirect('ums_cardfile.searchadd', ['source_type'     => 'work',
+                                                          'source_id'       => $form_state->getValue('wid'),
+                                                          'type1'           => 'artist',
+                                                          'search'          => $form_state->getValue('search_text'),
+                                                          'optional_key'    => 'wrid',
+                                                          'optional_value'  => $form_state->getValue('wrid'),
+                                                        ]);
     }
-    else {
-      $link_display_text = 'cardfile/searchadd/work/' . $form_state->getValue('wid') . '/artist/' . $form_state->getValue('search_text');
-      $drupal_goto_url = ums_cardfile_drupal_goto($link_display_text, ['wrid' => $form_state->getValue('wrid')]);
-    }
-    return new RedirectResponse($drupal_goto_url);
+    return;
   }
 }

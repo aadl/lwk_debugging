@@ -102,7 +102,7 @@ class WorkForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('submitForm: ENTERED');
+    dblog('WorkForm:submitForm: ENTERED');
     //Check for merge ID
     $merge_id = $form_state->getValue('merge_id');
     dblog('WorkForm:submitForm - merge_id = ', $merge_id);
@@ -133,15 +133,21 @@ class WorkForm extends FormBase {
       $work['wid'] = $wid;
       ums_cardfile_save('ums_works', $work, 'wid');
     } else {
-      // new event
+      // new work
       ums_cardfile_save('ums_works', $work, NULL);
     }
 
     $eid = $form_state->getValue('eid');
     dblog('WorkForm: submitForm: eid=', $eid);
     if ($eid) {
-      $form_state->setRedirect('ums_cardfile.join.event', ['wid' => $wid]);
-    } else {
+      $form_state->setRedirect('ums_cardfile.join',
+                                ['type1' => 'event', 
+                                  'id1' => $form_state->getValue('eid'),
+                                  'type2' => 'work', 
+                                  'id2' => $work['wid']
+                                ]);
+    }
+    else {
       $form_state->setRedirect('ums_cardfile.work', ['wid' => $wid]);
     }
     drupal_set_message('Repertoire saved');

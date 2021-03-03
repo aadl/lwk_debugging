@@ -47,15 +47,16 @@ class PerfRoleAddForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('PerfRoleAddForm: ENTERED');
+    dblog('PerfRoleAddForm: submitForm ENTERED');
     $new_role = [];
     $new_role['name'] = $form_state->getValue('name');
     ums_cardfile_save('ums_performance_roles', $new_role, NULL);
     drupal_set_message('Added new role');
 
     if ($return = $form_state->getValue('return')) {
-      $drupal_goto_url = ums_cardfile_drupal_goto($return);
-      return new RedirectResponse($drupal_goto_url);
+      // $drupal_goto_url = ums_cardfile_drupal_goto($return);
+      dblog('PerfRoleAddForm: submitForm $return = ', $return);
+      return new RedirectResponse($return);
     }
   }
 }

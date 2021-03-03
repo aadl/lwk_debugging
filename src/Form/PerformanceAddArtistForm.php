@@ -99,15 +99,24 @@ class PerformanceAddArtistForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-   $clicked_element = $form_state->getTriggeringElement()['#id'];
+    $clicked_element = $form_state->getTriggeringElement()['#id'];
     if ($clicked_element == 'edit-submit-recent') {
-      $link_display_text = 'cardfile/join/performance/' . $form_state->getValue('pid') . '/artist/' . $form_state->getValue('recent_aid');
-      $drupal_goto_url = ums_cardfile_drupal_goto($link_display_text, ['prid' => $form_state->getValue('prid')]);
- 
+      $form_state->setRedirect('ums_cardfile.join', [ 'type1'           => 'performance',
+                                                      'id1'             => $form_state->getValue('pid'),
+                                                      'type2'           => 'artist',
+                                                      'id2'             => $form_state->getValue('recent_aid'),
+                                                      'optional_key'    => 'prid',
+                                                      'optional_value'  => $form_state->getValue('prid'),
+                                                    ]);
     } else {
-      $link_display_text = 'cardfile/searchadd/performance/' . $form_state->getValue('pid') . '/artist/' . $form_state->getValue('search_text');
-      $drupal_goto_url = ums_cardfile_drupal_goto($link_display_text, ['prid' => $form_state->getValue('prid')]);
+      $form_state->setRedirect('ums_cardfile.searchadd', ['source_type'     => 'performance',
+                                                          'source_id'       => $form_state->getValue('pid'),
+                                                          'type1'           => 'artist',
+                                                          'search'          => $form_state->getValue('search_text'),
+                                                          'optional_key'    => 'prid',
+                                                          'optional_value'  => $form_state->getValue('prid'),
+                                                        ]);
     }
-    return new RedirectResponse($drupal_goto_url);
+    return;
   }
 }
