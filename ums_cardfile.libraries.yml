@@ -1,5 +1,10 @@
-ums-cardfile-functions:
+cardfile-lib:
   version: 1.x
+  css:
+    theme:
+      css/cardfile-lib.css: {}
+    layout:
+      css/cardfile-lib.css: {}
   js:
     js/ums-cardfile-functions.js: {}
   dependencies:

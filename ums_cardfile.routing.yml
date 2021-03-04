@@ -111,13 +111,14 @@ ums_cardfile.event.delete:
   requirements:
     _permission: 'access ums_cardfile'
 
-# $items['cardfile/event/reorder'] = array(
-#     'title' => 'Reorder Event Performances',
-#     'page callback' => 'drupal_get_form',
-#     'page arguments' => array('ums_cardfile_event_reorder_form', 3),
-#     'access arguments' => array('edit ums card file records'),
-#     'type' => MENU_NORMAL_ITEM
-#   );
+ums_cardfile.event.reorder:
+  path: '/cardfile/event/reorder/{eid}'
+  defaults:
+    _title: 'UMS Cardfile Reorder Event Performances'
+    _form: '\Drupal\ums_cardfile\Form\EventReorderForm'
+    eid: ''
+  requirements:
+    _permission: 'access ums_cardfile'
 
 
 # ---------------------------------------------------------------------------------------------
