@@ -32,7 +32,7 @@ function ums_cardfile_help($path, $arg) {
  * need to change all permissions to a UMS only role
  */
 function ums_cardfile_perm() {
-  return array('edit ums card file records', 'view ums card file records' );
+  return ['edit ums card file records', 'view ums card file records'];
 }
 
 
@@ -344,7 +344,7 @@ function _ums_cardfile_get_performance($pid = 0) {
     $performance['work'] = _ums_cardfile_get_work($performance['wid']);
 
     // Get performance artists
-    $performance['artists'] = array();
+    $performance['artists'] = [];
     $perf_artists = $db->query("SELECT ums_artists.aid AS aid, " .
                     "ums_artists.name AS name, " .
                     "ums_artists.alias AS alias, " .
@@ -403,7 +403,7 @@ function _ums_cardfile_get_event($eid = 0) {
           $event['programs'][] = ums_cardfile_create_link(
             'Program',
             'node/' . $parts[0],
-            array('fragment' => $parts[1])
+            ['fragment' => $parts[1]]
           );
         } else {
           $event['programs'][] = ums_cardfile_create_link('Program', 'node/' . $program_nid);
@@ -437,7 +437,7 @@ function _ums_cardfile_get_work($wid = 0) {
 
   if ($work['wid']) {
     // Get work artists
-    $work['artists'] = array();
+    $work['artists'] = [];
     $work_artists = $db->query("SELECT ums_artists.aid AS aid, " .
                     "ums_artists.name AS name, " .
                     "ums_artists.alias AS alias, " .
@@ -453,7 +453,7 @@ function _ums_cardfile_get_work($wid = 0) {
     }
 
     // Get work events
-    $work['events'] = array();
+    $work['events'] = [];
     $work_events = $db->query("SELECT ums_events.eid AS eid, " .
                     "ums_events.date AS date, " .
                     "ums_events.notes AS notes, " .

@@ -28,10 +28,10 @@ class EventAddPerformanceForm extends FormBase {
         'style' => 'width: 400px;'
       ],
     ];
-    $form['collapsible']['eid'] = array(
+    $form['collapsible']['eid'] = [
       '#type' => 'value',
       '#value' => $eid,
-    );
+    ];
 
     $form['collapsible']['search'] = [
       '#type' => 'textfield',

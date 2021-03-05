@@ -57,16 +57,16 @@ class PerformanceCopyArtistsForm extends FormBase {
     }
     dblog('PerformanceCopyArtistsForm: other_pids: ', $other_pids);
 
-    $form['collapsible']['source_pid'] = array(
+    $form['collapsible']['source_pid'] = [
       '#type' => 'radios',
       '#title' => 'Select Performance as source of Performance Artists',
       '#options' => $other_pids,
-    );
+    ];
 
-    $form['collapsible']['submit'] = array(
+    $form['collapsible']['submit'] = [
       '#type' => 'submit',
       '#value' => 'Copy Artists',
-    );
+    ];
       
     dblog('PerformanceCopyArtistsForm - RETURNING' ); // $form:', $form);
 

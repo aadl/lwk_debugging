@@ -19,27 +19,27 @@ class PerfRoleAddForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state, $return = '') {
     dblog('PerfRoleAddForm buildForm ENTERED');
 
-  $form = array(
-    '#prefix' => '<div class="container-inline">',
-    '#suffix' => '</div>',
-  );
-  if ($return) {
-    $form['return'] = array(
-      '#type' => 'value',
-      '#value' => $return,
-    );
-  }
-  $form['name'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Add a Artist Role'),
-      '#size' => 64,
-      '#maxlength' => 128,
-    );
-    $form['submit'] = array(
+    $form = [
+      '#prefix' => '<div class="container-inline">',
+      '#suffix' => '</div>',
+    ];
+    if ($return) {
+      $form['return'] = [
+        '#type' => 'value',
+        '#value' => $return,
+      ];
+    }
+    $form['name'] = [
+        '#type' => 'textfield',
+        '#title' => t('Add a Artist Role'),
+        '#size' => 64,
+        '#maxlength' => 128,
+    ];
+    $form['submit'] = [
       '#type' => 'submit',
       '#value' => ($return ? t('Add and Return to Previous Page') : t('Add')),
-    );
-    
+    ];
+      
     return $form;
   }
 

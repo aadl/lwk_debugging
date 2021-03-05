@@ -19,16 +19,16 @@ class SeriesAddForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state, $sid = 0) {
     dblog('SeriesAddForm buildForm ENTERED');
 
-    $form['name'] = array(
+    $form['name'] = [
       '#type' => 'textfield',
       '#title' => t('Add a Series'),
       '#size' => 64,
       '#maxlength' => 128,
-    );
-    $form['submit'] = array(
+    ];
+    $form['submit'] = [
       '#type' => 'submit',
       '#value' => t('Add'),
-    );
+    ];
     
     return $form;
   }

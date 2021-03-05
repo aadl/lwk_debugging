@@ -39,58 +39,61 @@ class PerformanceAddArtistForm extends FormBase {
       '#suffix' => '</tr></table>',
     ];
 
-    // $form = array(
-    //   '#prefix' => '<fieldset class="collapsible collapsed"><legend>Add Repertoire Performance Artist</legend>' .
-    //               '<table><tr><th>Select Role:</th><th>Select Artist:</th></tr><tr>',
-    //   '#suffix' => '</tr></table></fieldset>',
-    // );
-    $form['collapsible']['table']['pid'] = array(
+    $form['collapsible']['table']['pid'] = [
       '#type' => 'value',
       '#value' => $pid,
-    );
-    $form['collapsible']['table']['role'] = array(
+    ];
+
+    $form['collapsible']['table']['role'] = [
       '#prefix' => '<td style="padding-right: 25px"><div class="container-inline">',
       '#suffix' => '</div></td>',
-    );
+    ];
 
     $current_path = \Drupal::service('path.current')->getPath();
 
-    $form['collapsible']['table']['role']['prid'] = array(
+    $form['collapsible']['table']['role']['prid'] = [
       '#type' => 'select',
       '#title' => 'Role',
       '#options' => $perf_role_options,
       '#description' => '[' .ums_cardfile_create_link('Edit Artist Roles', 'cardfile/perfroles', ['query' => ['return' => $current_path]]) . ']',
-    );
-    $form['collapsible']['table']['search'] = array(
+    ];
+
+    $form['collapsible']['table']['search'] = [
       '#prefix' => '<td><div class="container-inline">',
       '#suffix' => '</div><p><strong>- OR -</strong></p>',
-    );
-    $form['collapsible']['table']['search']['search_text'] = array(
+    ];
+
+    $form['collapsible']['table']['search']['search_text'] = [
       '#type' => 'textfield',
       '#title' => t('Search for existing artist'),
       '#size' => 32,
       '#maxlength' => 32,
-    );
-    $form['collapsible']['table']['search']['submit_search'] = array(
+    ];
+
+    $form['collapsible']['table']['search']['submit_search'] = [
       '#type' => 'submit',
       '#value' => t('Search'),
-    );
-    $form['collapsible']['table']['recent'] = array(
+    ];
+
+    $form['collapsible']['table']['recent'] = [
       '#prefix' => '<div class="container-inline">',
       '#suffix' => '</div><p><strong>- OR -</strong></p>',
-    );
-    $form['collapsible']['table']['recent']['recent_aid'] = array(
+    ];
+
+    $form['collapsible']['table']['recent']['recent_aid'] = [
       '#type' => 'select',
       '#title' => 'Recent artists',
       '#options' => ums_cardfile_recent_artists_d8(),
-    );
-    $form['collapsible']['table']['recent']['submit_recent'] = array(
+    ];
+
+    $form['collapsible']['table']['recent']['submit_recent'] = [
       '#type' => 'submit',
       '#value' => t('Use This Artist'),
-    );
-    $form['collapsible']['table']['addNew'] = array(
+    ];
+
+    $form['collapsible']['table']['addNew'] = [
       '#suffix' => ums_cardfile_create_link('ADD NEW ARTIST', 'cardfile/artist/edit', ['query' => ['pid' => $pid]]) . '</p></td>'
-    );
+    ];
     
     return $form;
   }
