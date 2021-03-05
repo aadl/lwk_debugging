@@ -435,7 +435,6 @@ function _ums_cardfile_get_work($wid = 0) {
                                   "FROM ums_works " .
                                   "WHERE ums_works.wid = :wid", [':wid' => $wid])->fetchAssoc();
 
-  dblog('_ums_cardfile_get_work: $work:', $work);
   if ($work['wid']) {
     // Get work artists
     $work['artists'] = array();
@@ -452,7 +451,6 @@ function _ums_cardfile_get_work($wid = 0) {
     foreach ($work_artists as $work_artist) {
       $work['artists'][] = $work_artist;
     }
-    dblog('_ums_cardfile_get_work: AFTER FOREACH adding work artists - $work:', $work);
 
     // Get work events
     $work['events'] = array();
@@ -477,11 +475,9 @@ function _ums_cardfile_get_work($wid = 0) {
     foreach ($work_events as $work_event) {
       $work['events'][] = $work_event;
     }
-    dblog('_ums_cardfile_get_work: AFTER FOREACH adding work_events - $work:', $work);
   } else {
     $work = FALSE;
   }
-  dblog('_ums_cardfile_get_work - returning: ', $work);
   return $work;
 }
 
