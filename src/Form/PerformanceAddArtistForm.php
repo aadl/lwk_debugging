@@ -26,6 +26,10 @@ class PerformanceAddArtistForm extends FormBase {
       $perf_role_options[$performance_role->wrid] = $performance_role->name;
     }
 
+    $form = [
+      '#attributes' => ['class' => 'form-width-exception']
+    ];
+
     $form['collapsible'] = [
       '#type' => 'details',
       '#title' => t('Add Repertoire Performance Artist'),

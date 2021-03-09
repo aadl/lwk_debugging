@@ -22,6 +22,7 @@ class PerformanceForm extends FormBase {
     
     $perf = _ums_cardfile_get_performance($pid);
     if ($perf['pid']) {
+
       $form['info'] = [
         '#value' => '<h2>Editing Info for Performance of ' . $perf['work']['title'] . ' at ' .
                   $perf['event']['venue'] . ' on ' . $perf['event']['date'] . '</h2>',

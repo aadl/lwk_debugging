@@ -33,6 +33,10 @@ class PerformanceDeleteArtistConfirmForm extends ConfirmFormBase {
     $artist_name = $artist['name'];
     $performance_title = $performance['work']['title'];
 
+    $form = [
+      '#attributes' => ['class' => 'form-width-exception']
+    ];
+
     $form['engineered_header'] = [
       '#prefix' => '<h3>Are you sure you want to remove ' . $artist_name . ' from this performance of ' . $performance_title . '?</h3>',
     ];

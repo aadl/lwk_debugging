@@ -24,6 +24,10 @@ class PerformanceCopyArtistsForm extends FormBase {
 
     dblog('PerformanceCopyArtistsForm: performance: ', $performance);
 
+    $form = [
+      '#attributes' => ['class' => 'form-width-exception']
+    ];
+
     $form['collapsible'] = [
       '#type' => 'details',
       '#title' => t('Copy Performance Artists from other Repertoire'),

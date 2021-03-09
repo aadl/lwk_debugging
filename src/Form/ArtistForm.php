@@ -143,14 +143,14 @@ class ArtistForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('submitForm: ENTERED');
+    dblog('ARTISTFORM: submitForm: ENTERED');
     // Check for merge ID
-    $merge_id = $form_state->get(['collapsible', 'merge_id']);
+    //$form_values = $form_state->getValues();
+    //dblog('ARTISTFORM: submitForm: form_values =', $form_values);
+
+    $merge_id = $form_state->getValue('merge_id');
     $aid = $form_state->getValue('aid');
-    dblog('submitForm: merge_id =', $merge_id, 'aid =', $aid);
-    if ($merge_id) {
-      dblog("ArtistForm:: submitForm - $form_state->get(['collapsible', 'merge_id']) =", $form_state->get(['collapsible', 'merge_id']));
-    }
+    dblog('ARTISTFORM: submitForm: merge_id =', $merge_id, 'aid =', $aid);
 
     if ($aid && $merge_id) {
      // if ($_REQUEST['destination']) {

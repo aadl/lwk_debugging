@@ -33,6 +33,10 @@ class WorkDeleteArtistConfirmForm extends ConfirmFormBase {
     $artist_name = $artist['name'];
     $work_title = $work['title'];
 
+    $form = [
+      '#attributes' => ['class' => 'form-width-exception']
+    ];
+
     $form['engineered_header'] = [
       '#prefix' => '<h3>Are you sure you want to remove ' . $artist_name . ' as a creator from ' . $work_title . '?</h3>',
     ];

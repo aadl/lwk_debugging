@@ -19,6 +19,9 @@ class SeriesAddForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state, $sid = 0) {
     dblog('SeriesAddForm buildForm ENTERED');
 
+    $form = [
+      '#attributes' => ['class' => 'form-width-exception']
+    ];
     $form['name'] = [
       '#type' => 'textfield',
       '#title' => t('Add a Series'),

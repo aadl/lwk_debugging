@@ -19,6 +19,10 @@ class EventAddPerformanceForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state, $eid = 0) {
     dblog('EventAddPerformanceForm buildForm ENTERED');
 
+    $form = [
+      '#attributes' => ['class' => 'form-width-exception']
+    ];
+
     $form['collapsible'] = [
       '#type' => 'details',
       '#title' => t('Add Repertoire Performance'),

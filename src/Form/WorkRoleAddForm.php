@@ -20,6 +20,9 @@ class WorkRoleAddForm extends FormBase {
     dblog('WorkRoleAddForm buildForm ENTERED');
 
     $form = [
+      '#attributes' => ['class' => 'form-width-exception']
+    ];
+    $form = [
       '#prefix' => '<div class="container-inline">',
       '#suffix' => '</div>',
     ];

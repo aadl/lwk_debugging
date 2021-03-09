@@ -26,13 +26,14 @@ class WorkAddArtistForm extends FormBase {
       $work_role_options[$work_role->wrid] = $work_role->name;
     }
 
+    $form = [
+      '#attributes' => ['class' => 'form-width-exception']
+    ];
     $form['collapsible'] = [
       '#type' => 'details',
       '#title' => t('Add Creator'),
         //'#description' => t($desc_html),
         '#open' => FALSE, // Controls the HTML5 'open' attribute. Defaults to FALSE.
-        '#prefix' => '<div id="LWK" style="width:1000px">',
-        '#suffix' => '</div>'
       ];
 
 
