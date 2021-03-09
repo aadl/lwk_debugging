@@ -292,7 +292,7 @@ class DefaultController extends ControllerBase {
           $work = $performance['work'];
           $performance['work_artists_list'] = '';
 
-          if (count($work['artists'])) {
+          if (is_array($work) && count($work['artists'])) {
             $work_artists = [];
             foreach ($work['artists'] as $artist) {
               $work_artists[$artist['aid']]['name'] = $artist['name'];
@@ -902,6 +902,7 @@ class DefaultController extends ControllerBase {
     dblog('cf_autocomplete ENTERED *** type =', $type, 'request->query = ', $request->query);
     $results = [];
     $input = $request->query->get('q');
+    dblog('cf_autocomplete ENTERED *** strlen input =', strlen($input), $input);
 
     // Get the typed string from the URL, if it exists.
     if ($input) {
@@ -925,10 +926,11 @@ class DefaultController extends ControllerBase {
                      ];
         }
       } elseif ($type == 'event') {
+        dblog('autocomplete EVENT');
         $events = $db->query(
           "SELECT * FROM ums_events " .
           "WHERE date LIKE :input " .
-          "ORDER BY name ASC LIMIT 25", [':input' => '%%' . $input . '%%']
+          "ORDER BY date ASC LIMIT 25", [':input' => '%%' . $input . '%%']
         )
       ->fetchAll();
 
@@ -940,14 +942,17 @@ class DefaultController extends ControllerBase {
                      ];
         }
       } elseif ($type == 'work') {
+        dblog('autocomplete WORK');
         $works = $db->query(
           "SELECT * FROM ums_works " .
           "WHERE title LIKE :input " .
           "OR alternate LIKE :input " .
           "OR notes LIKE :input " .
-          "ORDER BY name ASC LIMIT 25", [':input' => '%%' . $input . '%%']
+          "ORDER BY title ASC LIMIT 25", [':input' => '%%' . $input . '%%']
           )
         ->fetchAll();
+        
+        dblog('autocomplete - count ($works) =', count($works));
 
         foreach ($works as $match) {
           $results[] = [

@@ -420,6 +420,7 @@ function _ums_cardfile_get_event($eid = 0) {
 /*== WORKS ===================================================================*/
 
 function _ums_cardfile_get_work($wid = 0) {
+  $work = [];
   dblog('_ums_cardfile_get_work: ENTERED $wid:', $wid);
   $db = \Drupal::database();
   $work = $db->query("SELECT ums_works.wid AS wid, " .
