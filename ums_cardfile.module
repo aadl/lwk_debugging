@@ -199,21 +199,16 @@ function ums_cardfile_save($table_name, $fields_array, $field_key) {
     $query = $db->select($table_name, 'tn');
     // check if the record exists
     foreach ($fields_array as $field => $value) {
-    dblog('Adding CONDITION: ', $field, $value);
-    $query->condition('tn.' . $field, $value, '=');
+      $query->condition('tn.' . $field, $value, '=');
     }
     $count_query = $query->countQuery();
     $num_rows = $query->countQuery()->execute()->fetchField();
-    dblog('ums_cardfile_save: CHECKING BEFORE INSERT num_rows = ', $num_rows);
 
     if ($num_rows == 0) {
         $record_id = $db->insert($table_name)
       ->fields($fields_array)->execute();
       dblog('ums_cardfile_save: AFTER INSERT', $record_id);
     }
-
-    $num_rows = $query->countQuery()->execute()->fetchField();
-    dblog('ums_cardfile_save: CHECKING AFTER INSERT num_rows = ', $num_rows);
   }
 
   return $record_id;
@@ -519,48 +514,6 @@ function _ums_cardfile_merge_work($old_wid, $wid) {
 }
 
 /*== HELPER FUNCTIONS ========================================================*/
-
-function ums_cardfile_autocomplete($type) {
-  $db = \Drupal::database();
-  $url_search = \Drupal::request()->query->get('search');
-  if ($type == 'artist') {
-    $artists = $db->query(
-      "SELECT * FROM ums_artists " .
-                    "WHERE name LIKE '%%:url_search%%' " .
-                    "OR name_plain LIKE '%%:url_search%%' " .
-                    "OR alias LIKE '%%:url_search%%' " .
-                    "ORDER BY name ASC LIMIT 25",
-      [':url_search' => $url_search]
-    )->fetchAll();
-    foreach($artists as $match) {
-      echo $match['name'] . ' (aid:' . $match['aid'] . ")\n";
-    }
-  } elseif ($type == 'event') {
-    $events = $db->query(
-      "SELECT * FROM ums_events " .
-                    "WHERE date LIKE '%%:url_search%%' " .
-                    "ORDER BY date ASC LIMIT 25",
-      [':url_search' => $url_search]
-    );
-    foreach($events as $match) {
-      $match_event = _ums_cardfile_get_event($match['eid']);
-      echo $match_event['date'] . ' at ' . $match_event['venue'] . ' (eid:' . $match['eid'] . ")\n";
-    }
-  } elseif ($type == 'work') {
-    $works = $db->query(
-      "SELECT * FROM ums_works " .
-                    "WHERE title LIKE '%%:url_search%%' " .
-                    "OR alternate LIKE '%%:url_search%%' " .
-                    "OR notes LIKE '%%:url_search%%' " .
-                    "ORDER BY title ASC LIMIT 25",
-      [':url_search' => $url_search]
-    );
-    foreach($works as $match) {
-      echo $match['title'] . ' (wid:' . $match['wid'] . ")\n";
-    }
-  }
-}
-
 function ums_cardfile_recent_artists_d8($new_aid = 0) {
     
   $db = \Drupal::database();

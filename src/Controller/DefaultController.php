@@ -691,7 +691,7 @@ class DefaultController extends ControllerBase {
     elseif ($type1 == 'performance' && $type2 == 'artist') {
       $artist_perf = [];
       $artist_perf['pid'] = $id1;
-      $artist_perff['aid'] = $id2;
+      $artist_perf['aid'] = $id2;
       $artist_perf['prid'] = $optional_value;
       ums_cardfile_save('ums_artist_performances', $artist_perf, NULL);
       drupal_set_message("Added new Repertoire Artist to the Performance");
@@ -728,17 +728,19 @@ class DefaultController extends ControllerBase {
     elseif ($source_type == 'performance') {
      $performance = _ums_cardfile_get_performance($source_id);
       $prid = $optional_value;
-      $performance_role = $db->query('SELECT * FROM ums_performance_roles WHERE prid = :prid', [':prid' => $prid])->fetchAssoc();
-      $query_args = ['prid' => $performance_role->prid];
-      $heading_text = 'Adding a <strong>' . $performance_role->name . '</strong> to ' . $performance['work']['title'] . ' at event: ' .
+      $performance_role = $db->query("SELECT * FROM ums_performance_roles WHERE prid = :prid", [':prid' => $prid])->fetchAssoc();
+      dblog('cf_searchadd - performance_role =', $performance_role);
+      $query_args = ['prid' => $performance_role['prid']];
+      $heading_text = 'Adding a <strong>' . $performance_role['name'] . '</strong> to ' . $performance['work']['title'] . ' at event: ' .
                             $performance['event']['date'] . ' at ' . $performance['event']['venue'];
     } 
     elseif ($source_type == 'work') {
       $work = _ums_cardfile_get_work($source_id);
       $wrid = $optional_value;
-      $performance_role = $db->query('SELECT * FROM ums_work_roles WHERE wrid = :wrid', [':wrid' => $wrid])->fetchAssoc();
-      $query_args = ['wrid' => $performance_role->wrid];
-      $heading_text = 'Adding a <strong>' . $performance_role->name . '</strong> to ' . $work['title'];
+      $work_role = $db->query("SELECT * FROM ums_work_roles WHERE wrid = :wrid", [':wrid' => $wrid])->fetchAssoc();
+      dblog('cf_searchadd - work_role =', $work_role);
+      $query_args = ['wrid' => $work_role['wrid']];
+      $heading_text = 'Adding a <strong>' . $work_role['name'] . '</strong> to ' . $work['title'];
     }
 
     $copy_performance_flag = FALSE;
@@ -837,13 +839,9 @@ class DefaultController extends ControllerBase {
       elseif ($type == 'artist') {   // ----------------------- ARTIST
         foreach ($search_terms as $search_term) {
           $search_query_part = "(name LIKE '%%$search_term%%'";
-          //$search_args[] = [':'. $search_term => $search_term ];
           $search_query_part .= " OR name_plain LIKE '%%$search_term%%'";
-          //$search_args[] = [':'. $search_term => $search_term ];
           $search_query_part .= " OR alias LIKE '%%$search_term%%'";
-          //$search_args[] = [':'. $search_term => $search_term ];
           $search_query_part .= " OR notes LIKE '%%$search_term%%')";
-          //$search_args[] = [':'. $search_term => $search_term ];
           $search_query_parts[] = $search_query_part;
         }
         $select_statement = "SELECT * FROM ums_artists WHERE " . implode(' AND ', $search_query_parts) .
@@ -851,21 +849,21 @@ class DefaultController extends ControllerBase {
         $res = $db->query($select_statement, $search_args)->fetchAll();
 
         $artists = [];
-        foreach ($res as $$artist) {
+        foreach ($res as $artist) {
           dblog('BEFORE ARTIST ums_cardfile_create_link');
           $select_link = ums_cardfile_create_link('SELECT', '/cardfile/join/' .
                                                             $source_type . '/' .
                                                             $source_id. '/' .
                                                             'artist' . '/' . 
-                                                            $artist['aid'] .'/' . 
+                                                            $artist->aid .'/' . 
                                                             key($query_args) .'/' .
                                                             current($query_args));
           dblog('searchAdd: (artist) select_link=', $select_link);
           $artists[] = [
-            'Artist ID' => $artist['aid'],
-            'Name' => $artist['name'],
-            'Alias' => $artist['alias'],
-            'Notes' => $artist['notes'],
+            'Artist ID' => $artist->aid,
+            'Name' => $artist->name,
+            'Alias' => $artist->alias,
+            'Notes' => $artist->notes,
             'SELECT' => $select_link,
           ];
         }
@@ -889,4 +887,67 @@ class DefaultController extends ControllerBase {
       '#cache' => [ 'max-age' => 0 ]
     ];
   }
+
+  public function cf_autocomplete(Request $request, $type) { 
+    dblog('cf_autocomplete ENTERED *** type =', $type, 'request->query = ', $request->query);
+    $results = [];
+    $input = $request->query->get('q');
+
+    // Get the typed string from the URL, if it exists.
+    if ($input) {
+      $db = \Drupal::database();
+      $url_search = \Drupal::request()->query->get('search');
+    
+      if ($type == 'artist') {
+        $artists = $db->query(
+          "SELECT * FROM ums_artists " .
+        "WHERE name LIKE '%%$input%%' " .
+        "OR name_plain LIKE '%%$input%%' " .
+        "OR alias LIKE '%%$input%%' " .
+        "ORDER BY name ASC LIMIT 25"
+        )
+      ->fetchAll();
+        foreach ($artists as $match) {
+          dblog('LOOP - count(artists) =', $match);
+          $results[] = [
+                      'value' => $match->name,
+                      'label' => $match->name
+                     ];
+        }
+      } elseif ($type == 'event') {
+        $events = $db->query(
+          "SELECT * FROM ums_events " .
+        "WHERE date LIKE '%%$input%%' " .
+        "ORDER BY name ASC LIMIT 25"
+        )
+      ->fetchAll();
+
+        foreach ($events as $match) {
+          $match_event = _ums_cardfile_get_event($match['eid']);
+          $results[] = [
+                      'value' => $match_event->date,
+                      'label' => $match_event->date
+                     ];
+        }
+      } elseif ($type == 'work') {
+        $works = $db->query(
+          "SELECT * FROM ums_works " .
+        "WHERE title LIKE '%%$input%%' " .
+        "OR alternate LIKE '%%$input%%' " .
+        "OR notes LIKE '%%$input%%' " .
+        "ORDER BY name ASC LIMIT 25"
+        )
+      ->fetchAll();
+
+        foreach ($works as $match) {
+          $results[] = [
+                      'value' => $match->title,
+                      'label' => $match->title
+                     ];
+        }
+      }
+    }
+    return new JsonResponse($results);
+  }
+
 }

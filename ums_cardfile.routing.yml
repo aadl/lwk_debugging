@@ -268,6 +268,16 @@ ums_cardfile.join:
   requirements:
     _permission: 'access ums_cardfile'
 
+ums_cardfile.autocomplete:
+  path: '/cardfile-autocomplete/{type}'
+  defaults:
+    _title: 'UMS Autocomplete'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_autocomplete'
+    type: ''
+    _format: json
+  requirements:
+    _permission: 'access ums_cardfile'
+
 # ---------------------------------------------------------------------------------------------
 ums_cardfile.perfroles:
   path: '/cardfile/perfroles'

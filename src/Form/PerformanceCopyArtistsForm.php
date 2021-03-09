@@ -19,7 +19,6 @@ class PerformanceCopyArtistsForm extends FormBase {
 
   public function buildForm(array $form, FormStateInterface $form_state, $pid = 0) {
     dblog('PerformanceCopyArtistsForm: buildForm ENTERED - pid', $pid);
-    $db = \Drupal::database();
 
     $performance = _ums_cardfile_get_performance($pid);
 
@@ -78,13 +77,14 @@ class PerformanceCopyArtistsForm extends FormBase {
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
     dblog('PerformanceCopyArtistsForm: submitForm ENTERED');
- 
+    $db = \Drupal::database();
+
     $pid = $form_state->getValue('pid');
     $source_pid = $form_state->getValue('source_pid');
 
     // Copy all performance artists from source pid to new pid
-    $res = db_query("SELECT * FROM ums_artist_performances WHERE pid = %d", $source_pid);
-    while ($artist_perf = db_fetch_object($res)) {
+    $artist_performances = $db->query("SELECT * FROM ums_artist_performances WHERE pid = $source_pid")->fetchAll();
+    foreach ($artist_performances as $artist_perf) {
       $artist_perf->pid = $pid;
       ums_cardfile_save('ums_artist_performances', $artist_perf, NULL);
     }
