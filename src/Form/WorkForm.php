@@ -49,12 +49,13 @@ class WorkForm extends FormBase {
       ];
       $cancel_path = 'cardfile/work/' . $work['wid'];
     }
+    $work_title = (isset($work)) ? $work['title'] : '';
     $form['title'] = [
       '#type' => 'textfield',
       '#title' => t('Title'),
       '#size' => 64,
       '#maxlength' => 128,
-      '#default_value' => ($url_title ? $url_title : $work['title']),
+      '#default_value' => ($url_title) ? $url_title : $work_title,
       '#description' => t('Title of Repertoire'),
     ];
     $form['alternate'] = [
@@ -62,16 +63,16 @@ class WorkForm extends FormBase {
       '#title' => t('Alternate Title'),
       '#size' => 64,
       '#maxlength' => 256,
-      '#default_value' => $work['alternate'],
+      '#default_value' => (isset($work)) ? $work['alternate'] : '',
       '#description' => t('Alternate Titles for the Repertoire') . ' (' . t('separate multiple values with a comma') . ')',
     ];
     $form['notes'] = [
       '#type' => 'textarea',
       '#title' => t('Notes'),
-      '#default_value' => $work['notes'],
+      '#default_value' => (isset($work)) ? $work['notes'] : '',
     ];
 
-    if ($work['wid']) {
+    if (isset($work) && $work['wid']) {
       $form['collapsible'] = [
         '#type' => 'details',
        '#title' => t('MERGE REPERTOIRE'),
@@ -134,7 +135,9 @@ class WorkForm extends FormBase {
       ums_cardfile_save('ums_works', $work, 'wid');
     } else {
       // new work
-      ums_cardfile_save('ums_works', $work, NULL);
+      $new_wid = ums_cardfile_save('ums_works', $work, NULL);
+      $work['wid'] = $new_wid;
+      dblog('WorkForm: submitForm: NEW WORK SAVED, newwid=', $new_wid);
     }
 
     $eid = $form_state->getValue('eid');

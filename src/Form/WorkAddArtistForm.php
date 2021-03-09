@@ -67,6 +67,8 @@ class WorkAddArtistForm extends FormBase {
       '#title' => t('Search for existing artist'),
       '#size' => 32,
       '#maxlength' => 32,
+      '#autocomplete_route_name' => 'ums_cardfile.autocomplete',
+      '#autocomplete_route_parameters' => [ 'type' => 'artist', 'name' => 'search_text'],
     ];
     $form['collapsible']['table']['search']['submit_search'] = [
       '#type' => 'submit',

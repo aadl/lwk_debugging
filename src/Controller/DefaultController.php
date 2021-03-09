@@ -684,7 +684,7 @@ class DefaultController extends ControllerBase {
       $pid = ums_cardfile_save('ums_performances', $perf, NULL);
       dblog('cf_join: pid =', $pid);
       drupal_set_message('Created new Repertoire Performance for Event ID: ' . $id1 .
-                        '<br />Add Artist Info below:');
+                        '. Add Artist Info below:');
       $redirectlink = '/cardfile/performance/' . $pid;
       dblog("cf_join: 'event / 'work' -- redirectlink = $redirectlink");
     } 

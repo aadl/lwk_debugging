@@ -38,6 +38,8 @@ class EventAddPerformanceForm extends FormBase {
       '#title' => t('Search for existing repertoire'),
       '#size' => 150,
       '#maxlength' => 150,
+      '#autocomplete_route_name' => 'ums_cardfile.autocomplete',
+      '#autocomplete_route_parameters' => [ 'type' => 'work', 'name' => 'search'],
     ];
     $form['collapsible']['submit'] = [
       '#type' => 'submit',
@@ -59,7 +61,7 @@ class EventAddPerformanceForm extends FormBase {
     dblog('EventAddPerformanceForm: submitForm ENTERED');               
     $form_state->setRedirect('ums_cardfile.searchadd', [ 'source_type' => 'event',
                                                           'source_id'  => $form_state->getValue('eid'),
-                                                          'type'      => 'work',
+                                                          'type'       => 'work',
                                                           'search'     => $form_state->getValue('search')
                                                         ]);
     return;
