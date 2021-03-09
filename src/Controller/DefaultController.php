@@ -767,23 +767,29 @@ class DefaultController extends ControllerBase {
           
       if ($type == 'work') {    // ----------------------- WORK
         $wids = [];
+        $works_query_parts = [];
+        $artists_query_parts = [];
+        $search_args = [];
+        $search_terms_iterator = 0;
         foreach ($search_terms as $search_term) {
-          dblog('cf_searchadd: type == work - FOREACH, $search_term = ', $search_term);
-          $search_query_part = "(ums_works.title LIKE '%%$search_term%%'";
-          $search_query_part .= " OR ums_works.alternate LIKE '%%$search_term%%'";
-          $search_query_part .= " OR ums_works.notes LIKE '%%$search_term%%'";
+          $search_term_placeholder = ':search_term_' . $search_terms_iterator++;
+          dblog('cf_searchadd: type == work - FOREACH, ', $search_term_placeholder, '=', $search_term);
+          $search_query_part = "(ums_works.title LIKE $search_term_placeholder";
+          $search_query_part .= " OR ums_works.alternate LIKE $search_term_placeholder";
+          $search_query_part .= " OR ums_works.notes LIKE $search_term_placeholder";
           $works_query_parts[] = $search_query_part . ')';
 
-          $search_query_part .= " OR ums_artists.name LIKE '%%$search_term%%'";
-          $search_query_part .= " OR ums_artists.name_plain LIKE '%%$search_term%%'";
-          $search_query_part .= " OR ums_artists.alias LIKE '%%$search_term%%'";
-          $search_query_part .= " OR ums_artists.notes LIKE '%%:$search_term%%')";
+          $search_query_part .= " OR ums_artists.name LIKE $search_term_placeholder";
+          $search_query_part .= " OR ums_artists.name_plain LIKE $search_term_placeholder";
+          $search_query_part .= " OR ums_artists.alias LIKE $search_term_placeholder";
+          $search_query_part .= " OR ums_artists.notes LIKE $search_term_placeholder)";
           $artists_query_parts[] = $search_query_part;
+          $search_args[$search_term_placeholder] = '%%' . $search_term . '%%';
         }
 
         $select_statement = "SELECT wid FROM ums_works WHERE " . implode(' AND ', $works_query_parts) . " ORDER BY wid";
-        $res = $db->query($select_statement)->fetchAll();
-        foreach( $res as $match) {
+        $res = $db->query($select_statement, $search_args)->fetchAll();
+        foreach($res as $match) {
           $wids[$match->wid] = $match->wid;
         }
 
@@ -793,7 +799,7 @@ class DefaultController extends ControllerBase {
                         "AND ums_artist_works.aid = ums_artists.aid " .
                         "AND " . implode(' AND ', $artists_query_parts) .
                         " ORDER BY wid";
-        $res = $db->query($select_statement)->fetchAll();
+        $res = $db->query($select_statement, $search_args)->fetchAll();
         foreach( $res as $match) {
           $wids[$match->wid] = $match->wid;
         }
@@ -837,15 +843,19 @@ class DefaultController extends ControllerBase {
       } 
       
       elseif ($type == 'artist') {   // ----------------------- ARTIST
+        $search_query_parts = [];
+        $search_args = [];
+        $search_terms_iterator = 0;
         foreach ($search_terms as $search_term) {
-          $search_query_part = "(name LIKE '%%$search_term%%'";
-          $search_query_part .= " OR name_plain LIKE '%%$search_term%%'";
-          $search_query_part .= " OR alias LIKE '%%$search_term%%'";
-          $search_query_part .= " OR notes LIKE '%%$search_term%%')";
+          $search_term_placeholder = ':search_term_' . $search_terms_iterator++;
+          $search_query_part = "(name LIKE $search_term_placeholder";
+          $search_query_part .= " OR name_plain LIKE $search_term_placeholder";
+          $search_query_part .= " OR alias LIKE $search_term_placeholder";
+          $search_query_part .= " OR notes LIKE $search_term_placeholder)";
           $search_query_parts[] = $search_query_part;
+          $search_args[$search_term_placeholder] = '%%' . $search_term . '%%';
         }
-        $select_statement = "SELECT * FROM ums_artists WHERE " . implode(' AND ', $search_query_parts) .
-                        "ORDER BY name ASC";
+        $select_statement = "SELECT * FROM ums_artists WHERE " . implode(' AND ', $search_query_parts) . "ORDER BY name ASC";
         $res = $db->query($select_statement, $search_args)->fetchAll();
 
         $artists = [];
@@ -901,10 +911,10 @@ class DefaultController extends ControllerBase {
       if ($type == 'artist') {
         $artists = $db->query(
           "SELECT * FROM ums_artists " .
-        "WHERE name LIKE '%%$input%%' " .
-        "OR name_plain LIKE '%%$input%%' " .
-        "OR alias LIKE '%%$input%%' " .
-        "ORDER BY name ASC LIMIT 25"
+          "WHERE name LIKE :input " .
+          "OR name_plain LIKE :input " .
+          "OR alias LIKE :input " .
+          "ORDER BY name ASC LIMIT 25", [':input' => '%%' . $input . '%%']
         )
       ->fetchAll();
         foreach ($artists as $match) {
@@ -917,8 +927,8 @@ class DefaultController extends ControllerBase {
       } elseif ($type == 'event') {
         $events = $db->query(
           "SELECT * FROM ums_events " .
-        "WHERE date LIKE '%%$input%%' " .
-        "ORDER BY name ASC LIMIT 25"
+          "WHERE date LIKE :input " .
+          "ORDER BY name ASC LIMIT 25", [':input' => '%%' . $input . '%%']
         )
       ->fetchAll();
 
@@ -932,12 +942,12 @@ class DefaultController extends ControllerBase {
       } elseif ($type == 'work') {
         $works = $db->query(
           "SELECT * FROM ums_works " .
-        "WHERE title LIKE '%%$input%%' " .
-        "OR alternate LIKE '%%$input%%' " .
-        "OR notes LIKE '%%$input%%' " .
-        "ORDER BY name ASC LIMIT 25"
-        )
-      ->fetchAll();
+          "WHERE title LIKE :input " .
+          "OR alternate LIKE :input " .
+          "OR notes LIKE :input " .
+          "ORDER BY name ASC LIMIT 25", [':input' => '%%' . $input . '%%']
+          )
+        ->fetchAll();
 
         foreach ($works as $match) {
           $results[] = [
