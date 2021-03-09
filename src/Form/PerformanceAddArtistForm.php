@@ -21,9 +21,9 @@ class PerformanceAddArtistForm extends FormBase {
 
   // get work roles
     $perf_role_options = [];
-    $performance_roles = $db->query("SELECT * FROM ums_work_roles ORDER BY name")->fetchAll();
+    $performance_roles = $db->query("SELECT * FROM ums_performance_roles ORDER BY name")->fetchAll();
     foreach ($performance_roles as $performance_role) {
-      $perf_role_options[$performance_role->wrid] = $performance_role->name;
+      $perf_role_options[$performance_role->prid] = $performance_role->name;
     }
 
     $form = [
@@ -59,7 +59,7 @@ class PerformanceAddArtistForm extends FormBase {
       '#type' => 'select',
       '#title' => 'Role',
       '#options' => $perf_role_options,
-      '#description' => '[' .ums_cardfile_create_link('Edit Artist Roles', 'cardfile/perfroles', ['query' => ['return' => $current_path]]) . ']',
+      '#description' => '[' . ums_cardfile_create_link('Edit Artist Roles', 'cardfile/perfroles', ['query' => ['return' => $current_path]]) . ']',
     ];
 
     $form['collapsible']['table']['search'] = [
@@ -108,8 +108,12 @@ class PerformanceAddArtistForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    dblog('PerformanceAddArtistForm - submitForm: ENTERED');
     $clicked_element = $form_state->getTriggeringElement()['#id'];
-    if ($clicked_element == 'edit-submit-recent') {
+    dblog('PerformanceAddArtistForm - submitForm: clicked_element =', $clicked_element);
+
+    if (strpos($clicked_element,'submit-recent') != FALSE) {
+      dblog('PerformanceAddArtistForm - submitForm: CLICKED submit-recent');
       $form_state->setRedirect('ums_cardfile.join', [ 'type1'           => 'performance',
                                                       'id1'             => $form_state->getValue('pid'),
                                                       'type2'           => 'artist',
@@ -118,6 +122,7 @@ class PerformanceAddArtistForm extends FormBase {
                                                       'optional_value'  => $form_state->getValue('prid'),
                                                     ]);
     } else {
+      dblog('PerformanceAddArtistForm - submitForm: DID NOT CLICK submit-recent');
       $form_state->setRedirect('ums_cardfile.searchadd', ['source_type'     => 'performance',
                                                           'source_id'       => $form_state->getValue('pid'),
                                                           'type'            => 'artist',

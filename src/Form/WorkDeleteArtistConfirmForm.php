@@ -26,6 +26,7 @@ class WorkDeleteArtistConfirmForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, $wid = 0, $aid = 0) {
+    dblog('WorkDeleteArtistConfirmForm: buildForm ENTERED, $wid =', $wid, ', aid =', $aid);
     $this->wid = $wid;
     $this->aid = $aid;
     $work = _ums_cardfile_get_work($wid);
@@ -33,9 +34,9 @@ class WorkDeleteArtistConfirmForm extends ConfirmFormBase {
     $artist_name = $artist['name'];
     $work_title = $work['title'];
 
-    $form = [
-      '#attributes' => ['class' => 'form-width-exception']
-    ];
+    // $form = [
+    //   '#attributes' => ['class' => 'form-width-exception']
+    // ];
 
     $form['engineered_header'] = [
       '#prefix' => '<h3>Are you sure you want to remove ' . $artist_name . ' as a creator from ' . $work_title . '?</h3>',
@@ -64,6 +65,7 @@ class WorkDeleteArtistConfirmForm extends ConfirmFormBase {
    */
   public function getDescription() {
     return $this->t('NOTE. This action cannot be undone');
+
   }
 
   /**
