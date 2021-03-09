@@ -102,8 +102,8 @@ class DefaultController extends ControllerBase {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_artists WHERE aid = :aid", [':aid' => $aid]);
     \Drupal::messenger()->addMessage('Removed the artist from the database');
-    return [
-    ];
+
+    return new RedirectResponse('/cardfile/artists');
   }
 
   public function cf_artists_merge($old_id, $merge_id, $confirm = '') {
@@ -181,8 +181,8 @@ class DefaultController extends ControllerBase {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_venues WHERE vid = :vid", [':vid' => $vid]);
     \Drupal::messenger()->addMessage('Removed the venue from the database');
-    return [
-    ];
+    
+    return new RedirectResponse('/cardfile/venues');
   }
 
  // ===============================================================================================
@@ -342,8 +342,7 @@ class DefaultController extends ControllerBase {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_events WHERE eid = :eid", [':eid' => $eid]);
     \Drupal::messenger()->addMessage('Removed the event from the database');
-    return [
-    ];
+    return new RedirectResponse('/cardfile/events');
   }
 
  // ===============================================================================================
@@ -381,8 +380,8 @@ class DefaultController extends ControllerBase {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_series WHERE sid = :sid", [':sid' => $sid]);
     \Drupal::messenger()->addMessage('Removed the series from the database');
-    return [
-    ];
+
+    return new RedirectResponse('/cardfile/series');
   }
 
  // ===============================================================================================
@@ -486,8 +485,8 @@ class DefaultController extends ControllerBase {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_works WHERE wid = :wid", [':wid' => $wid]);
     \Drupal::messenger()->addMessage('Removed the work from the database');
-    return [
-    ];
+    
+    return new RedirectResponse('/cardfile/works');
   }
 
   public function cf_works_merge($old_wid, $merge_id, $confirm = '') {
