@@ -3,7 +3,7 @@
 </h2>
 
 {% if copy_performance_flag %}
-  <p>Copy Repertoire Performances from Event {{ source_event.date }} at {{ source_event.venue }}?</p>
+  <p>Copy Repertoire Performances from Event {{ source_event.date | date("m/d/Y")}} at {{ source_event.venue }}?</p>
 	  <ul>
       {% for source_perf in source_event.performances %}  
         <li>{{ source_perf.title }}</li>

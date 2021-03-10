@@ -222,7 +222,7 @@ class DefaultController extends ControllerBase {
         } else {
           $program_links = '';
         }
-
+        dblog('cf_events: EVENT photo_nid = ', $event['photo_nid']);
         if ($event['photo_nid']) {
           $photo_links = [];
           foreach (explode(',', $event['photo_nid']) as $photo_nid) {
@@ -275,7 +275,7 @@ class DefaultController extends ControllerBase {
    * cf_event - handle event editing
    */
   public function cf_event($eid = 0) {
-    dblog('cf_event: ENTERED, $aid = ' . $eid);
+    dblog('cf_event: ENTERED, $eid = ' . $eid);
     $db = \Drupal::database();
 
     $event = _ums_cardfile_get_event($eid);
@@ -587,7 +587,7 @@ class DefaultController extends ControllerBase {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_artist_performances WHERE aid = :aid AND pid = :pid", [':aid' => $aid, ':pid' => $pid]);
     \Drupal::messenger()->addMessage('Artist has been deleted');
-    
+
     return new RedirectResponse('/cardfile/performance/' . $pid);
   }
   

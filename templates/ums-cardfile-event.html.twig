@@ -1,5 +1,5 @@
 <h1>
-  <span>UMS Cardfile Event {{event.title ? ': ' ~ event.title}}</span>
+  <span>UMS Cardfile Event {{(event.title | length > 0) ? ': ' ~ event.title : '' }}</span>
 </h1>
 
 
@@ -15,7 +15,7 @@
   <p><strong>Series:</strong> {{ event.series }}</p>
 
 {% if event.program_nid %}
-  <p><strong>View Program(s):</strong> <a href="/node/{{ nid }}">Program</a></p>
+  <p><strong>View Program:</strong> <a href="/node/{{ event.program_nid }}">Program</a></p>
 {% endif %}
 
 

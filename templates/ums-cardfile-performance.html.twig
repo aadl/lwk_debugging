@@ -6,7 +6,7 @@
     <span>UMS Repertoire Performance</span>
   </h1>
 
-  <p>Performance #{{ performance.weight}} at <strong>Event:</strong> {{ performance.event.date }}  at {{ performance.event.venue }}.</p>
+  <p>Performance #{{ performance.weight}} at <strong>Event:</strong> {{ performance.event.date | date("m/d/Y") }}  at {{ performance.event.venue }}.</p>
 
   {% if performance.notes %}
     <p>
