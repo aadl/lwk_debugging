@@ -22,7 +22,7 @@
 	<h2>Repertoire as a Creator:</h2>
   {% if artist.works|length > 0 %}
     {% for work in artist.works %}
-      <p>Composer: <a href="/cardfile/work/{{ work.wid }}">{{work.title}}</a></p>
+      <p>{{work.name}}: <a href="/cardfile/work/{{ work.wid }}">{{work.title}}</a></p>
     {% endfor %}</ul>
   {% else %}
     <p>No repertoire as a creator.</p>
