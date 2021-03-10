@@ -87,7 +87,7 @@ class PerformanceCopyArtistsForm extends FormBase {
     $source_pid = $form_state->getValue('source_pid');
 
     // Copy all performance artists from source pid to new pid
-    $artist_performances = $db->query("SELECT * FROM ums_artist_performances WHERE pid = $source_pid")->fetchAll();
+    $artist_performances = $db->query("SELECT * FROM ums_artist_performances WHERE pid = :pid", [':pid' => $source_pid])->fetchAll();
     foreach ($artist_performances as $artist_perf) {
       $artist_perf->pid = $pid;
       ums_cardfile_save('ums_artist_performances', $artist_perf, NULL);
