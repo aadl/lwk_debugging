@@ -231,7 +231,7 @@ ums_cardfile.performance.delete_artist:
   path: '/cardfile/performance/delete_artist/{pid}/{aid}'
   defaults:
     _title: 'Delete Performance Artist'
-    _form: '\Drupal\ums_cardfile\Form\PerformanceDeleteArtistConfirmForm'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_performance_delete_artist'
     pid: 0
     aid: 0
   requirements:

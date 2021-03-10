@@ -1,3 +1,5 @@
+{{ attach_library('ums_cardfile/cardfile-lib') }}
+
 <div class="l-overflow-clear">
 
   <h1>
@@ -43,7 +45,7 @@
         <p>
           <strong>{{ perf_artist.role }}:</strong>
           <a href="/cardfile/artist/{{ perf_artist.aid }}">{{ perf_artist.name }}</a>
-          [<a href="/cardfile/performance/delete_artist/{{ performance.pid }}/{{perf_artist.aid }}">X</a>]
+          [<a class="performance_delete_artist" href="/cardfile/performance/delete_artist/{{ performance.pid }}/{{perf_artist.aid }}" data-artist_name="{{ perf_artist.name }}" data-work_title="{{ performance.work.title }}">X</a>]
         </p>
       {% endfor %}
     </p>
