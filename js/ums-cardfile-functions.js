@@ -33,34 +33,12 @@
           }
 
           function handle_performance_delete_artist(currentElement) {
-            var buttonLink = currentElement.attr('href');
             var artist_name = currentElement.data('artist_name');  
             var work_title = currentElement.data('work_title');  
-            console.log(buttonLink);
-            console.log(artist_name);
-            console.log(work_title);
-
             var confirmResult = confirm('Are you sure you want to remove ' + artist_name + ' as a creator from ' + work_title + '?');
-            console.log('confirmResult = ' + confirmResult);
-            debugger;
 
-            if (confirmResult) {
-              // $.ajax({
-              //   url: buttonLink,
-              //   type: "GET",
-              //   success: function (result) {
-              //   },
-              //   error: function (error) {
-              //     console.log('delete artist ' + artist_name + 'confirmation - ajax error' + JSON.stringify(error));
-              //   }
-              // });
-            }
-            else {
-              
-            }
             return confirmResult;
           }
-         
 
 
                     // --------------------------------- EVENT HANDLERS ---------------------------------
@@ -88,7 +66,7 @@
             return handleButtonClick('creator role', $(this));
           });        
           
-          $('a.performance_delete_artist').click(function(e) {
+          $('a.delete_artist').click(function(e) {
             console.log('performance_delete_artist clicked');
             result = handle_performance_delete_artist($(this));
             console.log('handle_performance_delete_artist return = ' + result);

@@ -525,6 +525,18 @@ class DefaultController extends ControllerBase {
     return [];
   }
 
+   /**
+   * cf_work_delete_artist - handle work artist deletion
+   */
+  public function cf_work_delete_artist($aid, $wid) {  
+    $db = \Drupal::database();
+    $db->query("DELETE FROM ums_artist_works WHERE aid = :aid AND wid = :wid", [':aid' => $aid, ':wid' => $wid]);
+    \Drupal::messenger()->addMessage('Artist has been deleted');
+    
+    return new RedirectResponse('/cardfile/work/' . $wid);
+  }
+
+
 // ===============================================================================================
 // ===============================================================================================
   /**
@@ -572,12 +584,10 @@ class DefaultController extends ControllerBase {
    * cf_performance_delete_artist - handle performance artist deletion
    */
   public function cf_performance_delete_artist($aid, $pid) {  
-    $performance = _ums_cardfile_get_performance($pid);
-    $eid = $performance['eid'];
-
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_artist_performances WHERE aid = :aid AND pid = :pid", [':aid' => $aid, ':pid' => $pid]);
     \Drupal::messenger()->addMessage('Artist has been deleted');
+    
     return new RedirectResponse('/cardfile/performance/' . $pid);
   }
   

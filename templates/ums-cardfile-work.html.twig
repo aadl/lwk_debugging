@@ -1,3 +1,5 @@
+{{ attach_library('ums_cardfile/cardfile-lib') }}
+
 <h1>
   <span>UMS Repertoire</span>
 </h1>
@@ -23,7 +25,7 @@
     <h2>Creators</h2>
     {% for work_artist in work.artists %}
       <p><strong>{{ work_artist.role }}</strong> <a href="/cardfile/artist/{{ work_artist.aid }}">{{ work_artist.name }}</a>
-        [<a href="/cardfile/work/delete_artist/{{ work.wid }}/{{ work_artist.aid }}">X</a>]</p>
+        [<a class="delete_artist" href="/cardfile/work/delete_artist/{{ work.wid }}/{{work_artist.aid }}" data-artist_name="{{ work_artist.name }}" data-work_title="{{ work.title }}">X</a>]
     {% endfor %}
   {% endif %}
 

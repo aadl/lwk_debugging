@@ -191,7 +191,7 @@ ums_cardfile.work.delete_artist:
   path: '/cardfile/work/delete_artist/{wid}/{aid}'
   defaults:
     _title: 'Delete Work Artist'
-    _form: '\Drupal\ums_cardfile\Form\WorkDeleteArtistConfirmForm'
+    _controller: '\Drupal\ums_cardfile\Controller\DefaultController::cf_work_delete_artist'
     wid: 0
     aid: 0
   requirements:
