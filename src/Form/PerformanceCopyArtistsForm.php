@@ -18,12 +18,7 @@ class PerformanceCopyArtistsForm extends FormBase {
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $pid = 0) {
-    dblog('PerformanceCopyArtistsForm: buildForm ENTERED - pid', $pid);
-
     $performance = _ums_cardfile_get_performance($pid);
-
-    dblog('PerformanceCopyArtistsForm: performance: ', $performance);
-
     $form = [
       '#attributes' => ['class' => 'form-width-exception']
     ];
@@ -36,11 +31,6 @@ class PerformanceCopyArtistsForm extends FormBase {
       '#prefix' => '<div id="LWK-PerformanceCopyArtistsForm',
       '#suffix' => '</div>',
     ];
-
-    // $form['collapsible']['table'] = [
-    //   '#prefix' => '<table><tr><th>Select Role:</th><th>Select Artist:</th></tr><tr>',
-    //   '#suffix' => '</tr></table>',
-    // ];
 
     $form['collapsible']['pid'] = [
       '#type' => 'value',
@@ -58,7 +48,6 @@ class PerformanceCopyArtistsForm extends FormBase {
         $other_pids[$other_performance['pid']] = $description;
       }
     }
-    dblog('PerformanceCopyArtistsForm: other_pids: ', $other_pids);
 
     $form['collapsible']['source_pid'] = [
       '#type' => 'radios',
@@ -71,8 +60,6 @@ class PerformanceCopyArtistsForm extends FormBase {
       '#value' => 'Copy Artists',
     ];
       
-    dblog('PerformanceCopyArtistsForm - RETURNING' ); // $form:', $form);
-
     return $form;
   }
 
@@ -80,7 +67,6 @@ class PerformanceCopyArtistsForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('PerformanceCopyArtistsForm: submitForm ENTERED');
     $db = \Drupal::database();
 
     $pid = $form_state->getValue('pid');

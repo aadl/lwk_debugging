@@ -18,9 +18,7 @@ class EventForm extends FormBase {
     return 'event_edit_form';
   }
 
-  public function buildForm(array $form, FormStateInterface $form_state, $eid = 0) {
-    dblog('EventForm buildForm ENTERED, eid=',$eid);
-    
+  public function buildForm(array $form, FormStateInterface $form_state, $eid = 0) {    
     $db = \Drupal::database();
 
  // get venues
@@ -59,7 +57,6 @@ class EventForm extends FormBase {
         '#value' => $eid,
       ];
     }
-    dblog('EventForm buildForm AFTER SETTING eid in form, $eid = ', $form_state->getValue('eid'));
 
     $form['title'] = [
       '#type' => 'textfield',
@@ -132,8 +129,6 @@ class EventForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('EventForm: submitForm: ENTERED');
-
     $event = [];
     $event['title'] = $form_state->getValue('title');
     $event['date'] = $form_state->getValue('date');

@@ -17,8 +17,6 @@ class WorkRoleAddForm extends FormBase {
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $return = '') {
-    dblog('WorkRoleAddForm buildForm ENTERED');
-
     $form = [
       '#attributes' => ['class' => 'form-width-exception']
     ];
@@ -50,7 +48,6 @@ class WorkRoleAddForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('WorkRoleAddForm: submitForm ENTERED');
     $new_role = [];
     $new_role['name'] = $form_state->getValue('name');
     ums_cardfile_save('ums_work_roles', $new_role, NULL);
@@ -58,7 +55,6 @@ class WorkRoleAddForm extends FormBase {
 
     if ($return = $form_state->getValue('return')) {
       $drupal_goto_url = ums_cardfile_drupal_goto($return);
-      dblog('WorkRoleAddForm: submitForm $return = ', $return, ', drupal_goto_url = ', $drupal_goto_url);
       return new RedirectResponse($drupal_goto_url);
     }
   }

@@ -32,7 +32,6 @@ class DefaultController extends ControllerBase {
     $db = \Drupal::database();
     $page = pager_find_page();
  
-    dblog('cf_artists: ENTERED, $filter = ' . $filter . ', $page = ', $page);
     $per_page = 50;
     $offset = $per_page * $page;
     $query = $db->select('ums_artists', 'artists')
@@ -47,7 +46,6 @@ class DefaultController extends ControllerBase {
     $artists = $query->range($offset, $per_page)->execute()->fetchAll();
     $pager = pager_default_initialize($num_rows, $per_page);
 
-    dblog('cf_artists: ENTERED, count artists = ', count($artists));
     foreach ($artists as $artist) {
       if ($artist->photo_nid) {
         $photo_links = [];
@@ -78,7 +76,6 @@ class DefaultController extends ControllerBase {
    * cf_artist - handle artist edits
    */
   public function cf_artist($aid = 0) {
-    dblog('cf_artist: ENTERED, $aid = ' . $aid);
     $db = \Drupal::database();
 
     $artist = _ums_cardfile_get_artist($aid);
@@ -107,7 +104,6 @@ class DefaultController extends ControllerBase {
   }
 
   public function cf_artists_merge($old_id, $merge_id, $confirm = '') {
-    dblog("cf_artists_merge  ENTERED old_id = $old_id, merge_id = $merge_id, confirm = $confirm");
     if ($confirm) {
       _ums_cardfile_merge_artist($old_id, $merge_id);
       return new RedirectResponse('/cardfile/artist/' . $merge_id);
@@ -115,11 +111,6 @@ class DefaultController extends ControllerBase {
 
     $old_artist = _ums_cardfile_get_artist($old_id);
     $artist = _ums_cardfile_get_artist($merge_id);
-
-    dblog('ISSET: old_artist->performances :', isset($old_artist['performances']));
-    dblog('ISSET: old_artist->works        :', isset($old_artist['works']));
-    dblog('ISSET: artist->performances     :', isset($artist['performances']));
-    dblog('ISSET: artist->works            :', isset($artist['works']));
 
     if ($old_artist['aid'] && $artist['aid']) {
       $old_artist['performances'] = (isset($old_artist['performances'])) ? count($old_artist['performances']) : 0;
@@ -192,7 +183,6 @@ class DefaultController extends ControllerBase {
    * cf_events - handle events display
    */
   public function cf_events($year = '') {
-    dblog('cf_events  ENTERED year = ', $year);
     $db = \Drupal::database();
     $rows = [];
 
@@ -203,9 +193,7 @@ class DefaultController extends ControllerBase {
         $events = $db->query("SELECT eid FROM ums_events WHERE YEAR(date) = :year ORDER BY date", [':year' => $year])->fetchAll();
       }
       // NOTE THIS IS SLOW WHEN 'ALL' IS reqyested - nearly 5000 records
-      dblog('cf_events: COUNT events = ', count($events));
       foreach($events as $e) {
-       dblog('cf_events: LOOP e = ', $e);
        $event = _ums_cardfile_get_event($e->eid);
         if ($event['program_nid']) {
           $program_links = [];
@@ -222,7 +210,6 @@ class DefaultController extends ControllerBase {
         } else {
           $program_links = '';
         }
-        dblog('cf_events: EVENT photo_nid = ', $event['photo_nid']);
         if ($event['photo_nid']) {
           $photo_links = [];
           foreach (explode(',', $event['photo_nid']) as $photo_nid) {
@@ -250,7 +237,6 @@ class DefaultController extends ControllerBase {
       }
     }
     else {
-     dblog('cf_events year NULL');
      $event_years = $db->query('SELECT YEAR(date) AS event_year, COUNT(eid) AS event_count FROM ums_events GROUP BY event_year ORDER BY event_year')->fetchAll();
       foreach ($event_years as $e_year) {
         $row = [
@@ -275,7 +261,6 @@ class DefaultController extends ControllerBase {
    * cf_event - handle event editing
    */
   public function cf_event($eid = 0) {
-    dblog('cf_event: ENTERED, $eid = ' . $eid);
     $db = \Drupal::database();
 
     $event = _ums_cardfile_get_event($eid);
@@ -360,8 +345,6 @@ class DefaultController extends ControllerBase {
                 'id' => $aseries->sid
               ];
     }
-    dblog('cf_series rows count =', count($rows));
-
     $series_add_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\SeriesAddForm');
 
     return [
@@ -376,7 +359,6 @@ class DefaultController extends ControllerBase {
    * cf_series - handle series deletion
    */
   public function cf_delete_series($sid) {  
-    dblog('cf_delete_series sid =', $sid);
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_series WHERE sid = :sid", [':sid' => $sid]);
     \Drupal::messenger()->addMessage('Removed the series from the database');
@@ -390,12 +372,9 @@ class DefaultController extends ControllerBase {
    * cf_work - handle works display
    */
   public function cf_works($filter = '') {
-    dblog('cf_works ENTERED filter =', $filter);
     $rows = [];
     $db = \Drupal::database();
     $page = pager_find_page();
- 
-    dblog('cf_works: ENTERED, $filter = ' . $filter . ', $page = ', $page);
     $per_page = 50;
     $offset = $per_page * $page;
 
@@ -403,7 +382,6 @@ class DefaultController extends ControllerBase {
       ->fields('ums_works', ['wid']);
 
     if (NULL != $filter) {
-      dblog('filter not null - ', $filter);
       $query->condition('title', $db->escapeLike($filter) . "%", 'like');
     }
     $query->orderBy('title');
@@ -412,16 +390,12 @@ class DefaultController extends ControllerBase {
     $works = $query->range($offset, $per_page)->execute()->fetchAll();
     $pager = pager_default_initialize($num_rows, $per_page);
 
-    dblog('cf_works: ENTERED, count works = ', count($works));
     $rows = [];
     foreach ($works as $work) {
-      dblog("------------------------------------------------------- cf_works: $work->wid =", $work->wid);
-
       $work_details = _ums_cardfile_get_work($work->wid);
       if ($work_details) {
     // Format Creators
         $creators = '';
-        dblog("cf_works: work_details count =", count($work_details['artists']));
         if (count($work_details['artists'])) {
           $creators .= '<span style="font-size: smaller">';
           foreach ($work_details['artists'] as $artist) {
@@ -438,7 +412,6 @@ class DefaultController extends ControllerBase {
           'alternate' => $work_details['alternate'],
           'notes' => strlen($work_details['notes']) > 30 ? substr($work_details['notes'], 0, 30) . '...' : $work_details['notes'],
         ];
-        dblog('cf_works: row =', $row);
         $rows[] = $row;
       }
     }
@@ -459,11 +432,9 @@ class DefaultController extends ControllerBase {
    * cf_work - handle work edits
    */
   public function cf_work($wid = 0) {
-    dblog('cf_work: ENTERED, $wid = ' . $wid);
     $db = \Drupal::database();
 
     $work = _ums_cardfile_get_work($wid);    
-    dblog('cf_work: ENTERED, $work = ',$work);
     if ($work['wid']) {
       $work_add_artist_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\WorkAddArtistForm', $work['wid']);
       return [
@@ -490,7 +461,6 @@ class DefaultController extends ControllerBase {
   }
 
   public function cf_works_merge($old_wid, $merge_id, $confirm = '') {
-    dblog("cf_works_merge  ENTERED old_id = $old_wid, merge_id = $merge_id, confirm = $confirm");
     if ($confirm) {
       _ums_cardfile_merge_work($old_wid, $merge_id);
       return new RedirectResponse('/cardfile/work/' . $merge_id);
@@ -543,11 +513,9 @@ class DefaultController extends ControllerBase {
    * cf_performance - handle performance edits
    */
   public function cf_performance($pid = 0) {
-    dblog('cf_performance: ENTERED, $pid = ' . $pid);
     $db = \Drupal::database();
 
     $performance = _ums_cardfile_get_performance($pid);    
-    dblog('cf_performance: AFTER _ums_cardfile_get_performance, $performance = ',$performance);
     if ($performance['pid']) {
       $work_add_artist_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\WorkAddArtistForm', $performance['work']['wid']);
       $performance_add_artist_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\PerformanceAddArtistForm', $performance['pid']);
@@ -617,7 +585,6 @@ class DefaultController extends ControllerBase {
    * cf_delete_perfrole - handle Performance Role deletion
    */
   public function cf_delete_perfrole($prid) {  
-    dblog('cf_delete_perfrole sid =', $prid);
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_performance_roles WHERE prid = :prid", [':prid' => $prid]);
     \Drupal::messenger()->addMessage('Removed Artist Role from database');
@@ -649,7 +616,6 @@ class DefaultController extends ControllerBase {
    * cf_delete_workrole - handle Performance Role deletion
    */
   public function cf_delete_workrole($wrid) {  
-    dblog('cf_delete_workrole wrid =', $wrid);
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_work_roles WHERE wrid = :wrid", [':wrid' => $wrid]);
     \Drupal::messenger()->addMessage('Removed Creator Role from database');
@@ -660,7 +626,6 @@ class DefaultController extends ControllerBase {
 // ===============================================================================================
 
   public function cf_join($type1, $id1, $type2, $id2, $optional_key='', $optional_value='') {
-    dblog("cf_join: ENTERED type1 = $type1, id1 = $id1, type2 = $type2, id2 = $id2, optional_key = $optional_key, optional_value = $optional_value");
     $redirectlink = '/cardfile';
     $db = \Drupal::database();
     if ($type1 == 'event' && $type2 == 'source_event') {
@@ -680,22 +645,18 @@ class DefaultController extends ControllerBase {
       }
       drupal_set_message("All Performances copied from event $id2 to event $id1");
       $redirectlink = '/cardfile/event/' . $id1;
-      dblog("cf_join: 'event / 'source_event' -- redirectlink = $redirectlink");
    }
     if ($type1 == 'event' && $type2 == 'work') {
       // New Performance
       $max = $db->query("SELECT MAX(weight) as max_weight FROM ums_performances WHERE eid = :id1", [':id1' => $id1])->fetchAssoc();
-      dblog('cf_join: max=', $max);
       $perf = [];
       $perf['eid'] = $id1;
       $perf['wid']  = $id2;
       $perf['weight'] = $max['max_weight'] + 1;
       $pid = ums_cardfile_save('ums_performances', $perf, NULL);
-      dblog('cf_join: pid =', $pid);
       drupal_set_message('Created new Repertoire Performance for Event ID: ' . $id1 .
                         '. Add Artist Info below:');
       $redirectlink = '/cardfile/performance/' . $pid;
-      dblog("cf_join: 'event / 'work' -- redirectlink = $redirectlink");
     } 
     elseif ($type1 == 'performance' && $type2 == 'artist') {
       $artist_perf = [];
@@ -706,7 +667,6 @@ class DefaultController extends ControllerBase {
       drupal_set_message("Added new Repertoire Artist to the Performance");
       ums_cardfile_recent_artists_d8($id2);
       $redirectlink = '/cardfile/performance/' . $artist_perf['pid'];
-      dblog("cf_join: 'performance / 'artist' -- redirectlink = $redirectlink");
     } 
     elseif ($type1 == 'work' && $type2 == 'artist') {
       $artist_work = [];
@@ -717,13 +677,11 @@ class DefaultController extends ControllerBase {
       drupal_set_message("Added new Creator to the Repertoire");
       ums_cardfile_recent_artists_d8($id2);
       $redirectlink = '/cardfile/work/' . $artist_work['wid'];
-      dblog("cf_join: 'work / 'artist' -- redirectlink = $redirectlink");
    }
     return new RedirectResponse($redirectlink);
   }
 
   public function cf_searchadd($source_type, $source_id, $type, $search, $optional_key='', $optional_value='') {
-    dblog("cf_searchadd: ENTERED", $source_type, $source_id, $type, $search, $optional_key, $optional_value);
     $db = \Drupal::database();
 
     $search_terms_list = [];
@@ -738,7 +696,6 @@ class DefaultController extends ControllerBase {
      $performance = _ums_cardfile_get_performance($source_id);
       $prid = $optional_value;
       $performance_role = $db->query("SELECT * FROM ums_performance_roles WHERE prid = :prid", [':prid' => $prid])->fetchAssoc();
-      dblog('cf_searchadd - performance_role =', $performance_role);
       $query_args = ['prid' => $performance_role['prid']];
       $heading_text = 'Adding a <strong>' . $performance_role['name'] . '</strong> to ' . $performance['work']['title'] . ' at event: ' .
                             $performance['event']['date'] . ' at ' . $performance['event']['venue'];
@@ -747,7 +704,6 @@ class DefaultController extends ControllerBase {
       $work = _ums_cardfile_get_work($source_id);
       $wrid = $optional_value;
       $work_role = $db->query("SELECT * FROM ums_work_roles WHERE wrid = :wrid", [':wrid' => $wrid])->fetchAssoc();
-      dblog('cf_searchadd - work_role =', $work_role);
       $query_args = ['wrid' => $work_role['wrid']];
       $heading_text = 'Adding a <strong>' . $work_role['name'] . '</strong> to ' . $work['title'];
     }
@@ -782,7 +738,6 @@ class DefaultController extends ControllerBase {
         $search_terms_iterator = 0;
         foreach ($search_terms as $search_term) {
           $search_term_placeholder = ':search_term_' . $search_terms_iterator++;
-          dblog('cf_searchadd: type == work - FOREACH, ', $search_term_placeholder, '=', $search_term);
           $search_query_part = "(ums_works.title LIKE $search_term_placeholder";
           $search_query_part .= " OR ums_works.alternate LIKE $search_term_placeholder";
           $search_query_part .= " OR ums_works.notes LIKE $search_term_placeholder";
@@ -835,9 +790,7 @@ class DefaultController extends ControllerBase {
              // Work data already captured, just add artist info
               $works[$match->wid]['Artists'] .= "<br /><strong>" . $match->role . ':</strong> ' . $match->artist_name;
             } else {
-            dblog('BEFORE WORK ums_cardfile_create_link');
             $select_link = ums_cardfile_create_link('SELECT', "/cardfile/join/$source_type/$source_id/work/$match->wid");
-            dblog('searchAdd: (work) select_link=', $select_link);
              $works[$match->wid] = [
                 'Work ID' => $match->wid,
                 'Title' => $match->title,
@@ -869,7 +822,6 @@ class DefaultController extends ControllerBase {
 
         $artists = [];
         foreach ($res as $artist) {
-          dblog('BEFORE ARTIST ums_cardfile_create_link');
           $select_link = ums_cardfile_create_link('SELECT', '/cardfile/join/' .
                                                             $source_type . '/' .
                                                             $source_id. '/' .
@@ -877,7 +829,6 @@ class DefaultController extends ControllerBase {
                                                             $artist->aid .'/' . 
                                                             key($query_args) .'/' .
                                                             current($query_args));
-          dblog('searchAdd: (artist) select_link=', $select_link);
           $artists[] = [
             'Artist ID' => $artist->aid,
             'Name' => $artist->name,
@@ -908,10 +859,8 @@ class DefaultController extends ControllerBase {
   }
 
   public function cf_autocomplete(Request $request, $type) { 
-    dblog('cf_autocomplete ENTERED *** type =', $type, 'request->query = ', $request->query);
     $results = [];
     $input = $request->query->get('q');
-    dblog('cf_autocomplete ENTERED *** strlen input =', strlen($input), $input);
 
     // Get the typed string from the URL, if it exists.
     if ($input) {
@@ -928,14 +877,12 @@ class DefaultController extends ControllerBase {
         )
       ->fetchAll();
         foreach ($artists as $match) {
-          dblog('LOOP - count(artists) =', $match);
           $results[] = [
                       'value' => $match->name,
                       'label' => $match->name
                      ];
         }
       } elseif ($type == 'event') {
-        dblog('autocomplete EVENT');
         $events = $db->query(
           "SELECT * FROM ums_events " .
           "WHERE date LIKE :input " .
@@ -951,7 +898,6 @@ class DefaultController extends ControllerBase {
                      ];
         }
       } elseif ($type == 'work') {
-        dblog('autocomplete WORK');
         $works = $db->query(
           "SELECT * FROM ums_works " .
           "WHERE title LIKE :input " .
@@ -960,9 +906,6 @@ class DefaultController extends ControllerBase {
           "ORDER BY title ASC LIMIT 25", [':input' => '%%' . $input . '%%']
           )
         ->fetchAll();
-        
-        dblog('autocomplete - count ($works) =', count($works));
-
         foreach ($works as $match) {
           $results[] = [
                       'value' => $match->title,

@@ -18,9 +18,7 @@ class ArtistForm extends FormBase {
     return 'artist_edit_form';
   }
 
-  public function buildForm(array $form, FormStateInterface $form_state, $aid = 0) {
-    dblog('ArtistForm buildForm ENTERED');
-    
+  public function buildForm(array $form, FormStateInterface $form_state, $aid = 0) {    
     $db = \Drupal::database();
     $form = [];
     $form['title'] = [
@@ -143,20 +141,10 @@ class ArtistForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('ARTISTFORM: submitForm: ENTERED');
-    // Check for merge ID
-    //$form_values = $form_state->getValues();
-    //dblog('ARTISTFORM: submitForm: form_values =', $form_values);
-
     $merge_id = $form_state->getValue('merge_id');
     $aid = $form_state->getValue('aid');
-    dblog('ARTISTFORM: submitForm: merge_id =', $merge_id, 'aid =', $aid);
 
     if ($aid && $merge_id) {
-     // if ($_REQUEST['destination']) {
-      //   unset($_REQUEST['destination']);
-      // }
-      dblog("ArtistForm: submitForm: SETTING artists_merge REDIRECT, aid=$aid, merge_id=$merge_id");
       $form_state->setRedirect('ums_cardfile.artists.merge',
                                 ['old_id' => $aid, //, ['aid' => $aid]);
                                  'merge_id' => $merge_id]); //, ['aid' => $aid]);
@@ -173,7 +161,6 @@ class ArtistForm extends FormBase {
     $artist['name_plain'] = ums_cardfile_normalize($artist['name']);
 
     $aid = $form_state->getValue('aid');
-    dblog('EventForm: submitForm: aid=',$aid);
     if ($aid) {
       // update existing record
       $artist['aid'] = $aid;

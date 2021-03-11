@@ -95,7 +95,6 @@ class EventReorderForm extends FormBase {
         '::cancel',
       ],
     ];
-    dblog($form);
     return $form;
   }
 

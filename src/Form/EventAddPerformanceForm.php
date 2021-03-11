@@ -17,8 +17,6 @@ class EventAddPerformanceForm extends FormBase {
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $eid = 0) {
-    dblog('EventAddPerformanceForm buildForm ENTERED');
-
     $form = [
       '#attributes' => ['class' => 'form-width-exception']
     ];
@@ -62,7 +60,6 @@ class EventAddPerformanceForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('EventAddPerformanceForm: submitForm ENTERED');               
     $form_state->setRedirect('ums_cardfile.searchadd', [ 'source_type' => 'event',
                                                           'source_id'  => $form_state->getValue('eid'),
                                                           'type'       => 'work',

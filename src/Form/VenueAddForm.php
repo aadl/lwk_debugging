@@ -17,8 +17,6 @@ class VenueAddForm extends FormBase {
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $sid = 0) {
-    dblog('VenueAddForm buildForm ENTERED');
-
     $form = [
       '#attributes' => ['class' => 'form-width-exception']
     ];
@@ -39,12 +37,9 @@ class VenueAddForm extends FormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
   }
 
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('VenueAddForm: ENTERED');
-    
+  public function submitForm(array &$form, FormStateInterface $form_state) {    
     $venue = [];
     $venue['name'] = $form_state->getValue('name');
-    dblog('VenueForm::submitForm', $venue);
     ums_cardfile_save('ums_venues', $venue, NULL);
     drupal_set_message('Venue saved');
   }

@@ -67,9 +67,7 @@
           });        
           
           $('a.delete_artist').click(function(e) {
-            console.log('performance_delete_artist clicked');
             result = handle_performance_delete_artist($(this));
-            console.log('handle_performance_delete_artist return = ' + result);
             if (!result) {
               e.preventDefault();
             }

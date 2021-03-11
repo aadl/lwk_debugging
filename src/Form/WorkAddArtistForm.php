@@ -51,7 +51,6 @@ class WorkAddArtistForm extends FormBase {
     ];
 
     $current_path = \Drupal::service('path.current')->getPath();
-    dblog('WorkAddArtistForm: buildForm: $current_path =', $current_path);
 
     $form['collapsible']['table']['role']['wrid'] = [
       '#type' => 'select',

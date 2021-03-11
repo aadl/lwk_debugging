@@ -19,8 +19,6 @@ class WorkForm extends FormBase {
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $wid = 0) {
-    dblog('WorkForm buildForm ENTERED, wid =', $wid);
-
     $db = \Drupal::database();
 
     $cancel_path = 'cardfile/works';
@@ -31,7 +29,6 @@ class WorkForm extends FormBase {
     // Get optional parameters from URL
     $url_eid = \Drupal::request()->query->get('eid');
     $url_title = \Drupal::request()->query->get('title');
-    dblog('WorkForm buildForm param:eid,title =', $url_eid, $url_title);
 
     if ($url_eid) {
       $event = _ums_cardfile_get_event($url_eid);
@@ -103,12 +100,7 @@ class WorkForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dblog('WorkForm:submitForm: ENTERED');
     //Check for merge ID
-    $merge_id = $form_state->getValue('merge_id');
-    dblog('WorkForm:submitForm - merge_id = ', $merge_id);
-    dblog('WorkForm:submitForm - merge_id = ', $form_state->getValues());
-    
     if ($form_state->getValue('aid') && $form_state->getValue('merge_id')) {
       // if ($_REQUEST['destination']) {
       //   unset($_REQUEST['destination']);
@@ -128,7 +120,6 @@ class WorkForm extends FormBase {
     ];
 
     $wid = $form_state->getValue('wid');
-    dblog('WorkForm: submitForm: wid=', $wid);
     if ($wid) {
       // update existing record
       $work['wid'] = $wid;
@@ -137,11 +128,9 @@ class WorkForm extends FormBase {
       // new work
       $new_wid = ums_cardfile_save('ums_works', $work, NULL);
       $work['wid'] = $new_wid;
-      dblog('WorkForm: submitForm: NEW WORK SAVED, newwid=', $new_wid);
     }
 
     $eid = $form_state->getValue('eid');
-    dblog('WorkForm: submitForm: eid=', $eid);
     if ($eid) {
       $form_state->setRedirect('ums_cardfile.join',
                                 [ 'type1' => 'event', 
