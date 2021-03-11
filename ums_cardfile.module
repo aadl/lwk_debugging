@@ -165,20 +165,6 @@ function ums_cardfile_theme($existing, $type, $theme, $path) {
 // ---------------------------------------------------------------------------------------------------
 // DRUPAL 8 MIGRATION NEW METHODS
 // ---------------------------------------------------------------------------------------------------
-  /*
-* Debugging routine to log to the <root folder>/LWKLWK.log IN arborcat.module
-*/
-function dblog(...$things_to_log) {
-  $line_to_log = '';
-  foreach ($things_to_log as $item) {
-    $line_to_log = $line_to_log . ' ' . print_r($item, TRUE);
-  }
-  // prepend date/time onto log line
-  $now_date_time = new DrupalDateTime();
-  $date_time_string = (string) $now_date_time->format('Y-m-d H:i:s');
-  $complete_line = '[' . $date_time_string . '] ' . $line_to_log . "\n";
-  error_log($complete_line, 3, "LWKLWK.log");
-}
 
 function ums_cardfile_create_link($link_text, $url_String, $url_options = []) {
   $host = \Drupal::request()->getSchemeAndHttpHost();
@@ -207,24 +193,14 @@ function ums_cardfile_save($table_name, $fields_array, $field_key) {
     if ($num_rows == 0) {
         $record_id = $db->insert($table_name)
       ->fields($fields_array)->execute();
-      dblog('ums_cardfile_save: AFTER INSERT', $record_id);
     }
   }
 
   return $record_id;
 }
 
-// function ums_cardfile_drupal_goto($path, $options = []) {
-//   dblog('ums_cardfile_drupal_goto: path = ', $path);
-//   $return_path = Url::fromUri('internal:/' . $path, $options);
-//   dblog('ums_cardfile_drupal_goto:  $return_path->toString() = ', $return_path->toString());
-
-//   return $return_path->toString();
-// }
-
 function ums_cardfile_drupal_goto_url($path, $options = []) {
   $url = Url::fromUri('internal:/' . $path, ['query' => $options]);
-  dblog('ums_cardfile_drupal_goto_url:  $url->toString() = ', $url->toString());
 
   return $url;
 }
@@ -232,7 +208,6 @@ function ums_cardfile_drupal_goto_url($path, $options = []) {
 /*== ARTISTS =================================================================*/
 
 function _ums_cardfile_get_artist($aid = 0) {
-  dblog('_ums_cardfile_get_artist: ENTERED $aid:', $aid);
   $db = \Drupal::database();
   $artist = $db->query("SELECT ums_artists.aid AS aid, " .
                                     "ums_artists.name AS name, " .
@@ -279,14 +254,10 @@ function _ums_cardfile_get_artist($aid = 0) {
 }
 
 function _ums_cardfile_merge_artist($old_aid, $aid) {
-  dblog('_ums_cardfile_merge_artist: ENTERED old_aid:', $old_aid, '$aid:', $aid);
   $db = \Drupal::database();
   // Copy info from old artist record to new if field is blank
   $old_artist = $db->query("SELECT * FROM ums_artists WHERE aid = :old_aid", [':old_aid' => $old_aid])->fetchAssoc();
   $artist = $db->query("SELECT * FROM ums_artists WHERE aid = :aid", [':aid' => $aid])->fetchAssoc();
-
-  dblog('_ums_cardfile_merge_artist: AFTER DB QUERY old_artist:', $old_artist);
-  dblog('_ums_cardfile_merge_artist: AFTER DB QUERY artist:', $artist);
 
   if (empty($old_artist['aid'])) {
     drupal_set_message("Cannot merge artist $old_aid (artist not found)");
@@ -323,7 +294,6 @@ function _ums_cardfile_merge_artist($old_aid, $aid) {
 /*== PERFORMANCES ============================================================*/
 
 function _ums_cardfile_get_performance($pid = 0) {
-  dblog('_ums_cardfile_get_performance: ENTERED $aid:', $pid);
   $db = \Drupal::database();
   $performance = $db->query("SELECT ums_performances.pid AS pid, " .
                                     "ums_performances.eid AS eid, " .
@@ -360,7 +330,6 @@ function _ums_cardfile_get_performance($pid = 0) {
 /*== EVENTS ==================================================================*/
 
 function _ums_cardfile_get_event($eid = 0) {
-  dblog('_ums_cardfile_get_event: >>>>>>>>>>>> ENTERED $eid:', $eid);
   $db = \Drupal::database();
   $event = $db->query("SELECT ums_events.eid AS eid, " .
                                    "ums_events.title AS title, " .
@@ -413,7 +382,6 @@ function _ums_cardfile_get_event($eid = 0) {
       }
     }
   }
-  dblog('_ums_cardfile_get_event: EXITING'); 
   return $event;
 }
 
@@ -421,7 +389,6 @@ function _ums_cardfile_get_event($eid = 0) {
 
 function _ums_cardfile_get_work($wid = 0) {
   $work = [];
-  dblog('_ums_cardfile_get_work: ENTERED $wid:', $wid);
   $db = \Drupal::database();
   $work = $db->query("SELECT ums_works.wid AS wid, " .
                                   "ums_works.title AS title, " .
