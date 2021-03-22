@@ -55,6 +55,12 @@ class WorkRoleAddForm extends FormBase {
 
     if ($return = $form_state->getValue('return')) {
       $drupal_goto_url = ums_cardfile_drupal_goto($return);
+
+      $drupal_goto_url = Url::fromUri('internal:/' . $return, NULL);
+
+      dblog('$drupal_goto_url =', $drupal_goto_url);
+      dblog('$drupal_goto_url =', $drupal_goto_url->toString());
+      
       return new RedirectResponse($drupal_goto_url);
     }
   }

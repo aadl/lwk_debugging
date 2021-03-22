@@ -1,0 +1,9 @@
+{
+  "name": "aadl/ums_cardfile",
+  "description": "Drupal module providing staff interface to the ums cardfile DB tables",
+  "type": "drupal-custom-module",
+  "require": {
+    "php": "^7.0",
+    "drupal/core": "^8.0"
+  }
+}

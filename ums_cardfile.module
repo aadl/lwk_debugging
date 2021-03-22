@@ -259,17 +259,17 @@ function _ums_cardfile_merge_artist($old_aid, $aid) {
   $old_artist = $db->query("SELECT * FROM ums_artists WHERE aid = :old_aid", [':old_aid' => $old_aid])->fetchAssoc();
   $artist = $db->query("SELECT * FROM ums_artists WHERE aid = :aid", [':aid' => $aid])->fetchAssoc();
 
-  if (empty($old_artist['aid'])) {
+  if (isset($old_artist['aid'])) {
     drupal_set_message("Cannot merge artist $old_aid (artist not found)");
     return new RedirectResponse('/cardfile/artists');
-  } elseif (empty($artist['aid'])) {
+  } elseif (isset($artist['aid'])) {
     drupal_set_message("Cannot merge artist into artist $aid (artist not found)");
     return new RedirectResponse('/cardfile/artists');
   }
 
   $updated = FALSE;
   foreach ($old_artist as $field => $value) {
-    if (empty($artist[$field])) {
+    if (isset($artist[$field])) {
       $artist[$field] = $value;
       $updated = TRUE;
     }
@@ -303,7 +303,7 @@ function _ums_cardfile_get_performance($pid = 0) {
                                     "ums_performances.weight AS weight " .
                                     "FROM ums_performances " .
                                     "WHERE ums_performances.pid = :pid", [':pid' => $pid])->fetchAssoc();
-  if (FALSE == empty($performance)) {
+  if (0 === count($performance)) {
     // Get performance event & work
     $performance['event'] = _ums_cardfile_get_event($performance['eid']);
     $performance['work'] = _ums_cardfile_get_work($performance['wid']);
@@ -346,7 +346,7 @@ function _ums_cardfile_get_event($eid = 0) {
                                    "WHERE ums_events.sid = ums_series.sid " .
                                    "AND ums_events.vid = ums_venues.vid " .
                                    "AND ums_events.eid = :eid", [':eid' => $eid])->fetchAssoc();
-  if (FALSE == empty($event)) {
+  if (0 === count($event)) {
     // Get performances
     $performances = $db->query("SELECT * FROM ums_performances, ums_works " .
                     "WHERE ums_performances.eid = :eid " .
@@ -449,17 +449,17 @@ function _ums_cardfile_merge_work($old_wid, $wid) {
   $old_work = db_fetch_array(db_query("SELECT * FROM ums_works WHERE wid = %d", $old_wid));
   $work = db_fetch_array(db_query("SELECT * FROM ums_works WHERE wid = %d", $wid));
 
-  if (empty($old_work['wid'])) {
+  if (isset($old_work['wid'])) {
     drupal_set_message("Cannot merge Repertoire $old_wid (repertoire not found)");
     return new RedirectResponse('/cardfile/works');
-  } elseif (empty($work['wid'])) {
+  } elseif (isset($work['wid'])) {
     drupal_set_message("Cannot merge Repertoire into Repertoire $wid (repertoire not found)");
     return new RedirectResponse('/cardfile/works');
   }
 
   $updated = FALSE;
   foreach ($old_work as $field => $value) {
-    if (empty($work[$field])) {
+    if (isset($work[$field])) {
       $work[$field] = $value;
       $updated = TRUE;
     }

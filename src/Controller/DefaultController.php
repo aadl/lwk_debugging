@@ -121,7 +121,7 @@ class DefaultController extends ControllerBase {
  
       $merge_table = [];
       foreach ($old_artist as $field => $old_artist_data) {
-        $arrows = (!empty($old_artist_data) && empty($artist[$field]) ? '>>>>' : '');
+        $arrows = ((count($old_artist_data) > 0) && isset($artist[$field]) ? '>>>>' : '');
         $merge_table[] = ["$field", $old_artist_data, $arrows, $artist[$field]];
       }
 
@@ -244,9 +244,6 @@ class DefaultController extends ControllerBase {
           'numberOfEvents' => $e_year->event_count,
         ];
         $rows[] = $row;
-        if (empty($header)) {
-          $header = array_keys($row);
-        }
       }
     }
     return [
@@ -478,7 +475,7 @@ class DefaultController extends ControllerBase {
  
       $merge_table = [];
       foreach ($old_work as $field => $old_work_data) {
-        $arrows = (!empty($old_work_data) && empty($work[$field]) ? '>>>>' : '');
+        $arrows = ((count($old_work_data) > 0) && isset($work[$field]) ? '>>>>' : '');
         $merge_table[] = ["$field", $old_work_data, $arrows, $work[$field]];
       }
 
