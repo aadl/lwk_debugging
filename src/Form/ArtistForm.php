@@ -199,7 +199,7 @@ class ArtistForm extends FormBase {
     else {
       $form_state->setRedirect('ums_cardfile.artist', ['aid' => $aid]);
     }
-    drupal_set_message('Artist saved');
+    \Drupal::messenger()->addMessage('Artist saved');
 
     return;
   }

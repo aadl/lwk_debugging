@@ -260,10 +260,10 @@ function _ums_cardfile_merge_artist($old_aid, $aid) {
   $artist = $db->query("SELECT * FROM ums_artists WHERE aid = :aid", [':aid' => $aid])->fetchAssoc();
 
   if (isset($old_artist['aid'])) {
-    drupal_set_message("Cannot merge artist $old_aid (artist not found)");
+    \Drupal::messenger()->addMessage("Cannot merge artist $old_aid (artist not found)");
     return new RedirectResponse('/cardfile/artists');
   } elseif (isset($artist['aid'])) {
-    drupal_set_message("Cannot merge artist into artist $aid (artist not found)");
+    \Drupal::messenger()->addMessage("Cannot merge artist into artist $aid (artist not found)");
     return new RedirectResponse('/cardfile/artists');
   }
 
@@ -287,7 +287,7 @@ function _ums_cardfile_merge_artist($old_aid, $aid) {
   $db->query("DELETE FROM ums_artist_works WHERE aid = :old_aid", [':old_aid' => $old_aid]);
   $db->query("DELETE FROM ums_artists WHERE aid = :old_aid", [':old_aid' => $old_aid]);
 
-  drupal_set_message("Merged Artist #$old_aid (" . $old_artist['name'] .
+  \Drupal::messenger()->addMessage("Merged Artist #$old_aid (" . $old_artist['name'] .
                      ") into Artist #$aid (" . $artist['name'] . ")");
 }
 
@@ -445,15 +445,16 @@ function _ums_cardfile_get_work($wid = 0) {
 }
 
 function _ums_cardfile_merge_work($old_wid, $wid) {
+  $db = \Drupal::database();
   // Copy info from old work record to new if field is blank
-  $old_work = db_fetch_array(db_query("SELECT * FROM ums_works WHERE wid = %d", $old_wid));
-  $work = db_fetch_array(db_query("SELECT * FROM ums_works WHERE wid = %d", $wid));
+  $old_work = $db->query("SELECT * FROM ums_works WHERE wid = %d", $old_wid)->fetchAll(PDO::FETCH_ASSOC);
+  $work = $db->query("SELECT * FROM ums_works WHERE wid = %d", $wid)->fetchAll(PDO::FETCH_ASSOC);
 
   if (isset($old_work['wid'])) {
-    drupal_set_message("Cannot merge Repertoire $old_wid (repertoire not found)");
+    \Drupal::messenger()->addMessage("Cannot merge Repertoire $old_wid (repertoire not found)");
     return new RedirectResponse('/cardfile/works');
   } elseif (isset($work['wid'])) {
-    drupal_set_message("Cannot merge Repertoire into Repertoire $wid (repertoire not found)");
+    \Drupal::messenger()->addMessage("Cannot merge Repertoire into Repertoire $wid (repertoire not found)");
     return new RedirectResponse('/cardfile/works');
   }
 
@@ -469,15 +470,15 @@ function _ums_cardfile_merge_work($old_wid, $wid) {
   }
 
   // Move artists and performances from old work to work
-  db_query("UPDATE IGNORE ums_artist_works SET wid = %d WHERE wid = %d", $wid, $old_wid);
-  db_query("UPDATE IGNORE ums_performances SET wid = %d WHERE wid = %d", $wid, $old_wid);
+  $db->query("UPDATE IGNORE ums_artist_works SET wid = %d WHERE wid = %d", $wid, $old_wid);
+  $db->query("UPDATE IGNORE ums_performances SET wid = %d WHERE wid = %d", $wid, $old_wid);
 
   // DELETE old work record
-  db_query("DELETE FROM ums_artist_works WHERE wid = %d", $old_wid);
-  db_query("DELETE FROM ums_performances WHERE wid = %d", $old_wid);
-  db_query("DELETE FROM ums_works WHERE wid = %d", $old_wid);
+  $db->query("DELETE FROM ums_artist_works WHERE wid = %d", $old_wid);
+  $db->query("DELETE FROM ums_performances WHERE wid = %d", $old_wid);
+  $db->query("DELETE FROM ums_works WHERE wid = %d", $old_wid);
 
-  drupal_set_message("Merged Repertoire #$old_wid (" . $old_work['title'] .
+  \Drupal::messenger()->addMessage("Merged Repertoire #$old_wid (" . $old_work['title'] .
                      ") into Repertoire #$wid (" . $work['title'] . ")");
 }
 

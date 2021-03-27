@@ -142,7 +142,7 @@ class WorkForm extends FormBase {
     else {
       $form_state->setRedirect('ums_cardfile.work', ['wid' => $wid]);
     }
-    drupal_set_message('Repertoire saved');
+    \Drupal::messenger()->addMessage('Repertoire saved');
 
     return;
   }

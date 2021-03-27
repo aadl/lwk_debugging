@@ -51,7 +51,7 @@ class WorkRoleAddForm extends FormBase {
     $new_role = [];
     $new_role['name'] = $form_state->getValue('name');
     ums_cardfile_save('ums_work_roles', $new_role, NULL);
-    drupal_set_message('Added new Creator Role');
+    \Drupal::messenger()->addMessage('Added new Creator Role');
 
     if ($return = $form_state->getValue('return')) {
       $drupal_goto_url = ums_cardfile_drupal_goto($return);

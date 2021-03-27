@@ -41,6 +41,6 @@ class VenueAddForm extends FormBase {
     $venue = [];
     $venue['name'] = $form_state->getValue('name');
     ums_cardfile_save('ums_venues', $venue, NULL);
-    drupal_set_message('Venue saved');
+    \Drupal::messenger()->addMessage('Venue saved');
   }
 }

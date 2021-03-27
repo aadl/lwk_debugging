@@ -78,6 +78,6 @@ class PerformanceCopyArtistsForm extends FormBase {
       $artist_perf->pid = $pid;
       ums_cardfile_save('ums_artist_performances', $artist_perf, NULL);
     }
-    drupal_set_message("Copied Repertoire Artists to the Performance");
+    \Drupal::messenger()->addMessage("Copied Repertoire Artists to the Performance");
   }
 }

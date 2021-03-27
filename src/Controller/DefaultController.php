@@ -6,7 +6,8 @@
 namespace Drupal\ums_cardfile\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Symfony\Component\HttpFoundation\Response;
+use Drupal\Core\Pager\PagerManagerInterface;
+use Drupal\Core\Pager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -30,7 +31,8 @@ class DefaultController extends ControllerBase {
   public function cf_artists($filter = '') {
     $rows = [];
     $db = \Drupal::database();
-    $page = pager_find_page();
+    $pager_manager = \Drupal::service('pager.manager');
+    $page = $pager_manager->findPage();
  
     $per_page = 50;
     $offset = $per_page * $page;
@@ -44,7 +46,7 @@ class DefaultController extends ControllerBase {
 
     $num_rows = $query->countQuery()->execute()->fetchField();
     $artists = $query->range($offset, $per_page)->execute()->fetchAll();
-    $pager = pager_default_initialize($num_rows, $per_page);
+    $pager = $pager_manager->defaultInitialize($num_rows, $per_page);
 
     foreach ($artists as $artist) {
       if ($artist->photo_nid) {
@@ -132,7 +134,7 @@ class DefaultController extends ControllerBase {
       ];
 
     } else {
-      drupal_set_message('Invalid Artist IDs', 'error');
+      \Drupal::messenger()->addMessage('Invalid Artist IDs', 'error');
       return new RedirectResponse('/cardfile/artists');
     }
     return [];
@@ -371,7 +373,8 @@ class DefaultController extends ControllerBase {
   public function cf_works($filter = '') {
     $rows = [];
     $db = \Drupal::database();
-    $page = pager_find_page();
+    $pager_manager = \Drupal::service('pager.manager');
+    $page = $pager_manager->findPage();
     $per_page = 50;
     $offset = $per_page * $page;
 
@@ -385,7 +388,7 @@ class DefaultController extends ControllerBase {
 
     $num_rows = $query->countQuery()->execute()->fetchField();
     $works = $query->range($offset, $per_page)->execute()->fetchAll();
-    $pager = pager_default_initialize($num_rows, $per_page);
+    $pager = $pager_manager->defaultInitialize($num_rows, $per_page);
 
     $rows = [];
     foreach ($works as $work) {
@@ -486,7 +489,7 @@ class DefaultController extends ControllerBase {
       ];
 
     } else {
-      drupal_set_message('Invalid Repertoire IDs', 'error');
+      \Drupal::messenger()->addMessage('Invalid Repertoire IDs', 'error');
       return new RedirectResponse('/cardfile/works');
     }
     return [];
@@ -640,7 +643,7 @@ class DefaultController extends ControllerBase {
           ums_cardfile_save('ums_artist_performances', $copy_artist_perf, NULL);
         }
       }
-      drupal_set_message("All Performances copied from event $id2 to event $id1");
+      \Drupal::messenger()->addMessage("All Performances copied from event $id2 to event $id1");
       $redirectlink = '/cardfile/event/' . $id1;
    }
     if ($type1 == 'event' && $type2 == 'work') {
@@ -651,7 +654,7 @@ class DefaultController extends ControllerBase {
       $perf['wid']  = $id2;
       $perf['weight'] = $max['max_weight'] + 1;
       $pid = ums_cardfile_save('ums_performances', $perf, NULL);
-      drupal_set_message('Created new Repertoire Performance for Event ID: ' . $id1 .
+      \Drupal::messenger()->addMessage('Created new Repertoire Performance for Event ID: ' . $id1 .
                         '. Add Artist Info below:');
       $redirectlink = '/cardfile/performance/' . $pid;
     } 
@@ -661,7 +664,7 @@ class DefaultController extends ControllerBase {
       $artist_perf['aid'] = $id2;
       $artist_perf['prid'] = $optional_value;
       ums_cardfile_save('ums_artist_performances', $artist_perf, NULL);
-      drupal_set_message("Added new Repertoire Artist to the Performance");
+      \Drupal::messenger()->addMessage("Added new Repertoire Artist to the Performance");
       ums_cardfile_recent_artists_d8($id2);
       $redirectlink = '/cardfile/performance/' . $artist_perf['pid'];
     } 
@@ -671,7 +674,7 @@ class DefaultController extends ControllerBase {
       $artist_work['aid'] = $id2;
       $artist_work['wrid'] = $optional_value;
       ums_cardfile_save('ums_artist_works', $artist_work, NULL);
-      drupal_set_message("Added new Creator to the Repertoire");
+      \Drupal::messenger()->addMessage("Added new Creator to the Repertoire");
       ums_cardfile_recent_artists_d8($id2);
       $redirectlink = '/cardfile/work/' . $artist_work['wid'];
    }

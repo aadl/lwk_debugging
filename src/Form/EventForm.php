@@ -153,7 +153,7 @@ class EventForm extends FormBase {
       $eid = $result->eid;
     }
 
-    drupal_set_message('Event saved');
+    \Drupal::messenger()->addMessage('Event saved');
     $form_state->setRedirect('ums_cardfile.event', ['eid' => $eid]);
     return;
   }

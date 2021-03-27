@@ -51,7 +51,7 @@ class PerfRoleAddForm extends FormBase {
     $new_role = [];
     $new_role['name'] = $form_state->getValue('name');
     ums_cardfile_save('ums_performance_roles', $new_role, NULL);
-    drupal_set_message('Added new role');
+    \Drupal::messenger()->addMessage('Added new role');
 
     if ($return = $form_state->getValue('return')) {
       return new RedirectResponse($return);

@@ -42,6 +42,6 @@ class SeriesAddForm extends FormBase {
     $series['name'] = $form_state->getValue('name');
 
     ums_cardfile_save('ums_series', $series, NULL);
-    drupal_set_message('Series saved');
+    \Drupal::messenger()->addMessage('Series saved');
   }
 }
