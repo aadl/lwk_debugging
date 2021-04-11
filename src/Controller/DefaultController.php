@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  * Default controller for the ums_cardfile module.
  */
 class DefaultController extends ControllerBase {
+
   public function cf_home() {
     return [
       '#theme' => 'ums-cardfile-home'
@@ -33,7 +34,7 @@ class DefaultController extends ControllerBase {
     $db = \Drupal::database();
     $pager_manager = \Drupal::service('pager.manager');
     $page = $pager_manager->findPage();
- 
+
     $per_page = 50;
     $offset = $per_page * $page;
     $query = $db->select('ums_artists', 'artists')
@@ -97,7 +98,7 @@ class DefaultController extends ControllerBase {
   /**
    * cf_delete_artist - handle venue deletion
    */
-  public function cf_delete_artist($aid) {  
+  public function cf_delete_artist($aid) {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_artists WHERE aid = :aid", [':aid' => $aid]);
     \Drupal::messenger()->addMessage('Removed the artist from the database');
@@ -120,7 +121,7 @@ class DefaultController extends ControllerBase {
 
       $artist['performances'] = (isset($artist['performances'])) ? count($artist['performances']) : 0;
       $artist['works'] = (isset($artist['works'])) ? count($artist['works']) : 0;
- 
+
       $merge_table = [];
       foreach ($old_artist as $field => $old_artist_data) {
         $arrows = ((count($old_artist_data) > 0) && isset($artist[$field]) ? '>>>>' : '');
@@ -134,7 +135,7 @@ class DefaultController extends ControllerBase {
       ];
 
     } else {
-      \Drupal::messenger()->addMessage('Invalid Artist IDs', 'error');
+      \Drupal::messenger()->addError('Invalid Artist IDs');
       return new RedirectResponse('/cardfile/artists');
     }
     return [];
@@ -151,7 +152,7 @@ class DefaultController extends ControllerBase {
     $venues = $db->query('SELECT * FROM ums_venues ORDER BY name')->fetchAll();
     $rows = [];
     foreach ($venues as $venue) {
-       $rows[] = ['name' => $venue->name, 
+       $rows[] = ['name' => $venue->name,
                 'id' => $venue->vid
               ];
     }
@@ -166,15 +167,15 @@ class DefaultController extends ControllerBase {
       ];
   }
 
-  
+
   /**
    * cf_venues - handle venue deletion
    */
-  public function cf_delete_venue($vid) {  
+  public function cf_delete_venue($vid) {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_venues WHERE vid = :vid", [':vid' => $vid]);
     \Drupal::messenger()->addMessage('Removed the venue from the database');
-    
+
     return new RedirectResponse('/cardfile/venues');
   }
 
@@ -304,7 +305,7 @@ class DefaultController extends ControllerBase {
           $performance_rows[] = $performance;
         }
         $event['performances'] = $performance_rows;
-        
+
       }
 
       return [
@@ -322,7 +323,7 @@ class DefaultController extends ControllerBase {
   /**
    * cf_event - handle event deletion
    */
-  public function cf_delete_event($eid) {  
+  public function cf_delete_event($eid) {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_events WHERE eid = :eid", [':eid' => $eid]);
     \Drupal::messenger()->addMessage('Removed the event from the database');
@@ -340,7 +341,7 @@ class DefaultController extends ControllerBase {
     $series = $db->query('SELECT * FROM ums_series ORDER BY name')->fetchAll();
     $rows = [];
     foreach ($series as $aseries) {
-       $rows[] = ['name' => $aseries->name, 
+       $rows[] = ['name' => $aseries->name,
                 'id' => $aseries->sid
               ];
     }
@@ -357,7 +358,7 @@ class DefaultController extends ControllerBase {
   /**
    * cf_series - handle series deletion
    */
-  public function cf_delete_series($sid) {  
+  public function cf_delete_series($sid) {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_series WHERE sid = :sid", [':sid' => $sid]);
     \Drupal::messenger()->addMessage('Removed the series from the database');
@@ -406,7 +407,7 @@ class DefaultController extends ControllerBase {
           $creators .= '</span>';
         }
 
-        $row = [  
+        $row = [
           'wid' => $work_details['wid'],
           'creators' => '<strong>' . $work_details['title'] . '</strong>' . $creators,
           'alternate' => $work_details['alternate'],
@@ -434,7 +435,7 @@ class DefaultController extends ControllerBase {
   public function cf_work($wid = 0) {
     $db = \Drupal::database();
 
-    $work = _ums_cardfile_get_work($wid);    
+    $work = _ums_cardfile_get_work($wid);
     if ($work['wid']) {
       $work_add_artist_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\WorkAddArtistForm', $work['wid']);
       return [
@@ -444,7 +445,7 @@ class DefaultController extends ControllerBase {
         '#cache' => [ 'max-age' => 0 ]
       ];
     } else {
-      \Drupal::messenger()->addMessage("Repertoire not found",'error', TRUE);
+      \Drupal::messenger()->addError("Repertoire not found", TRUE);
       return new RedirectResponse('/cardfile/works');
     }
   }
@@ -452,11 +453,11 @@ class DefaultController extends ControllerBase {
   /**
    * cf_delete_work - handle work deletion
    */
-  public function cf_delete_work($wid) {  
+  public function cf_delete_work($wid) {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_works WHERE wid = :wid", [':wid' => $wid]);
     \Drupal::messenger()->addMessage('Removed the work from the database');
-    
+
     return new RedirectResponse('/cardfile/works');
   }
 
@@ -475,7 +476,7 @@ class DefaultController extends ControllerBase {
 
       $work['artists'] = (isset($work['artists'])) ? count($work['artists']) : 0;
       $work['events'] = (isset($work['events'])) ? count($work['events']) : 0;
- 
+
       $merge_table = [];
       foreach ($old_work as $field => $old_work_data) {
         $arrows = ((count($old_work_data) > 0) && isset($work[$field]) ? '>>>>' : '');
@@ -489,7 +490,7 @@ class DefaultController extends ControllerBase {
       ];
 
     } else {
-      \Drupal::messenger()->addMessage('Invalid Repertoire IDs', 'error');
+      \Drupal::messenger()->addError('Invalid Repertoire IDs');
       return new RedirectResponse('/cardfile/works');
     }
     return [];
@@ -498,11 +499,11 @@ class DefaultController extends ControllerBase {
    /**
    * cf_work_delete_artist - handle work artist deletion
    */
-  public function cf_work_delete_artist($aid, $wid) {  
+  public function cf_work_delete_artist($aid, $wid) {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_artist_works WHERE aid = :aid AND wid = :wid", [':aid' => $aid, ':wid' => $wid]);
     \Drupal::messenger()->addMessage('Artist has been deleted');
-    
+
     return new RedirectResponse('/cardfile/work/' . $wid);
   }
 
@@ -515,7 +516,7 @@ class DefaultController extends ControllerBase {
   public function cf_performance($pid = 0) {
     $db = \Drupal::database();
 
-    $performance = _ums_cardfile_get_performance($pid);    
+    $performance = _ums_cardfile_get_performance($pid);
     if ($performance['pid']) {
       $work_add_artist_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\WorkAddArtistForm', $performance['work']['wid']);
       $performance_add_artist_form = \Drupal::formBuilder()->getForm('Drupal\ums_cardfile\Form\PerformanceAddArtistForm', $performance['pid']);
@@ -529,7 +530,7 @@ class DefaultController extends ControllerBase {
         '#cache' => [ 'max-age' => 0 ]
       ];
     } else {
-      \Drupal::messenger()->addMessage("Performance not found",'error', TRUE);
+      \Drupal::messenger()->addError("Performance not found", TRUE);
       return new RedirectResponse('/cardfile/events');
     }
   }
@@ -537,7 +538,7 @@ class DefaultController extends ControllerBase {
   /**
    * cf_delete_performance - handle performance deletion
    */
-  public function cf_delete_performance($pid) {  
+  public function cf_delete_performance($pid) {
     $performance = _ums_cardfile_get_performance($pid);
     $eid = $performance['eid'];
 
@@ -551,14 +552,14 @@ class DefaultController extends ControllerBase {
    /**
    * cf_performance_delete_artist - handle performance artist deletion
    */
-  public function cf_performance_delete_artist($aid, $pid) {  
+  public function cf_performance_delete_artist($aid, $pid) {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_artist_performances WHERE aid = :aid AND pid = :pid", [':aid' => $aid, ':pid' => $pid]);
     \Drupal::messenger()->addMessage('Artist has been deleted');
 
     return new RedirectResponse('/cardfile/performance/' . $pid);
   }
-  
+
  // ===============================================================================================
  // ===============================================================================================
 
@@ -584,7 +585,7 @@ class DefaultController extends ControllerBase {
   /**
    * cf_delete_perfrole - handle Performance Role deletion
    */
-  public function cf_delete_perfrole($prid) {  
+  public function cf_delete_perfrole($prid) {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_performance_roles WHERE prid = :prid", [':prid' => $prid]);
     \Drupal::messenger()->addMessage('Removed Artist Role from database');
@@ -615,7 +616,7 @@ class DefaultController extends ControllerBase {
   /**
    * cf_delete_workrole - handle Performance Role deletion
    */
-  public function cf_delete_workrole($wrid) {  
+  public function cf_delete_workrole($wrid) {
     $db = \Drupal::database();
     $db->query("DELETE FROM ums_work_roles WHERE wrid = :wrid", [':wrid' => $wrid]);
     \Drupal::messenger()->addMessage('Removed Creator Role from database');
@@ -657,7 +658,7 @@ class DefaultController extends ControllerBase {
       \Drupal::messenger()->addMessage('Created new Repertoire Performance for Event ID: ' . $id1 .
                         '. Add Artist Info below:');
       $redirectlink = '/cardfile/performance/' . $pid;
-    } 
+    }
     elseif ($type1 == 'performance' && $type2 == 'artist') {
       $artist_perf = [];
       $artist_perf['pid'] = $id1;
@@ -667,7 +668,7 @@ class DefaultController extends ControllerBase {
       \Drupal::messenger()->addMessage("Added new Repertoire Artist to the Performance");
       ums_cardfile_recent_artists_d8($id2);
       $redirectlink = '/cardfile/performance/' . $artist_perf['pid'];
-    } 
+    }
     elseif ($type1 == 'work' && $type2 == 'artist') {
       $artist_work = [];
       $artist_work['wid'] = $id1;
@@ -691,7 +692,7 @@ class DefaultController extends ControllerBase {
     if ($source_type == 'event') {
       $event = _ums_cardfile_get_event($source_id);
       $heading_text = 'Adding repertoire to event: ' . $event['date'] . ' at ' . $event['venue'];
-    } 
+    }
     elseif ($source_type == 'performance') {
      $performance = _ums_cardfile_get_performance($source_id);
       $prid = $optional_value;
@@ -699,7 +700,7 @@ class DefaultController extends ControllerBase {
       $query_args = ['prid' => $performance_role['prid']];
       $heading_text = 'Adding a <strong>' . $performance_role['name'] . '</strong> to ' . $performance['work']['title'] . ' at event: ' .
                             $performance['event']['date'] . ' at ' . $performance['event']['venue'];
-    } 
+    }
     elseif ($source_type == 'work') {
       $work = _ums_cardfile_get_work($source_id);
       $wrid = $optional_value;
@@ -718,7 +719,7 @@ class DefaultController extends ControllerBase {
       $copy_performance_flag = TRUE;
       $source_eid = $matches[1];
       $source_event = _ums_cardfile_get_event($source_eid);
-    } 
+    }
     // -------------------------------------------------------------------
     // Search using 'search' terms passed in
     // -------------------------------------------------------------------
@@ -729,7 +730,7 @@ class DefaultController extends ControllerBase {
       // $output .= '<p>Searching for "' . implode('" AND "', $search_terms) . '"</p>';
       $search_query_parts = [];
       $search_args = [];
-          
+
       if ($type == 'work') {    // ----------------------- WORK
         $wids = [];
         $works_query_parts = [];
@@ -802,8 +803,8 @@ class DefaultController extends ControllerBase {
             }
           }
         }
-      } 
-      
+      }
+
       elseif ($type == 'artist') {   // ----------------------- ARTIST
         $search_query_parts = [];
         $search_args = [];
@@ -825,8 +826,8 @@ class DefaultController extends ControllerBase {
           $select_link = ums_cardfile_create_link('SELECT', '/cardfile/join/' .
                                                             $source_type . '/' .
                                                             $source_id. '/' .
-                                                            'artist' . '/' . 
-                                                            $artist->aid .'/' . 
+                                                            'artist' . '/' .
+                                                            $artist->aid .'/' .
                                                             key($query_args) .'/' .
                                                             current($query_args));
           $artists[] = [
@@ -853,12 +854,12 @@ class DefaultController extends ControllerBase {
       '#source_type' => $source_type,
       '#source_id' => $source_id,
       '#search' => $search,
-      '#type' => $type, 
+      '#type' => $type,
       '#cache' => [ 'max-age' => 0 ]
     ];
   }
 
-  public function cf_autocomplete(Request $request, $type) { 
+  public function cf_autocomplete(Request $request, $type) {
     $results = [];
     $input = $request->query->get('q');
 
@@ -866,7 +867,7 @@ class DefaultController extends ControllerBase {
     if ($input) {
       $db = \Drupal::database();
       $url_search = \Drupal::request()->query->get('search');
-    
+
       if ($type == 'artist') {
         $artists = $db->query(
           "SELECT * FROM ums_artists " .

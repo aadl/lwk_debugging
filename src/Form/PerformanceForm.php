@@ -19,7 +19,7 @@ class PerformanceForm extends FormBase {
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $pid = 0) {
-    
+
     $perf = _ums_cardfile_get_performance($pid);
     if ($perf['pid']) {
 
@@ -58,7 +58,7 @@ class PerformanceForm extends FormBase {
 
       return $form;
     } else {
-      \Drupal::messenger()->addMessage("Unable to find performance with ID: $pid", 'error');
+      \Drupal::messenger()->addError("Unable to find performance with ID: $pid");
       return new RedirectResponse('/cardfile');
     }
   }
