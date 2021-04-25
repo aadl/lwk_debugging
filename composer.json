@@ -1,6 +1,6 @@
 {
-  "name": "aadl/ums_cardfile",
-  "description": "Drupal module providing staff interface to the ums cardfile DB tables",
+  "name": "aadl/lwk_debugging",
+  "description": "Drupal module providing debuggng tools",
   "type": "drupal-custom-module",
   "require": {
     "php": "^7.0"

@@ -1,7 +1,0 @@
-name: UMS Card File
-description : UMS forms to create, read, edit and delete records
-package: Custom
-type: module
-version: 1.0
-core: 8.x
-core_version_requirement: ^8 || ^9

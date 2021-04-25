@@ -1,0 +1,23 @@
+<?php
+
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\Url;
+use Drupal\Core\Link;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+
+/*
+ * Debugging routine to log to the <root folder>/LWKLWK.log IN arborcat.module
+ */
+function dblog(...$things_to_log) {
+  $line_to_log = '';
+  foreach ($things_to_log as $item) {
+    $line_to_log = $line_to_log . ' ' . print_r($item, TRUE);
+  }
+  // prepend date/time onto log line
+  $now_date_time = new DrupalDateTime();
+  $date_time_string = (string) $now_date_time->format('Y-m-d H:i:s');
+  $complete_line = '[' . $date_time_string . '] ' . $line_to_log . "\n";
+  error_log($complete_line, 3, "LWKLWK.log");
+}
+
+
