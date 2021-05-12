@@ -1,8 +1,9 @@
 {
   "name": "aadl/lwk_debugging",
-  "description": "Drupal module providing debuggng tools",
+  "description": "Drupal module providing debug logging mechanism to a specified file",
   "type": "drupal-custom-module",
   "require": {
-    "php": "^7.0"
+    "php": "^7.0",
+    "drupal/core": "^8.0"
   }
 }
