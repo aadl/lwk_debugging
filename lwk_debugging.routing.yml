@@ -1,0 +1,7 @@
+lwk_debugging.admin_form:
+  path: /admin/config/lwk_debugging
+  defaults:
+    _title: 'lwk_debugging module settings'
+    _form: \Drupal\lwk_debugging\Form\Lwk_debuggingAdminForm
+  requirements:
+    _permission: 'access administration pages'

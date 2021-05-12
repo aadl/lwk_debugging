@@ -10,15 +10,14 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  */
 function dblog(...$things_to_log) {
 
-
-
   $line_to_log = '';
   foreach ($things_to_log as $item) {
-    if (strlen(json_encode($item)) < 1024) {
+    $encoded_str = json_encode($item);
+    if (strlen($encoded_str) < 1024) {
       $line_to_log = $line_to_log . ' ' . print_r($item, TRUE);
     }
     else {
-      $line_to_log = '+++ OBJECT TOO LARGE TO LOG +++';
+      $line_to_log = '+++ OBJECT TOO LARGE TO LOG +++' . substr($encoded_str, 0, 128) . '+++ END +++';
     }
   }
   // prepend date/time onto log line
