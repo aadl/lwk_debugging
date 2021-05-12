@@ -10,22 +10,25 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  */
 function dblog(...$things_to_log) {
 
+  $config = \Drupal::config('lwk_debugging.settings');
+  $max_num_chars = $config->get('max_num_chars');
+  $logging_filename = $config->get('logging_filename');
   $line_to_log = '';
   foreach ($things_to_log as $item) {
     $encoded_str = json_encode($item);
-    if (strlen($encoded_str) < 1024) {
+    if (strlen($encoded_str) <= $max_num_chars) {
       $line_to_log = $line_to_log . ' ' . print_r($item, TRUE);
     }
     else {
-      $line_to_log = '+++ OBJECT TOO LARGE TO LOG +++' . substr($encoded_str, 0, 128) . '+++ END +++';
+      $line_to_log = '+++ OBJECT TOO LARGE TO LOG COMPLETELY +++, first ' . $max_num_chars . ' chars: ' . substr($encoded_str, 0, $max_num_chars) . '+++ END +++';
     }
   }
   // prepend date/time onto log line
   $now_date_time = new DrupalDateTime();
   $date_time_string = (string) $now_date_time->format('Y-m-d H:i:s');
   $caller = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'];
-  $complete_line = '[' . $date_time_string . '] __' . $caller . '__:'. $line_to_log . "\n";
-  error_log($complete_line, 3, "LWKLWK.log");
+  $complete_line = '[' . $date_time_string . '] [[' . $caller . ']]:'. $line_to_log . "\n";
+  error_log($complete_line, 3, $logging_filename);
 }
 
 

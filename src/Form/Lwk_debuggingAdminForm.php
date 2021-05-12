@@ -34,9 +34,16 @@ class Lwk_debuggingAdminForm extends ConfigFormBase {
       '#type' => 'number',
       '#title' => t('Maximum # of characters'),
       '#default_value' => $config->get('max_num_chars'),
-      '#description' => t('Maximum # of characters to be written when a large structure is passed in to be logged'),
+      '#description' => t('Maximum # of characters to be written when a large structure is passed in to be logged')
     ];
-
+    $form['logging_filename'] = [ 
+      '#type' => 'textfield',
+      '#title' => t('Logging file name'),
+      '#default_value' => $config->get('logging_filename'),
+      '#size' => 64,
+      '#maxlength' => 128,
+      '#description' => t('Enter the name of the log file that will be created in the Drupal root (web) directory')
+   ];
 
     return parent::buildForm($form, $form_state);
   }
