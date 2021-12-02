@@ -5,3 +5,11 @@ lwk_debugging.admin_form:
     _form: \Drupal\lwk_debugging\Form\Lwk_debuggingAdminForm
   requirements:
     _permission: 'access administration pages'
+
+lwk_debugging.test:
+  path: '/lwk_test'
+  defaults:
+    _title: 'lwk_debugging test route'
+    _controller: '\Drupal\lwk_debugging\Controller\DefaultController::lwk_test'
+  requirements:
+    _permission: 'access lwk_debugging'
