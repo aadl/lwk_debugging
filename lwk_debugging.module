@@ -35,26 +35,3 @@ function dblog(...$things_to_log) {
 function dbje($obj) {
   return json_encode($obj, JSON_PRETTY_PRINT);
 }
-
-function lwk_debugging_test_node_load() {
-  $nodes_loaded = 0;
-  // load 10 SG nodes for testing Node::load
-  $query = \Drupal::entityQuery('node')
-  ->condition('type', 'sg_badge')
-  ->condition('status', 1)
-  ->range(0, 10);
-  $nodes = $query->execute();
-
-  foreach ($nodes as $nid) {
-    $node = Node::load($nid);
-    if ($node instanceof \Drupal\node\NodeInterface) { // Check if it is a node
-      $nodes_loaded++;
-      dblog("lwk_test after Node::load, node1:        bundle = ". $node->bundle());    
-      dblog("lwk_test after Node::load, node1:          type = ". $node->getType());    
-      dblog("lwk_test after Node::load, node1:         title = ". $node->get('title')->value);           // "Lorem Ipsum..."
-      dblog("lwk_test after Node::load, node1:       created = ". $node->get('created')->value);         // 1510948801
-      dblog("lwk_test after Node::load, node1:          body = ". $node->get('body')->value) . "\n";            // "The full node body, with HTML"
-    }
-  }
-  return $nodes_loaded;
-}
