@@ -32,6 +32,10 @@ function dblog(...$things_to_log) {
   error_log($complete_line, 3, $logging_filename);
 }
 
+function dbje($obj) {
+  return json_encode($obj, JSON_PRETTY_PRINT);
+}
+
 function lwk_debugging_test_node_load() {
   $nodes_loaded = 0;
   // load 10 SG nodes for testing Node::load
